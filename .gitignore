@@ -1,0 +1,30 @@
+# React / Frontend dependencies
+frontend/node_modules/
+frontend/build/
+frontend/.env
+npm-debug.log
+yarn-error.log
+
+# Backend dependencies & uploads
+backend/vendor/
+backend/uploads/
+*.log
+
+# Environment and Database configuration
+.env
+db_connect.php
+backend/config/db.php
+
+# Mac/Windows junk
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE & Editor folders
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
