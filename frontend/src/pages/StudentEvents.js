@@ -89,6 +89,16 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
             📄 View Brochure
           </button>
         )}
+        {isRegistered && (
+          <button
+            style={s(styles.registerBtn, { background: '#f0f0f0', color: '#333', marginBottom: '0.5rem', boxShadow: 'none', border: '1px solid #ccc' })}
+            onClick={() => onSelect(evt)}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#e0e0e0'}
+            onMouseLeave={(e) => e.currentTarget.style.background = '#f0f0f0'}
+          >
+            🎟️ View Details
+          </button>
+        )}
         <button
           style={s(
             styles.registerBtn,
@@ -116,7 +126,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
             e.currentTarget.style.boxShadow = "0 2px 4px rgba(128,0,0,0.3)";
           }}
         >
-          {isRegistered ? "🎫 View Ticket" : "ℹ️ View Details"}
+          {isRegistered ? "🎫 View Ticket" : "🎟️ View Details"}
         </button>
       </div>
     </div>
@@ -399,6 +409,23 @@ export default function StudentEvents() {
                        <div key={idx} style={styles.subEventCard}>
                          <h4 style={styles.subEventTitle}>{sub.name}</h4>
                          {sub.description && <p style={styles.subEventDesc}>{sub.description}</p>}
+                         <div style={{ marginTop: '0.5rem', marginBottom: '0.5rem', fontSize: '0.85rem', color: '#555' }}>
+                           {sub.coordinator_name && <div style={{ marginBottom: '0.25rem' }}><strong>Coordinator:</strong> {sub.coordinator_name}</div>}
+                           <div style={{ marginBottom: '0.25rem' }}>
+                             <strong>Participation:</strong> {sub.participation_type === 'group' ? 'Group' : 'Solo'}
+                           </div>
+                           {sub.participation_type === 'group' ? (
+                             <div style={{ marginBottom: '0.25rem' }}>
+                               <strong>Limits:</strong> {sub.max_groups || 'N/A'} Groups (Max {sub.max_team_size || 'N/A'} per group)
+                             </div>
+                           ) : (
+                             sub.max_participants && (
+                               <div style={{ marginBottom: '0.25rem' }}>
+                                 <strong>Max Participants:</strong> {sub.max_participants}
+                               </div>
+                             )
+                           )}
+                         </div>
                          <div style={styles.subEventMeta}>
                            <span>📍 {sub.venue || 'TBD'}</span>
                            <span>🕐 {sub.start_time ? formatTime(sub.start_time) : 'TBD'} - {sub.end_time ? formatTime(sub.end_time) : 'TBD'}</span>
@@ -439,12 +466,28 @@ export default function StudentEvents() {
                      </p>
                    )}
                  </div>
-                 <button 
-                   style={s(styles.registerBtn, { width: '100%', padding: '1rem', fontSize: '1.1rem' })}
-                   onClick={() => openRegistration(selectedEvent)}
-                 >
-                   Register Now
-                 </button>
+                 { (registeredEvents.includes(selectedEvent.id) || selectedEvent.is_registered) ? (
+                   <button 
+                     style={s(styles.registerBtn, { width: '100%', padding: '1rem', fontSize: '1.1rem', background: theme.colors.gold, color: theme.colors.maroon })}
+                     onClick={() => {
+                        setShowDetails(false);
+                        if (!selectedEvent.qr_token) {
+                          alert("Ticket not available yet.");
+                          return;
+                        }
+                        setTicketData(selectedEvent.qr_token);
+                     }}
+                   >
+                     🎫 View Ticket
+                   </button>
+                 ) : (
+                   <button 
+                     style={s(styles.registerBtn, { width: '100%', padding: '1rem', fontSize: '1.1rem' })}
+                     onClick={() => openRegistration(selectedEvent)}
+                   >
+                     Register Now
+                   </button>
+                 )}
                </div>
              </div>
            </div>

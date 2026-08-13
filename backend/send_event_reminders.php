@@ -24,7 +24,7 @@ $sqlTomorrow = "
     SELECT er.STUDENT_ID AS student_id, em.EVENT AS event_title
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.SL_NO
-    WHERE em.START_DATE = ? AND em.CURRENT_STATUS = 'published'
+    WHERE em.START_DATE = ? AND em.CURRENT_STATUS IN ('published', 'approved')
 ";
 $stmtTomorrow = $conn->prepare($sqlTomorrow);
 if ($stmtTomorrow) {
@@ -46,7 +46,7 @@ $sqlToday = "
     SELECT er.STUDENT_ID AS student_id, em.EVENT AS event_title, em.START_TIME AS event_time
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.SL_NO
-    WHERE em.START_DATE = ? AND em.CURRENT_STATUS = 'published' AND er.CHECK_IN_STATUS = 'pending'
+    WHERE em.START_DATE = ? AND em.CURRENT_STATUS IN ('published', 'approved') AND er.CHECK_IN_STATUS = 'pending'
 ";
 $stmtToday = $conn->prepare($sqlToday);
 if ($stmtToday) {
@@ -75,7 +75,7 @@ if ($stmtToday) {
 }
 
 // 4. Registration Deadline Warnings
-$sqlDeadline  = "SELECT SL_NO AS id, EVENT AS event_title, REGISTRATION_DEADLINE FROM event_master WHERE CURRENT_STATUS = 'published' AND REGISTRATION_DEADLINE IS NOT NULL";
+$sqlDeadline  = "SELECT SL_NO AS id, EVENT AS event_title, REGISTRATION_DEADLINE FROM event_master WHERE CURRENT_STATUS IN ('published', 'approved') AND REGISTRATION_DEADLINE IS NOT NULL";
 $stmtDeadline = $conn->prepare($sqlDeadline);
 if ($stmtDeadline) {
     $stmtDeadline->execute();
@@ -104,7 +104,7 @@ $sqlPast = "
     SELECT er.STUDENT_ID AS student_id, em.EVENT AS event_title, em.START_TIME AS event_time
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.SL_NO
-    WHERE em.START_DATE = ? AND em.CURRENT_STATUS = 'published' AND er.CHECK_IN_STATUS = 'checked_in'
+    WHERE em.START_DATE = ? AND em.CURRENT_STATUS IN ('published', 'approved') AND er.CHECK_IN_STATUS = 'checked_in'
 ";
 $stmtPast = $conn->prepare($sqlPast);
 if ($stmtPast) {

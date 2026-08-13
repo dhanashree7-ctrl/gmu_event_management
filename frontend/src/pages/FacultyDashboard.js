@@ -63,7 +63,10 @@ const NAV_ITEMS = [
 const EMPTY_FORM = {
   event_title: '',
   description: '',
-  event_date: '',
+  event_date: '', coordinator_name: '',
+  start_time: '',
+  end_time: '',
+  venue: '',
   category: '',
   event_scale: '',
   event_mode: 'offline',
@@ -76,7 +79,7 @@ const EMPTY_FORM = {
   max_volunteers: '',
   max_coordinators: '',
   is_festival: false,
-  sub_events: [{ name: '', description: '' }],
+  sub_events: [{ name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }],
   participation_type: 'solo',
   max_team_size: '',
 };
@@ -213,7 +216,7 @@ export default function FacultyDashboard() {
   const [selectedEventMode, setSelectedEventMode] = useState('offline');
   const [selectedEventDetails, setSelectedEventDetails] = useState(null);
   const [logistics, setLogistics] = useState({
-    date: '',
+    date: '', coordinator_name: '',
     time: '',
     venue: '',
     registration_deadline: '',
@@ -264,6 +267,7 @@ export default function FacultyDashboard() {
     const formData = new FormData();
     formData.append('event_id', selectedEventId);
     formData.append('event_date', logistics.date);
+      formData.append('coordinator_name', form.coordinator_name);
     formData.append('event_time', logistics.time);
     formData.append('venue', logistics.venue);
     formData.append('registration_deadline', logistics.registration_deadline);
@@ -478,6 +482,10 @@ export default function FacultyDashboard() {
       formData.append('event_title', form.event_title);
       formData.append('description', form.description);
       formData.append('event_date', form.event_date);
+      formData.append('coordinator_name', form.coordinator_name);
+      formData.append('start_time', form.start_time);
+      formData.append('end_time', form.end_time);
+      formData.append('venue', form.venue);
       formData.append('category', form.category);
       formData.append('event_scale', form.event_scale);
       formData.append('event_mode', form.event_mode);
@@ -490,7 +498,7 @@ export default function FacultyDashboard() {
       if (form.max_volunteers) formData.append('max_volunteers', form.max_volunteers);
       if (form.is_festival) {
         formData.append('is_festival', 'true');
-        formData.append('sub_events', JSON.stringify(form.sub_events.filter(s => s.trim() !== '')));
+        formData.append('sub_events', JSON.stringify(form.sub_events.filter(s => s.name && s.name.trim() !== '')));
       }
       formData.append('participation_type', form.participation_type);
       if (form.participation_type === 'group' && form.max_team_size) {
@@ -759,9 +767,9 @@ export default function FacultyDashboard() {
                     ))}
                   </div>
                 </div>
-
-                {/* Participation Type — Solo / Group toggle */}
+                                {/* Participation Type — Solo / Group toggle */}
                 <div style={styles.formRow}>
+                  {!(form.is_festival) && (<>
                   <div style={styles.formGroup}>
                     <label style={styles.formLabel}>
                       Participation Type <span style={styles.required}>*</span>
@@ -811,9 +819,59 @@ export default function FacultyDashboard() {
                       )}
                     </div>
                   )}
+
+                  </>)}
+                  {/* Start Time */}
+                  <div style={styles.formGroup}>
+                    <label htmlFor="start_time" style={styles.formLabel}>
+                      Start Time <span style={styles.requiredStar}>*</span>
+                    </label>
+                    <input
+                      type="time"
+                      id="start_time"
+                      name="start_time"
+                      value={form.start_time || ''}
+                      onChange={(e) => handleFieldChange('start_time', e.target.value)}
+                      style={styles.formInput}
+                      required
+                    />
+                  </div>
+
+                  {/* End Time */}
+                  <div style={styles.formGroup}>
+                    <label htmlFor="end_time" style={styles.formLabel}>
+                      End Time <span style={styles.requiredStar}>*</span>
+                    </label>
+                    <input
+                      type="time"
+                      id="end_time"
+                      name="end_time"
+                      value={form.end_time || ''}
+                      onChange={(e) => handleFieldChange('end_time', e.target.value)}
+                      style={styles.formInput}
+                      required
+                    />
+                  </div>
+
+                  {/* Venue */}
+                  <div style={styles.formGroup}>
+                    <label htmlFor="venue" style={styles.formLabel}>
+                      Venue <span style={styles.requiredStar}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="venue"
+                      name="venue"
+                      value={form.venue || ''}
+                      onChange={(e) => handleFieldChange('venue', e.target.value)}
+                      style={styles.formInput}
+                      placeholder="e.g. Main Auditorium"
+                      required
+                    />
+                  </div>
                 </div>
 
-                <div style={styles.formGroup}>
+                <div style={styles.formRow}>
                   <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem' }}>
                     {form.event_mode === 'offline'
                       ? 'Venue is required for offline events (set during logistics).'
@@ -865,6 +923,108 @@ export default function FacultyDashboard() {
                             rows="2"
                             required={form.is_festival}
                           />
+                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                            <select
+                              value={sub.participation_type || 'solo'}
+                              onChange={(e) => {
+                                const newSubs = [...form.sub_events];
+                                newSubs[idx].participation_type = e.target.value;
+                                handleFieldChange('sub_events', newSubs);
+                              }}
+                              style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                            >
+                              <option value="solo">Solo</option>
+                              <option value="group">Group</option>
+                            </select>
+                            {sub.participation_type === 'group' ? (
+                              <>
+                                <input
+                                  type="number"
+                                  value={sub.max_groups || ''}
+                                  onChange={(e) => {
+                                    const newSubs = [...form.sub_events];
+                                    newSubs[idx].max_groups = e.target.value;
+                                    handleFieldChange('sub_events', newSubs);
+                                  }}
+                                  placeholder="Max Groups"
+                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                                />
+                                <input
+                                  type="number"
+                                  value={sub.max_team_size || ''}
+                                  onChange={(e) => {
+                                    const newSubs = [...form.sub_events];
+                                    newSubs[idx].max_team_size = e.target.value;
+                                    handleFieldChange('sub_events', newSubs);
+                                  }}
+                                  placeholder="Max per Group"
+                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                                />
+                              </>
+                            ) : (
+                              <input
+                                type="number"
+                                value={sub.max_participants || ''}
+                                onChange={(e) => {
+                                  const newSubs = [...form.sub_events];
+                                  newSubs[idx].max_participants = e.target.value;
+                                  handleFieldChange('sub_events', newSubs);
+                                }}
+                                placeholder="Max Participants"
+                                style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                              />
+                            )}
+                            <input
+                              type="text"
+                              value={sub.coordinator_name || ''}
+                              onChange={(e) => {
+                                const newSubs = [...form.sub_events];
+                                newSubs[idx].coordinator_name = e.target.value;
+                                handleFieldChange('sub_events', newSubs);
+                              }}
+                              placeholder="Coordinator Name"
+                              style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                            />
+                            <input
+                              type="text"
+                              value={sub.venue || ''}
+                              onChange={(e) => {
+                                const newSubs = [...form.sub_events];
+                                newSubs[idx].venue = e.target.value;
+                                handleFieldChange('sub_events', newSubs);
+                              }}
+                              placeholder="Sub-Event Venue"
+                              style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <label style={{ fontSize: '0.8rem', color: '#666', whiteSpace: 'nowrap' }}>Start Time:</label>
+                                <input
+                                  type="time"
+                                  value={sub.start_time || ''}
+                                  onChange={(e) => {
+                                    const newSubs = [...form.sub_events];
+                                    newSubs[idx].start_time = e.target.value;
+                                    handleFieldChange('sub_events', newSubs);
+                                  }}
+                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                                />
+                            </div>
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <label style={{ fontSize: '0.8rem', color: '#666', whiteSpace: 'nowrap' }}>End Time:</label>
+                                <input
+                                  type="time"
+                                  value={sub.end_time || ''}
+                                  onChange={(e) => {
+                                    const newSubs = [...form.sub_events];
+                                    newSubs[idx].end_time = e.target.value;
+                                    handleFieldChange('sub_events', newSubs);
+                                  }}
+                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                                />
+                            </div>
+                          </div>
                           {form.sub_events.length > 1 && (
                             <button
                               type="button"
@@ -879,7 +1039,7 @@ export default function FacultyDashboard() {
                       ))}
                       <button
                         type="button"
-                        onClick={() => handleFieldChange('sub_events', [...form.sub_events, { name: '', description: '' }])}
+                        onClick={() => handleFieldChange('sub_events', [...form.sub_events, { name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }])}
                         style={{ marginTop: '0.5rem', padding: '6px 12px', background: '#e0f7fa', color: '#006064', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}
                       >
                         + Add Another Sub-Event

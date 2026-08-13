@@ -108,15 +108,15 @@ if ($action === 'reject') {
         $nr = $route[$next_step];
         $new_status = ($nr === 'pro_vc' || $nr === 'provc') ? 'pending_provc' : 'pending_' . strtolower(trim($nr));
     } else {
-        $new_status = 'approved';
+        $new_status = 'published';
     }
 }
 
 
 // Step 2: Update event_master and event_metadata
-$update_sql  = 'UPDATE event_master SET CURRENT_STATUS = ?, REMARKS = ? WHERE SL_NO = ?';
+$update_sql  = 'UPDATE event_master SET CURRENT_STATUS = ? WHERE SL_NO = ?';
 $update_stmt = $conn->prepare($update_sql);
-$update_stmt->bind_param('ssi', $new_status, $remarks, $event_id);
+$update_stmt->bind_param('si', $new_status, $event_id);
 if (!$update_stmt->execute()) {
     $update_stmt->close(); $conn->close();
     http_response_code(500);
@@ -125,9 +125,9 @@ if (!$update_stmt->execute()) {
 }
 $update_stmt->close();
 
-$update_meta_sql  = 'UPDATE event_metadata SET APPROVAL_STEP = ? WHERE EVENT_ID = ?';
+$update_meta_sql  = 'UPDATE event_metadata SET APPROVAL_STEP = ?, REMARKS = ? WHERE EVENT_ID = ?';
 $update_meta_stmt = $conn->prepare($update_meta_sql);
-$update_meta_stmt->bind_param('ii', $next_step, $event_id);
+$update_meta_stmt->bind_param('isi', $next_step, $remarks, $event_id);
 $update_meta_stmt->execute();
 $update_meta_stmt->close();
 
@@ -151,7 +151,7 @@ $budget      = (float)($event['budget'] ?? 0);
 
 if ($proposer) {
     $remark_text = $remarks ? " Reason: $remarks" : "";
-    if ($new_status === 'approved')  $msg = "🎉 Your proposal for '$event_title' is fully approved!$remark_text Please finalize logistics to publish it.";
+    if ($new_status === 'published')  $msg = "🎉 Your proposal for '$event_title' is fully approved and published directly to the dashboard!$remark_text";
     elseif ($new_status === 'rejected') $msg = "❌ Your proposal for '$event_title' was rejected by $role.$remark_text";
     else $msg = "✅ Your proposal '$event_title' was approved by $role and moved to the next level.$remark_text";
 

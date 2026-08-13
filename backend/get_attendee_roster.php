@@ -73,7 +73,8 @@ $sql = "SELECT
             u.full_name               AS student_name,
             u.email                   AS student_email,
             u.usn_or_emp_id           AS usn,
-            u.department              AS department
+            u.department              AS department,
+            u.semester                AS semester
         FROM event_registrations er
         LEFT JOIN users u ON er.STUDENT_ID = u.usn_or_emp_id
         WHERE er.EVENT_ID = ?
@@ -104,7 +105,7 @@ while ($row = $result->fetch_assoc()) {
         'student_name'         => $row['student_name']  ?? 'Unknown Student',
         'student_email'        => $row['student_email'] ?? 'N/A',
         'registration_role'    => $row['registration_role']    ?? 'participant',
-        'semester'             => 'N/A',
+
         'special_requirements' => $row['special_requirements'] ?? 'None',
         'topics_of_interest'   => 'None',
         'check_in_status'      => $row['check_in_status'] ?? 'pending',
@@ -112,6 +113,7 @@ while ($row = $result->fetch_assoc()) {
         'registered_at'        => $row['registered_at'],
         'event_date'           => $event_date,
         'department'           => $row['department'],
+        'semester'             => $row['semester'],
     ];
 }
 

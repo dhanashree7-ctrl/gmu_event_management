@@ -47,7 +47,7 @@ try {
 }
 
 // current_status = 'published' covers approved/upcoming events in our system
-$sql = "SELECT EVENT AS event_title, START_DATE AS event_date, START_TIME AS event_time, VENUE AS venue, CATEGORY AS category, EVENT_SCALE AS event_scale FROM event_master WHERE CURRENT_STATUS = 'published' ORDER BY START_DATE ASC";
+$sql = "SELECT EVENT AS event_title, START_DATE AS event_date, START_TIME AS event_time, VENUE AS venue, CATEGORY AS category, EVENT_SCALE AS event_scale FROM event_master WHERE CURRENT_STATUS IN ('published', 'approved') ORDER BY START_DATE ASC";
 $result = $conn->query($sql);
 
 $events_context = "";

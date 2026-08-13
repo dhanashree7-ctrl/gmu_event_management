@@ -27,7 +27,7 @@ catch (RuntimeException $e) {
 $event_sql = "SELECT em.SL_NO AS id, em.EVENT AS event_title, em.CATEGORY AS category,
                      em.EVENT_SCALE AS event_scale, em.CURRENT_STATUS AS current_status,
                      emd.BUDGET AS budget, u.full_name AS proposed_by,
-                     em.APPROVAL_HISTORY_JSON AS approval_history_json, emd.DETAILS_JSON AS details_json
+                     emd.APPROVAL_HISTORY_JSON AS approval_history_json, emd.DETAILS_JSON AS details_json
               FROM event_master em
               LEFT JOIN event_metadata emd ON em.SL_NO = emd.EVENT_ID
               JOIN users u ON em.CREATED_BY = u.id

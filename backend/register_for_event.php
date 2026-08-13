@@ -64,7 +64,7 @@ $event_stmt = $conn->prepare("
            emd.PARTICIPATION_TYPE AS participation_type, emd.MAX_TEAM_SIZE AS max_team_size
     FROM event_master em 
     LEFT JOIN event_metadata emd ON em.SL_NO = emd.EVENT_ID 
-    WHERE em.SL_NO = ? AND em.CURRENT_STATUS = 'published'
+    WHERE em.SL_NO = ? AND em.CURRENT_STATUS IN ('published', 'approved')
 ");
 $event_stmt->bind_param('i', $event_id);
 $event_stmt->execute();

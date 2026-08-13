@@ -62,9 +62,9 @@ try {
 /*
  * Fetching the exact columns from our new Enterprise Schema
  */
-$sql = 'SELECT id, usn_or_emp_id, full_name, email, password, system_role, department, school_name
+$sql = 'SELECT id, usn_or_emp_id, username, full_name, email, password, system_role, department, school_name
          FROM   users
-         WHERE  usn_or_emp_id = ? OR email = ?
+         WHERE  username = ? OR usn_or_emp_id = ? OR email = ?
          LIMIT  1';
 
 $stmt = $conn->prepare($sql);
@@ -77,7 +77,7 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param('ss', $username, $username);
+$stmt->bind_param('sss', $username, $username, $username);
 
 if (!$stmt->execute()) {
     error_log('login.php – execute failed: ' . $stmt->error);

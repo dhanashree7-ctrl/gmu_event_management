@@ -57,7 +57,7 @@ $sql = "SELECT em.SL_NO AS id, em.EVENT AS event_title, em.DESCRIPTION AS descri
         LEFT JOIN event_metadata AS emd ON emd.EVENT_ID = em.SL_NO
         JOIN users AS u ON u.id = em.CREATED_BY
         LEFT JOIN event_registrations AS r ON r.EVENT_ID = em.SL_NO AND r.STUDENT_ID = ?
-        WHERE em.CURRENT_STATUS = 'published'";
+        WHERE em.CURRENT_STATUS IN ('published', 'approved')";
 
 if ($student_department) {
     $dept_escaped = $conn->real_escape_string($student_department);

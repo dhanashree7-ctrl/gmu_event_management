@@ -59,13 +59,17 @@ const NAV_ITEMS = [
 const EMPTY_FORM = {
   event_title: '',
   description: '',
-  event_date: '',
+  event_date: '', coordinator_name: '',
+  start_time: '',
+  end_time: '',
+  venue: '',
   category: '',
   event_scale: '',
   event_mode: 'offline',
+  date: '', coordinator_name: '',
   involved_departments: [],
   budget: '',
-    rewards: '',
+  rewards: '',
   immediate_approval: false,
   brochureFile: null,
   approval_route: [],
@@ -199,7 +203,7 @@ export default function StudentAffairsDashboard() {
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [selectedEventMode, setSelectedEventMode] = useState('offline');
   const [logistics, setLogistics] = useState({
-    date: '',
+    date: '', coordinator_name: '',
     time: '',
     venue: '',
     registration_deadline: '',
@@ -226,6 +230,7 @@ export default function StudentAffairsDashboard() {
     const formData = new FormData();
     formData.append('event_id', selectedEventId);
     formData.append('event_date', logistics.date);
+      formData.append('coordinator_name', form.coordinator_name);
     formData.append('event_time', logistics.time);
     formData.append('venue', logistics.venue);
     formData.append('registration_deadline', logistics.registration_deadline);
@@ -384,6 +389,18 @@ export default function StudentAffairsDashboard() {
     if (!form.event_scale) {
       errs.event_scale = 'Please select an event scale.';
     }
+    if (!form.date) {
+      errs.date = 'Event date is required.';
+    }
+    if (!form.start_time) {
+      errs.start_time = 'Start time is required.';
+    }
+    if (!form.end_time) {
+      errs.end_time = 'End time is required.';
+    }
+    if (form.event_mode === 'offline' && !form.venue.trim()) {
+      errs.venue = 'Venue is required for offline events.';
+    }
     if (form.budget === '' || isNaN(Number(form.budget)) || Number(form.budget) < 0) {
       errs.budget = 'Enter a valid budget amount (≥ 0).';
     }
@@ -406,7 +423,11 @@ export default function StudentAffairsDashboard() {
       const formData = new FormData();
       formData.append('event_title', form.event_title);
       formData.append('description', form.description);
-      formData.append('event_date', form.event_date);
+      formData.append('event_date', form.date);
+      formData.append('coordinator_name', form.coordinator_name);
+      formData.append('start_time', form.start_time);
+      formData.append('end_time', form.end_time);
+      formData.append('venue', form.venue);
       formData.append('category', form.category);
       formData.append('event_scale', form.event_scale);
       formData.append('event_mode', form.event_mode);
@@ -620,6 +641,80 @@ export default function StudentAffairsDashboard() {
                   )}
                 </div>
               </div>
+
+              {/* Row: Date, Time & Venue */}
+              <div style={styles.formRow}>
+                <div style={s(styles.formGroup, { flex: 1 })}>
+                  <label htmlFor="date" style={styles.formLabel}>
+                    Date <span style={styles.required}>*</span>
+                  </label>
+                  <input
+                    id="date"
+                    type="date"
+                    value={form.date}
+                    onChange={(e) => handleFieldChange('date', e.target.value)}
+                    style={s(styles.formInput, formErrors.date && styles.inputError)}
+                    disabled={loading}
+                  />
+                  {formErrors.date && (
+                    <p style={styles.fieldError}>{formErrors.date}</p>
+                  )}
+                </div>
+                
+                <div style={s(styles.formGroup, { flex: 1 })}>
+                  <label htmlFor="start_time" style={styles.formLabel}>
+                    Start Time <span style={styles.required}>*</span>
+                  </label>
+                  <input
+                    id="start_time"
+                    type="time"
+                    value={form.start_time}
+                    onChange={(e) => handleFieldChange('start_time', e.target.value)}
+                    style={s(styles.formInput, formErrors.start_time && styles.inputError)}
+                    disabled={loading}
+                  />
+                  {formErrors.start_time && (
+                    <p style={styles.fieldError}>{formErrors.start_time}</p>
+                  )}
+                </div>
+
+                <div style={s(styles.formGroup, { flex: 1 })}>
+                  <label htmlFor="end_time" style={styles.formLabel}>
+                    End Time <span style={styles.required}>*</span>
+                  </label>
+                  <input
+                    id="end_time"
+                    type="time"
+                    value={form.end_time}
+                    onChange={(e) => handleFieldChange('end_time', e.target.value)}
+                    style={s(styles.formInput, formErrors.end_time && styles.inputError)}
+                    disabled={loading}
+                  />
+                  {formErrors.end_time && (
+                    <p style={styles.fieldError}>{formErrors.end_time}</p>
+                  )}
+                </div>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label htmlFor="venue" style={styles.formLabel}>
+                  Venue {form.event_mode === 'offline' && <span style={styles.required}>*</span>}
+                </label>
+                <input
+                  id="venue"
+                  type="text"
+                  value={form.venue}
+                  onChange={(e) => handleFieldChange('venue', e.target.value)}
+                  placeholder="e.g. Main Auditorium"
+                  style={s(styles.formInput, formErrors.venue && styles.inputError)}
+                  disabled={loading}
+                  maxLength={255}
+                />
+                {formErrors.venue && (
+                  <p style={styles.fieldError}>{formErrors.venue}</p>
+                )}
+              </div>
+
 
 
 

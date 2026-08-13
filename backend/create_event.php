@@ -31,6 +31,10 @@ $event_mode       = strtolower(trim((string)($_POST['event_mode']   ?? 'offline'
 $allowed_modes    = ['offline', 'online'];
 if (!in_array($event_mode, $allowed_modes, true)) $event_mode = 'offline';
 
+$start_time       = isset($_POST['start_time']) && trim($_POST['start_time']) !== '' ? trim($_POST['start_time']) : null;
+$end_time         = isset($_POST['end_time'])   && trim($_POST['end_time'])   !== '' ? trim($_POST['end_time'])   : null;
+$venue            = isset($_POST['venue'])      && trim($_POST['venue'])      !== '' ? trim($_POST['venue'])      : null;
+
 $budget_raw       = $_POST['budget'] ?? null;
 $budget           = is_numeric($budget_raw) ? (float)$budget_raw : -1;
 $proposed_by_id   = filter_var($_POST['proposed_by_id'] ?? 0, FILTER_VALIDATE_INT);
@@ -110,6 +114,7 @@ $route_stmt = $conn->prepare("SELECT required_chain FROM approval_rules WHERE sc
 $route_stmt->bind_param('s', $event_scale);
 $route_stmt->execute();
 $route_res = $route_stmt->get_result();
+
 if ($route_row = $route_res->fetch_assoc()) {
     $approval_route_arr = json_decode($route_row['required_chain'], true);
     $approval_route_raw = $route_row['required_chain'];
@@ -134,18 +139,20 @@ if ($is_festival && isset($_POST['sub_events'])) {
     if (is_array($decoded)) $sub_events = $decoded;
 }
 $rewards = isset($_POST['rewards']) ? trim(strip_tags((string)$_POST['rewards'])) : '';
+$coordinator_name = isset($_POST['coordinator_name']) ? trim(strip_tags($_POST['coordinator_name'])) : '';
 $details_arr = [];
 if ($is_festival && !empty($sub_events)) { $details_arr['is_festival'] = true; $details_arr['sub_events'] = $sub_events; }
 if ($rewards !== '')                      $details_arr['rewards'] = $rewards;
+if ($coordinator_name !== '')             $details_arr['coordinator_name'] = $coordinator_name;
 $details_json = !empty($details_arr) ? json_encode($details_arr) : null;
 
 $event_id_val = 'EVT-' . strtoupper(uniqid());
 
 $sql = 'INSERT INTO event_master
-            (EVENT_ID, EVENT, DESCRIPTION, START_DATE, END_DATE, CATEGORY, TYPE, MODE,
+            (EVENT_ID, EVENT, DESCRIPTION, START_DATE, END_DATE, START_TIME, END_TIME, VENUE, CATEGORY, TYPE, MODE,
              CREATED_BY, DEPARTMENT, CURRENT_STATUS, EVENT_SCALE, IMMEDIATE_APPROVAL)
         VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?,
+            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
              ?, ?, ?, ?, ?)';
 
 $stmt = $conn->prepare($sql);
@@ -159,8 +166,8 @@ if (!$stmt) {
 
 $type_fallback = 'Event';
 try {
-    $stmt->bind_param('ssssssssssssi',
-        $event_id_val, $event_title, $description, $event_date, $event_date, $category, $type_fallback, $event_mode,
+    $stmt->bind_param('sssssssssssssssi',
+        $event_id_val, $event_title, $description, $event_date, $event_date, $start_time, $end_time, $venue, $category, $type_fallback, $event_mode,
         $proposed_by_id, $proposer_dept, $initial_status, $event_scale, $immediate_approval
     );
 

@@ -30,7 +30,10 @@ export default function ExecutiveDashboard() {
   // Action Center: Propose Event
   const [formData, setFormData] = useState({
     event_title: '',
-    date: '',
+    date: '', coordinator_name: '',
+    start_time: '',
+    end_time: '',
+    venue: '',
     description: '',
     category: '',
     event_scale: '',
@@ -44,7 +47,7 @@ export default function ExecutiveDashboard() {
     max_volunteers: '',
     max_coordinators: '',
     is_festival: false,
-    sub_events: [{ name: '', description: '' }],
+    sub_events: [{ name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }],
     participation_type: 'solo',
     max_team_size: '',
   });
@@ -257,6 +260,11 @@ export default function ExecutiveDashboard() {
       fd.append('event_title', formData.event_title);
       fd.append('description', formData.description);
       fd.append('event_date', formData.date);
+      fd.append('coordinator_name', formData.coordinator_name);
+      if (formData.coordinator_name) formData.append('coordinator_name', formData.coordinator_name);
+      fd.append('start_time', formData.start_time);
+      fd.append('end_time', formData.end_time);
+      fd.append('venue', formData.venue);
       fd.append('category', formData.category);
       fd.append('event_scale', formData.event_scale);
       fd.append('event_mode', formData.event_mode);
@@ -286,8 +294,8 @@ export default function ExecutiveDashboard() {
       if (json.success) {
         setProposeMessage({ type: 'success', text: 'Event proposed successfully!' });
         fetchApprovedHistory();
-        setFormData({ event_title: '', date: '', description: '', category: '', event_scale: '', event_mode: 'offline', budget: '',
-    rewards: '', brochureFile: null, approval_route: [], max_participants: '', max_volunteers: '', max_coordinators: '', is_festival: false, sub_events: [{ name: '', description: '' }], participation_type: 'solo', max_team_size: '' });
+        setFormData({ event_title: '', date: '', coordinator_name: '', coordinator_name: '', start_time: '', end_time: '', venue: '', description: '', category: '', event_scale: '', event_mode: 'offline', budget: '',
+    rewards: '', brochureFile: null, approval_route: [], max_participants: '', max_volunteers: '', max_coordinators: '', is_festival: false, sub_events: [{ name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }], participation_type: 'solo', max_team_size: '' });
       } else {
         setProposeMessage({ type: 'error', text: json.message || 'Failed to propose event.' });
       }
@@ -661,6 +669,25 @@ export default function ExecutiveDashboard() {
                           <input style={styles.formInput} type="date" name="date" value={formData.date} onChange={handleProposeChange} required />
                         </div>
                         <div style={{...styles.formGroup, flex: 1}}>
+                          <label style={styles.formLabel}>Start Time <span style={styles.required}>*</span></label>
+                          <input style={styles.formInput} type="time" name="start_time" value={formData.start_time} onChange={handleProposeChange} required />
+                        </div>
+                        <div style={{...styles.formGroup, flex: 1}}>
+                          <label style={styles.formLabel}>End Time <span style={styles.required}>*</span></label>
+                          <input style={styles.formInput} type="time" name="end_time" value={formData.end_time} onChange={handleProposeChange} required />
+                        </div>
+                      </div>
+                       
+                        <div style={styles.formGroup}>
+                          <label style={styles.formLabel}>Main Coordinator Name</label>
+                          <input style={styles.formInput} type="text" name="coordinator_name" placeholder="e.g. Dr. Smith" value={formData.coordinator_name || ''} onChange={handleProposeChange} />
+                        </div>
+<div style={styles.formGroup}>
+                        <label style={styles.formLabel}>Venue <span style={styles.required}>*</span></label>
+                        <input style={styles.formInput} type="text" name="venue" value={formData.venue} onChange={handleProposeChange} placeholder="e.g. Main Auditorium" required />
+                      </div>
+                      <div style={styles.formRow}>
+                        <div style={{...styles.formGroup, flex: 1}}>
                           <label style={styles.formLabel}>Category <span style={styles.required}>*</span></label>
                           <select style={styles.formInput} name="category" value={formData.category} onChange={handleProposeChange} required>
                             <option value="">-- Select --</option>
@@ -717,8 +744,7 @@ export default function ExecutiveDashboard() {
                             : 'No venue needed — event will be held virtually.'}
                         </p>
                       </div>
-
-                      {/* Participation Type — Solo / Group toggle */}
+                                      {/* Participation Type — Solo / Group toggle */}
                       <div style={styles.formRow}>
                         <div style={styles.formGroup}>
                           <label style={styles.formLabel}>Participation Type <span style={styles.required}>*</span></label>
@@ -819,7 +845,7 @@ export default function ExecutiveDashboard() {
                                   style={s(styles.formInput, { flex: 1 })}
                                   required={formData.is_festival}
                                 />
-                                <textarea
+                          <textarea
                                   value={sub.description}
                                   placeholder="Sub-event description"
                                   onChange={(e) => {
@@ -831,6 +857,108 @@ export default function ExecutiveDashboard() {
                                   rows="2"
                                   required={formData.is_festival}
                                 />
+                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                            <select
+                              value={sub.participation_type || 'solo'}
+                              onChange={(e) => {
+                                const newSubs = [...formData.sub_events];
+                                newSubs[idx].participation_type = e.target.value;
+                                setFormData({formData, sub_events: newSubs});
+                              }}
+                              style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                            >
+                              <option value="solo">Solo</option>
+                              <option value="group">Group</option>
+                            </select>
+                            {sub.participation_type === 'group' ? (
+                              <>
+                                <input
+                                  type="number"
+                                  value={sub.max_groups || ''}
+                                  onChange={(e) => {
+                                    const newSubs = [...formData.sub_events];
+                                    newSubs[idx].max_groups = e.target.value;
+                                    setFormData({formData, sub_events: newSubs});
+                                  }}
+                                  placeholder="Max Groups"
+                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                                />
+                                <input
+                                  type="number"
+                                  value={sub.max_team_size || ''}
+                                  onChange={(e) => {
+                                    const newSubs = [...formData.sub_events];
+                                    newSubs[idx].max_team_size = e.target.value;
+                                    setFormData({formData, sub_events: newSubs});
+                                  }}
+                                  placeholder="Max per Group"
+                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                                />
+                              </>
+                            ) : (
+                              <input
+                                type="number"
+                                value={sub.max_participants || ''}
+                                onChange={(e) => {
+                                  const newSubs = [...formData.sub_events];
+                                  newSubs[idx].max_participants = e.target.value;
+                                  setFormData({formData, sub_events: newSubs});
+                                }}
+                                placeholder="Max Participants"
+                                style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                              />
+                            )}
+                            <input
+                              type="text"
+                              value={sub.coordinator_name || ''}
+                              onChange={(e) => {
+                                const newSubs = [...formData.sub_events];
+                                newSubs[idx].coordinator_name = e.target.value;
+                                setFormData({formData, sub_events: newSubs});
+                              }}
+                              placeholder="Coordinator Name"
+                              style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                            />
+                            <input
+                              type="text"
+                              value={sub.venue || ''}
+                              onChange={(e) => {
+                                const newSubs = [...formData.sub_events];
+                                newSubs[idx].venue = e.target.value;
+                                setFormData({formData, sub_events: newSubs});
+                              }}
+                              placeholder="Sub-Event Venue"
+                              style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                            />
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <label style={{ fontSize: '0.8rem', color: '#666', whiteSpace: 'nowrap' }}>Start Time:</label>
+                                <input
+                                  type="time"
+                                  value={sub.start_time || ''}
+                                  onChange={(e) => {
+                                    const newSubs = [...formData.sub_events];
+                                    newSubs[idx].start_time = e.target.value;
+                                    setFormData({formData, sub_events: newSubs});
+                                  }}
+                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                                />
+                            </div>
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <label style={{ fontSize: '0.8rem', color: '#666', whiteSpace: 'nowrap' }}>End Time:</label>
+                                <input
+                                  type="time"
+                                  value={sub.end_time || ''}
+                                  onChange={(e) => {
+                                    const newSubs = [...formData.sub_events];
+                                    newSubs[idx].end_time = e.target.value;
+                                    setFormData({formData, sub_events: newSubs});
+                                  }}
+                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                                />
+                            </div>
+                          </div>
                                 {formData.sub_events.length > 1 && (
                                   <button
                                     type="button"
@@ -847,7 +975,7 @@ export default function ExecutiveDashboard() {
                             ))}
                             <button
                               type="button"
-                              onClick={() => setFormData({...formData, sub_events: [...formData.sub_events, { name: '', description: '' }]})}
+                              onClick={() => setFormData({...formData, sub_events: [...formData.sub_events, { name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }]})}
                               style={{ marginTop: '0.5rem', padding: '6px 12px', background: '#e0f7fa', color: '#006064', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}
                             >
                               + Add Another Sub-Event

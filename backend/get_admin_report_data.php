@@ -79,13 +79,13 @@ $in_clause = implode(',', array_map('intval', $valid_event_ids));
 
 $participants_query = "
     SELECT
-        u.full_name    AS participant_name,
-        u.usn_or_emp_id AS usn,
-        u.email        AS email,
+        COALESCE(u.full_name, 'Unknown Participant') AS participant_name,
+        COALESCE(u.usn_or_emp_id, er.STUDENT_ID) AS usn,
+        COALESCE(u.email, 'N/A')        AS email,
         er.ROLE        AS role,
-        u.department   AS department,
-        u.faculty_name AS faculty_name,
-        u.school_name  AS school_name,
+        COALESCE(u.department, 'N/A')   AS department,
+        COALESCE(u.faculty_name, 'N/A') AS faculty_name,
+        COALESCE(u.school_name, 'N/A')  AS school_name,
         er.EVENT_ID    AS event_id,
         em.EVENT       AS event_title
     FROM event_registrations er
