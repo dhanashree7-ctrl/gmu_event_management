@@ -28,12 +28,21 @@ The application routes users to dedicated workspaces based on their institutiona
 
 - Generate participant QR codes and scan them for check-in using the QR scanner.
 - Track registration capacity, participant roles, volunteer/coordinator counts, and attendance status.
-- Send and display approval, event, and reminder notifications, including unread notification polling.
+- Send approval, event, and reminder notifications automatically; display notifications with unread polling.
 - Collect 1-to-5-star feedback and comments after events.
 - View participation, check-in, demographics, feedback, budget, category, department, and academic-year analytics.
 - Drill into individual events and browse completed-event history with participant counts and average ratings.
 - Export report data and certificates from the frontend.
 - Ask the Gemini-backed event assistant questions about current approved events, dates, venues, categories, and scales.
+- View an interactive event calendar showing all events by date.
+- Review event timeline and history from proposal through completion.
+
+### User and system management
+
+- Events Admins can add, update, and manage users and their roles and departments.
+- Update account passwords and profile settings from any dashboard.
+- Configure global approval routing per event scale via drag-and-drop reordering.
+- View dashboard metrics including pending counts, participation trends, and approval pipeline health.
 
 ## Technology Stack
 
