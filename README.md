@@ -1,4 +1,4 @@
-# GMU Event Management System
+# Event Management System
 
 The GMU Event Management System is a React and PHP application for proposing, approving, publishing, running, and reviewing university events.
 
