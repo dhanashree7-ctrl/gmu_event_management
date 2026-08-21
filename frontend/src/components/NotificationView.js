@@ -86,7 +86,7 @@ export default function NotificationView() {
     <div style={styles.container}>
       <div style={{ ...styles.header, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h2 style={styles.title}>Your Notifications 🔔</h2>
+          <h2 style={styles.title}>Your Notifications </h2>
           <p style={styles.subtitle}>You have {notifications.length} unread alerts.</p>
         </div>
         {notifications.length > 0 && (
@@ -100,7 +100,7 @@ export default function NotificationView() {
             onMouseEnter={(e) => { e.currentTarget.style.background = '#e9e9e9'; e.currentTarget.style.borderColor = '#ccc'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = '#F5F5F5'; e.currentTarget.style.borderColor = '#ddd'; }}
           >
-            ✓ Mark All as Read
+             Mark All as Read
           </button>
         )}
       </div>
@@ -108,7 +108,7 @@ export default function NotificationView() {
       <div style={styles.list}>
         {notifications.length === 0 ? (
           <div style={styles.emptyState}>
-            <span style={{ fontSize: '3rem' }}>🎉</span>
+            <span style={{ fontSize: '3rem' }}></span>
             <h3 style={{ margin: '16px 0 8px', color: '#333' }}>You're all caught up!</h3>
             <p style={{ margin: 0, color: '#666' }}>Check back later for updates.</p>
           </div>
@@ -116,7 +116,7 @@ export default function NotificationView() {
           notifications.map(notif => (
             <div key={notif.id} style={styles.card}>
               <div style={styles.iconWrapper}>
-                <span>💬</span>
+                <span></span>
               </div>
               <div style={styles.cardContent}>
                 <p style={styles.message}>{notif.message}</p>

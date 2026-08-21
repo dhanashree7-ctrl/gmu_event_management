@@ -63,7 +63,7 @@ export default function UserProfileDropdown({ user }) {
             onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f5f5f5'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            <span style={{ marginRight: '8px' }}>⚙️</span> Settings
+            <span style={{ marginRight: '8px' }}>️</span> Settings
           </button>
           <div style={styles.divider} />
           <button 
@@ -76,7 +76,7 @@ export default function UserProfileDropdown({ user }) {
             onMouseEnter={e => e.currentTarget.style.backgroundColor = '#FFF0F0'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            <span style={{ marginRight: '8px' }}>🚪</span> Log Out
+            <span style={{ marginRight: '8px' }}></span> Log Out
           </button>
         </div>
       )}

@@ -55,15 +55,15 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
         {evt.description && <p style={styles.cardDesc}>{evt.description}</p>}
         <div style={styles.metaRow}>
           {(evt.event_mode === 'online' || evt.venue) && (
-            <span style={styles.metaItem}>📍 {evt.event_mode === 'online' ? 'Online' : evt.venue}</span>
+            <span style={styles.metaItem}> {evt.event_mode === 'online' ? 'Online' : evt.venue}</span>
           )}
-          <span style={styles.metaItem}>📅 {formatDate(evt.event_date)}</span>
+          <span style={styles.metaItem}> {formatDate(evt.event_date)}</span>
           {evt.event_time && (
-            <span style={styles.metaItem}>🕐 {formatTime(evt.event_time)}</span>
+            <span style={styles.metaItem}> {formatTime(evt.event_time)}</span>
           )}
           {evt.registration_deadline && (
             <span style={s(styles.metaItem, { color: theme.colors.maroon, fontWeight: 600 })}>
-              ⏳ Register By: {formatDate(evt.registration_deadline)} {formatTime(new Date(evt.registration_deadline).toTimeString().substring(0,5))}
+               Register By: {formatDate(evt.registration_deadline)} {formatTime(new Date(evt.registration_deadline).toTimeString().substring(0,5))}
             </span>
           )}
           <span style={{
@@ -73,7 +73,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
             borderRadius: '12px', padding: '0.15rem 0.6rem',
             fontSize: '0.75rem', fontWeight: 600
           }}>
-            {evt.event_mode === 'online' ? '💻 Online' : '🏢 Offline'}
+            {evt.event_mode === 'online' ? ' Online' : ' Offline'}
           </span>
         </div>
 
@@ -86,7 +86,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
             onMouseEnter={(e) => (e.currentTarget.style.background = "#F0EDE8")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            📄 View Brochure
+             View Brochure
           </button>
         )}
         {isRegistered && (
@@ -96,7 +96,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
             onMouseEnter={(e) => e.currentTarget.style.background = '#e0e0e0'}
             onMouseLeave={(e) => e.currentTarget.style.background = '#f0f0f0'}
           >
-            🎟️ View Details
+            ️ View Details
           </button>
         )}
         <button
@@ -126,7 +126,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
             e.currentTarget.style.boxShadow = "0 2px 4px rgba(128,0,0,0.3)";
           }}
         >
-          {isRegistered ? "🎫 View Ticket" : "🎟️ View Details"}
+          {isRegistered ? " View Ticket" : "️ View Details"}
         </button>
       </div>
     </div>
@@ -394,8 +394,8 @@ export default function StudentEvents() {
              <div style={styles.detailsMain}>
                <h3 style={styles.sectionTitle}>Eligibility</h3>
                <div style={styles.metaRow}>
-                 <span style={styles.metaItem}>📍 {selectedEvent.event_mode === 'online' ? 'Online' : (selectedEvent.venue || 'TBD')}</span>
-                 <span style={styles.metaItem}>🎓 Eligibility: {selectedEvent.event_scale === 'department' ? `${selectedEvent.proposer_dept} Students Only` : 'All University Students'}</span>
+                 <span style={styles.metaItem}> {selectedEvent.event_mode === 'online' ? 'Online' : (selectedEvent.venue || 'TBD')}</span>
+                 <span style={styles.metaItem}> Eligibility: {selectedEvent.event_scale === 'department' ? `${selectedEvent.proposer_dept} Students Only` : 'All University Students'}</span>
                </div>
                
                <h3 style={styles.sectionTitle}>All that you need to know about</h3>
@@ -427,8 +427,8 @@ export default function StudentEvents() {
                            )}
                          </div>
                          <div style={styles.subEventMeta}>
-                           <span>📍 {sub.venue || 'TBD'}</span>
-                           <span>🕐 {sub.start_time ? formatTime(sub.start_time) : 'TBD'} - {sub.end_time ? formatTime(sub.end_time) : 'TBD'}</span>
+                           <span> {sub.venue || 'TBD'}</span>
+                           <span> {sub.start_time ? formatTime(sub.start_time) : 'TBD'} - {sub.end_time ? formatTime(sub.end_time) : 'TBD'}</span>
                          </div>
                        </div>
                      ))}
@@ -441,7 +441,7 @@ export default function StudentEvents() {
                    <h3 style={styles.sectionTitle}>Rewards and Prizes</h3>
                    <div style={styles.subEventCard}>
                      <p style={{ margin: 0, whiteSpace: 'pre-wrap', color: '#444', lineHeight: 1.6 }}>
-                       🎁 {selectedEvent.details.rewards}
+                        {selectedEvent.details.rewards}
                      </p>
                    </div>
                  </>
@@ -478,7 +478,7 @@ export default function StudentEvents() {
                         setTicketData(selectedEvent.qr_token);
                      }}
                    >
-                     🎫 View Ticket
+                      View Ticket
                    </button>
                  ) : (
                    <button 
@@ -496,7 +496,7 @@ export default function StudentEvents() {
         <>
           <div style={styles.toolbar}>
             <div style={styles.searchWrap}>
-              <span style={styles.searchIcon}>🔍</span>
+              <span style={styles.searchIcon}></span>
               <input
                 type="text"
                 placeholder="Search events or venues…"
@@ -525,12 +525,12 @@ export default function StudentEvents() {
             </div>
           ) : error ? (
             <div style={styles.centreState}>
-              <span style={{ fontSize: "2.5rem" }}>⚠️</span>
+              <span style={{ fontSize: "2.5rem" }}>️</span>
               <p style={styles.stateText}>{error}</p>
             </div>
           ) : filtered.length === 0 ? (
             <div style={styles.centreState}>
-              <span style={{ fontSize: "3rem" }}>📭</span>
+              <span style={{ fontSize: "3rem" }}></span>
               <p style={styles.stateText}>No events match your search.</p>
             </div>
           ) : (
@@ -560,7 +560,7 @@ export default function StudentEvents() {
             </div>
           ) : pastEvents.length === 0 ? (
             <div style={styles.centreState}>
-              <span style={{ fontSize: "3rem" }}>🎓</span>
+              <span style={{ fontSize: "3rem" }}></span>
               <p style={styles.stateText}>You haven't attended any completed events yet.</p>
             </div>
           ) : (
@@ -575,8 +575,8 @@ export default function StudentEvents() {
                     <h3 style={styles.cardTitle}>{evt.event_title}</h3>
                     {evt.description && <p style={styles.cardDesc}>{evt.description}</p>}
                     <div style={styles.metaRow}>
-                      {evt.venue && <span style={styles.metaItem}>📍 {evt.venue}</span>}
-                      <span style={styles.metaItem}>📅 {formatDate(evt.event_date)}</span>
+                      {evt.venue && <span style={styles.metaItem}> {evt.venue}</span>}
+                      <span style={styles.metaItem}> {formatDate(evt.event_date)}</span>
                     </div>
                   </div>
                   <div style={styles.cardFooter}>
@@ -598,7 +598,7 @@ export default function StudentEvents() {
                       }}
                       disabled={evt.has_feedback}
                     >
-                      {evt.has_feedback ? "Feedback Submitted ✓" : "Leave Feedback ⭐"}
+                      {evt.has_feedback ? "Feedback Submitted " : "Leave Feedback "}
                     </button>
                     <button
                       style={{
@@ -616,7 +616,7 @@ export default function StudentEvents() {
                         }
                       }}
                     >
-                      Download Certificate 🎓
+                      Download Certificate 
                     </button>
                   </div>
                 </div>
@@ -630,7 +630,7 @@ export default function StudentEvents() {
       {showModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
-            <button style={styles.closeBtn} onClick={closeModal}>✕</button>
+            <button style={styles.closeBtn} onClick={closeModal}></button>
             
             {ticketData ? (
               <div style={styles.ticketContainer}>
@@ -664,9 +664,9 @@ export default function StudentEvents() {
                     <div style={{flex: 1}}>
                       <p style={styles.ticketLabel}>ROLE</p>
                       <p style={styles.ticketVal}>
-                        {selectedEvent?.my_role === 'volunteer' ? '🙋 Volunteer'
-                          : selectedEvent?.my_role === 'coordinator' ? '🎤 Coordinator'
-                          : '🎟️ Participant'}
+                        {selectedEvent?.my_role === 'volunteer' ? ' Volunteer'
+                          : selectedEvent?.my_role === 'coordinator' ? ' Coordinator'
+                          : '️ Participant'}
                       </p>
                     </div>
                   </div>
@@ -716,8 +716,8 @@ export default function StudentEvents() {
                   <label style={styles.label}>Register As *</label>
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
                     {[
-                      { key: 'participant', icon: '🎟️', desc: 'Attend the event' },
-                      { key: 'volunteer',   icon: '🙋', desc: 'Help run the event' }
+                      { key: 'participant', icon: '️', desc: 'Attend the event' },
+                      { key: 'volunteer',   icon: '', desc: 'Help run the event' }
                     ].map(r => {
                       const slotInfo = selectedEvent.slots?.[r.key];
                       const isFull   = slotInfo !== null && slotInfo !== undefined && slotInfo <= 0;
@@ -777,7 +777,7 @@ export default function StudentEvents() {
                           />
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span style={{ fontSize: '0.9rem', fontWeight: 600, color: theme.colors.charcoal }}>{sub.name}</span>
-                            <span style={{ fontSize: '0.75rem', color: '#666' }}>📍 {sub.venue || 'TBA'} • 🕐 {sub.start_time || 'TBA'} - {sub.end_time || 'TBA'}</span>
+                            <span style={{ fontSize: '0.75rem', color: '#666' }}> {sub.venue || 'TBA'} •  {sub.start_time || 'TBA'} - {sub.end_time || 'TBA'}</span>
                           </div>
                         </label>
                       ))}
@@ -895,7 +895,7 @@ export default function StudentEvents() {
       {feedbackModalOpen && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
-            <button style={styles.closeBtn} onClick={() => setFeedbackModalOpen(false)}>✕</button>
+            <button style={styles.closeBtn} onClick={() => setFeedbackModalOpen(false)}></button>
             <h2 style={styles.modalTitle}>Rate Your Experience</h2>
             <p style={styles.modalSub}>Your feedback helps us improve future events.</p>
             
@@ -912,7 +912,7 @@ export default function StudentEvents() {
                       transition: 'color 0.2s'
                     }}
                   >
-                    ★
+                    
                   </span>
                 ))}
               </div>

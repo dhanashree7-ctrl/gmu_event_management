@@ -87,7 +87,7 @@ export default function EventDrillDownPage() {
               rel="noopener noreferrer"
               style={s(styles.pdfButton, { marginLeft: '1rem' })}
             >
-              📄 View Organizer Report
+               View Organizer Report
             </a>
           )}
         </p>
@@ -285,7 +285,7 @@ export default function EventDrillDownPage() {
                   <div key={idx} style={styles.feedbackCard}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                       <strong style={{ color: '#333' }}>{fb.name}</strong>
-                      <span style={{ color: theme.colors.maroon, fontWeight: 'bold' }}>★ {fb.rating}</span>
+                      <span style={{ color: theme.colors.maroon, fontWeight: 'bold' }}> {fb.rating}</span>
                     </div>
                     <p style={{ margin: 0, color: '#555', fontStyle: 'italic', fontSize: '0.95rem' }}>
                       "{fb.comment}"
@@ -308,7 +308,7 @@ export default function EventDrillDownPage() {
           <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h2 style={{ margin: 0, color: theme.colors.maroon, fontSize: '1.5rem' }}>External Colleges</h2>
-              <button onClick={() => setShowCollegesModal(false)} style={styles.closeBtn}>✕</button>
+              <button onClick={() => setShowCollegesModal(false)} style={styles.closeBtn}></button>
             </div>
             <ul style={styles.collegesList}>
               {metrics.external_colleges_list.map((college, idx) => (

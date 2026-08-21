@@ -21,21 +21,21 @@ import theme from "../theme";
 import StudentEvents from "./StudentEvents";
 import SettingsView from "../components/SettingsView";
 import NotificationView from '../components/NotificationView';
-import NotificationBell from '../components/NotificationBell';
-import UserProfileDropdown from '../components/UserProfileDropdown';
 import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
+import DashboardLayout from '../components/layout/DashboardLayout';
+import EventArchive from '../components/EventArchive';
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 const s = (...styles) => Object.assign({}, ...styles);
 
 // ── Nav items ────────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
-  { id: "home", label: "Home", icon: "🏠" },
-  { id: "registered", label: "Registered Events", icon: "🎟️" },
-  { id: "calendar", label: "My Calendar", icon: "📅" },
-  { id: "notifications", label: "Notifications", icon: "🔔" },
-  { id: "settings", label: "Settings", icon: "⚙️" },
+  { id: "home", label: "Home", icon: "" },
+  { id: "registered", label: "Registered Events", icon: "️" },
+  { id: "calendar", label: "My Calendar", icon: "" },
+  { id: "notifications", label: "Notifications", icon: "" },
+  { id: "settings", label: "Settings", icon: "️" },
 ];
 
 // ── Category colour map ───────────────────────────────────────────────────────
@@ -78,148 +78,13 @@ function getGreeting() {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function Sidebar({ user, onLogout, collapsed, activeTab, onTabChange }) {
-  return (
-    <aside style={s(styles.sidebar, collapsed && styles.sidebarCollapsed)}>
-      <div style={styles.sidebarLogo}>
-        <span style={styles.sidebarCrest}>⚜</span>
-        {!collapsed && (
-          <div>
-            <p style={styles.sidebarLogoName}>GM University</p>
-            <p style={styles.sidebarLogoSub}>Event System</p>
-          </div>
-        )}
-      </div>
-
-      <div style={styles.divider} />
-
-      <nav style={styles.sidebarNav}>
-        {NAV_ITEMS.map((item) => (
-          <div
-            key={item.label}
-            style={s(styles.navItem, (activeTab === item.label || activeTab === item.id) && styles.navItemActive)}
-            onClick={() => onTabChange(item.id || item.label)}
-          >
-            <span style={styles.navIcon}>{item.icon}</span>
-            {!collapsed && <span style={styles.navLabel}>{item.label}</span>}
-          </div>
-        ))}
-      </nav>
-
-      <div style={{ flex: 1 }} />
-
-      {!collapsed && (
-        <div style={styles.sidebarUserCard}>
-          <div style={styles.userAvatar}>
-            {user?.name?.charAt(0)?.toUpperCase() ?? "?"}
-          </div>
-          <div style={styles.userInfo}>
-            <p style={styles.userName}>{user?.name ?? "Student"}</p>
-            <p style={styles.userRole}>
-              {user?.role_name?.replace("_", " ") ?? "Student"}
-            </p>
-          </div>
-        </div>
-      )}
-
-      <button onClick={onLogout} style={styles.logoutBtn}>
-        <span>🚪</span>
-        {!collapsed && <span>Logout</span>}
-      </button>
-    </aside>
-  );
-}
-
-function EventCard({ evt, onBrochure, onRegister, isRegistered }) {
-  const [hovered, setHovered] = useState(false);
-  const catStyle = getCategoryStyle(evt.category);
-
-  return (
-    <div
-      style={s(styles.card, hovered && styles.cardHovered)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {/* Card top accent */}
-      <div style={styles.cardAccent} />
-
-      <div style={styles.cardBody}>
-        {/* Category tag */}
-        <span
-          style={s(styles.categoryChip, {
-            background: catStyle.bg,
-            color: catStyle.color,
-          })}
-        >
-          {evt.category}
-        </span>
-
-        {/* Title */}
-        <h3 style={styles.cardTitle}>{evt.event_title}</h3>
-
-        {/* Description */}
-        {evt.description && (
-          <p style={styles.cardDesc}>{evt.description}</p>
-        )}
-
-        {/* Logistics pills */}
-        <div style={styles.metaRow}>
-          <span style={styles.metaItem}>📍 {evt.venue}</span>
-          <span style={styles.metaItem}>📅 {formatDate(evt.event_date)}</span>
-          <span style={styles.metaItem}>🕐 {formatTime(evt.event_time)}</span>
-        </div>
-      </div>
-
-      {/* Card footer actions */}
-      <div style={styles.cardFooter}>
-        {evt.brochure_path && (
-          <button
-            style={styles.brochureBtn}
-            onClick={() => onBrochure(evt)}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "#F0EDE8")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            📄 View Brochure
-          </button>
-        )}
-        <button
-          style={s(
-            styles.registerBtn,
-            isRegistered && {
-              background: "#E0E0E0",
-              color: "#757575",
-              boxShadow: "none",
-              cursor: "not-allowed",
-              transform: "translateY(0)",
-            }
-          )}
-          onClick={() => onRegister(evt.id)}
-          disabled={isRegistered}
-          onMouseEnter={(e) => {
-            if (isRegistered) return;
-            e.currentTarget.style.background = theme.colors.maroonDark;
-            e.currentTarget.style.transform = "translateY(-1px)";
-          }}
-          onMouseLeave={(e) => {
-            if (isRegistered) return;
-            e.currentTarget.style.background = theme.colors.maroon;
-            e.currentTarget.style.transform = "translateY(0)";
-          }}
-        >
-          {isRegistered ? "Registered! 🎉" : "Register Now →"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const [collapsed, setCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState("Home");
+    const [activeTab, setActiveTab] = useState("Dashboard");
+  const [eventsTab, setEventsTab] = useState("upcoming");
   const [myEvents, setMyEvents] = useState([]);
   const [loadingMyEvents, setLoadingMyEvents] = useState(false);
   const [myEventsError, setMyEventsError] = useState(null);
@@ -260,14 +125,21 @@ export default function StudentDashboard() {
   };
 
   useEffect(() => {
-    if (activeTab === "registered" || activeTab === "calendar" || activeTab === "home" || activeTab === "Home") {
+    if (activeTab === 'Events' || activeTab === 'Calendar' || activeTab === 'Dashboard') {
       fetchMyEvents();
       fetchSystemEvents();
     }
-    if (activeTab === "home" || activeTab === "Home") {
+    if (activeTab === 'Dashboard') {
       fetchGamificationData();
     }
   }, [activeTab]);
+
+  // Listen for navigate_tab events from NotificationBell
+  useEffect(() => {
+    const handler = (e) => setActiveTab(e.detail);
+    window.addEventListener('navigate_tab', handler);
+    return () => window.removeEventListener('navigate_tab', handler);
+  }, []);
 
   const fetchSystemEvents = async () => {
     setLoadingSystemEvents(true);
@@ -334,132 +206,101 @@ export default function StudentDashboard() {
 
   // ── Render ───────────────────────────────────────────────────────
   return (
-    <div style={styles.root}>
-      {/* Sidebar */}
-      <Sidebar 
-        user={user} 
-        onLogout={handleLogout} 
-        collapsed={collapsed} 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab} 
-      />
-
-      {/* Main */}
-      <div style={styles.main}>
-        {/* Top bar */}
-        <header style={styles.topBar}>
-          <button
-            style={styles.collapseBtn}
-            onClick={() => setCollapsed((c) => !c)}
-            aria-label="Toggle sidebar"
-          >
-            {collapsed ? "→" : "←"}
-          </button>
-
-          <div style={styles.topBarCenter}>
-            <h1 style={styles.topBarTitle}>Student Portal</h1>
-            <p style={styles.topBarSub}>
-              {new Date().toLocaleDateString("en-IN", {
-                weekday: "long", day: "numeric", month: "long", year: "numeric",
-              })}
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <NotificationBell />
-            <UserProfileDropdown user={user} />
-          </div>
-        </header>
-
-        {/* Scrollable content */}
-        <div style={styles.content}>
+    <DashboardLayout role="student" activeNav={activeTab} onNavChange={setActiveTab}>
+      <div>
           {/* Welcome banner */}
-          {activeTab === "Home" && (
+          {activeTab === 'Dashboard' && (
             <>
               <div style={styles.welcomeBanner}>
                 <div>
                   <h2 style={styles.welcomeTitle}>
-                    {getGreeting()}, {user?.name?.split(" ")[0] ?? "Charlie"}! 👋
+                    {getGreeting()}, {user?.name?.split(" ")[0] ?? "Charlie"}! 
                   </h2>
                   <p style={styles.welcomeSub}>
                     Browse upcoming events and register for the ones you love.
                   </p>
                 </div>
                 <div style={styles.welcomeDecor}>
-                  <span style={styles.welcomeIcon}>🎓</span>
+                  <span style={styles.welcomeIcon}></span>
                 </div>
               </div>
 
               {gamificationData && (
-                <div style={{ marginTop: '2rem' }}>
-                  <h3 style={{ fontSize: '1.2rem', color: '#555', marginBottom: '1rem', fontWeight: 600 }}>Your Engagement Overview</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, marginTop: '1rem' }}>
+                  <h3 style={{ fontSize: '1.2rem', color: '#555', marginBottom: '1rem', fontWeight: 600, flexShrink: 0 }}>Your Engagement Overview</h3>
                   
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.25rem', flex: 1, minHeight: 0 }}>
                     
                     {/* Reliability Score */}
-                    <div style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1' }}>
-                      <h3 style={{ fontSize: '1.1rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '1rem' }}>Reliability Score</h3>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                        <span style={{ fontSize: '0.9rem', color: '#666', fontWeight: 600 }}>Attended {gamificationData.reliability.attended} of {gamificationData.reliability.total} Registrations</span>
-                        <span style={{ fontSize: '0.9rem', color: theme.colors.maroon, fontWeight: 'bold' }}>{gamificationData.reliability.score}%</span>
+                    <div style={{ gridColumn: 'span 4', background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1', display: 'flex', flexDirection: 'column' }}>
+                      <h3 style={{ fontSize: '1rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '1rem' }}>Reliability Score</h3>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 600 }}>Attended {gamificationData.reliability.attended} of {gamificationData.reliability.total} Registrations</span>
+                          <span style={{ fontSize: '0.85rem', color: theme.colors.maroon, fontWeight: 'bold' }}>{gamificationData.reliability.score}%</span>
+                        </div>
+                        <div style={{ width: '100%', height: '10px', background: '#E0E0E0', borderRadius: '5px', overflow: 'hidden', marginBottom: '1rem' }}>
+                          <div style={{ width: `${gamificationData.reliability.score}%`, height: '100%', background: 'linear-gradient(90deg, #4A0404, #FDD06F)', transition: 'width 1s ease-in-out' }} />
+                        </div>
+                        <p style={{ fontSize: '0.75rem', color: '#888', margin: 0 }}>Maintain a high reliability score to earn exclusive access to premium events.</p>
                       </div>
-                      <div style={{ width: '100%', height: '12px', background: '#E0E0E0', borderRadius: '6px', overflow: 'hidden', marginBottom: '1.5rem' }}>
-                        <div style={{ width: `${gamificationData.reliability.score}%`, height: '100%', background: 'linear-gradient(90deg, #4A0404, #FDD06F)', transition: 'width 1s ease-in-out' }} />
-                      </div>
-                      <p style={{ fontSize: '0.8rem', color: '#888', margin: 0 }}>Maintain a high reliability score to earn exclusive access to premium events.</p>
                     </div>
 
                     {/* My Engagement Profile (Radar Chart) */}
-                    <div style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1' }}>
-                      <h3 style={{ fontSize: '1.1rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '1rem' }}>My Engagement Profile</h3>
-                      <div style={{ width: '100%', height: 250 }}>
+                    <div style={{ gridColumn: 'span 4', background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1', display: 'flex', flexDirection: 'column' }}>
+                      <h3 style={{ fontSize: '1rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '0.5rem' }}>My Engagement Profile</h3>
+                      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
                         {gamificationData.engagement_profile.length > 0 ? (
-                          <ResponsiveContainer>
-                            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={gamificationData.engagement_profile}>
-                              <PolarGrid />
-                              <PolarAngleAxis dataKey="category" tick={{ fill: '#555', fontSize: 12 }} />
-                              <PolarRadiusAxis angle={30} domain={[0, 'dataMax']} />
-                              <Radar name="Events" dataKey="count" stroke={theme.colors.maroon} fill={theme.colors.maroon} fillOpacity={0.6} />
-                              <Tooltip />
-                            </RadarChart>
-                          </ResponsiveContainer>
+                          <div style={{ position: 'absolute', inset: 0 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                              <RadarChart cx="50%" cy="50%" outerRadius="75%" data={gamificationData.engagement_profile}>
+                                <PolarGrid />
+                                <PolarAngleAxis dataKey="category" tick={{ fill: '#555', fontSize: 10 }} />
+                                <PolarRadiusAxis angle={30} domain={[0, 'dataMax']} tick={false} />
+                                <Radar name="Events" dataKey="count" stroke={theme.colors.maroon} fill={theme.colors.maroon} fillOpacity={0.6} />
+                                <Tooltip />
+                              </RadarChart>
+                            </ResponsiveContainer>
+                          </div>
                         ) : (
-                          <div style={{ textAlign: 'center', color: '#999', paddingTop: '4rem' }}>Not enough data yet. Register for events!</div>
+                          <div style={{ textAlign: 'center', color: '#999', paddingTop: '3rem' }}>Not enough data yet. Register for events!</div>
                         )}
                       </div>
                     </div>
 
                     {/* Role Breakdown (Donut Chart) */}
-                    <div style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1' }}>
-                      <h3 style={{ fontSize: '1.1rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '1rem' }}>Role Breakdown</h3>
-                      <div style={{ width: '100%', height: 250 }}>
+                    <div style={{ gridColumn: 'span 4', background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1', display: 'flex', flexDirection: 'column' }}>
+                      <h3 style={{ fontSize: '1rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '0.5rem' }}>Role Breakdown</h3>
+                      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
                         {gamificationData.role_breakdown.length > 0 ? (
-                          <ResponsiveContainer>
-                            <PieChart>
-                              <Pie
-                                data={gamificationData.role_breakdown}
-                                cx="50%" cy="50%"
-                                innerRadius={60} outerRadius={90}
-                                paddingAngle={5}
-                                dataKey="count"
-                                nameKey="name"
-                              >
-                                {gamificationData.role_breakdown.map((entry, index) => {
-                                  const colors = [theme.colors.maroon, theme.colors.gold, '#1565C0'];
-                                  return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
-                                })}
-                              </Pie>
-                              <Tooltip />
-                            </PieChart>
-                          </ResponsiveContainer>
+                          <div style={{ position: 'absolute', inset: 0 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                              <PieChart>
+                                <Pie
+                                  data={gamificationData.role_breakdown}
+                                  cx="50%" cy="50%"
+                                  innerRadius="50%" outerRadius="80%"
+                                  paddingAngle={5}
+                                  dataKey="count"
+                                  nameKey="name"
+                                >
+                                  {gamificationData.role_breakdown.map((entry, index) => {
+                                    const colors = [theme.colors.maroon, theme.colors.gold, '#1565C0'];
+                                    return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
+                                  })}
+                                </Pie>
+                                <Tooltip />
+                              </PieChart>
+                            </ResponsiveContainer>
+                          </div>
                         ) : (
-                          <div style={{ textAlign: 'center', color: '#999', paddingTop: '4rem' }}>Not enough data yet.</div>
+                          <div style={{ textAlign: 'center', color: '#999', paddingTop: '3rem' }}>Not enough data yet.</div>
                         )}
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '0.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.5rem', flexShrink: 0 }}>
                         {gamificationData.role_breakdown.map((r, i) => (
-                          <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', color: '#555' }}>
-                            <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', background: [theme.colors.maroon, theme.colors.gold, '#1565C0'][i % 3] }}></span>
+                          <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: '#555' }}>
+                            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: [theme.colors.maroon, theme.colors.gold, '#1565C0'][i % 3] }}></span>
                             {r.name}
                           </div>
                         ))}
@@ -472,7 +313,7 @@ export default function StudentDashboard() {
             </>
           )}
 
-          {activeTab === "registered" && (
+          {activeTab === 'Events' && (
             <div>
               <h2 style={{ fontSize: "1.4rem", color: theme.colors.maroon, marginBottom: "1.5rem" }}>
                 My Schedule
@@ -484,12 +325,12 @@ export default function StudentDashboard() {
                 </div>
               ) : myEventsError ? (
                 <div style={styles.centreState}>
-                  <span style={{ fontSize: "2.5rem" }}>⚠️</span>
+                  <span style={{ fontSize: "2.5rem" }}>️</span>
                   <p style={styles.stateText}>{myEventsError}</p>
                 </div>
               ) : myEvents.length === 0 ? (
                 <div style={styles.centreState}>
-                  <span style={{ fontSize: "3rem" }}>📭</span>
+                  <span style={{ fontSize: "3rem" }}></span>
                   <p style={styles.stateText}>You haven't registered for any events yet!</p>
                 </div>
               ) : (
@@ -501,9 +342,9 @@ export default function StudentDashboard() {
                       <div style={styles.cardBody}>
                         <h3 style={styles.cardTitle}>{evt.event_title}</h3>
                         <div style={styles.metaRow}>
-                          <span style={styles.metaItem}>📍 {evt.venue || 'TBD'}</span>
-                          <span style={styles.metaItem}>📅 {formatDate(evt.event_date || evt.date)}</span>
-                          <span style={styles.metaItem}>🕐 {formatTime(evt.event_time || evt.time)}</span>
+                          <span style={styles.metaItem}> {evt.venue || 'TBD'}</span>
+                          <span style={styles.metaItem}> {formatDate(evt.event_date || evt.date)}</span>
+                          <span style={styles.metaItem}> {formatTime(evt.event_time || evt.time)}</span>
                         </div>
 
                         {/* Attendance Status Badge */}
@@ -527,11 +368,11 @@ export default function StudentDashboard() {
                                   borderRadius: '20px', padding: '0.3rem 0.75rem',
                                   fontSize: '0.8rem', fontWeight: 600, width: 'fit-content'
                                 }}>
-                                  ✅ Checked In — Attended
+                                   Checked In — Attended
                                 </span>
                                 {evt.check_in_time && (
                                   <span style={{ fontSize: '0.75rem', color: '#666', paddingLeft: '0.5rem' }}>
-                                    🕑 Checked in at: {new Date(evt.check_in_time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                     Checked in at: {new Date(evt.check_in_time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
                                   </span>
                                 )}
                               </div>
@@ -544,7 +385,7 @@ export default function StudentDashboard() {
                                 borderRadius: '20px', padding: '0.3rem 0.75rem',
                                 fontSize: '0.8rem', fontWeight: 600, marginTop: '0.75rem', width: 'fit-content'
                               }}>
-                                ❌ Not Checked In — Not Attended
+                                 Not Checked In — Not Attended
                               </span>
                             );
                           } else {
@@ -555,7 +396,7 @@ export default function StudentDashboard() {
                                 borderRadius: '20px', padding: '0.3rem 0.75rem',
                                 fontSize: '0.8rem', fontWeight: 600, marginTop: '0.75rem', width: 'fit-content'
                               }}>
-                                🎟️ Registered — Awaiting Event
+                                ️ Registered — Awaiting Event
                               </span>
                             );
                           }
@@ -572,7 +413,7 @@ export default function StudentDashboard() {
                               window.open(`${API_BASE}/${path}`, "_blank");
                             }}
                           >
-                            📄 View Brochure
+                             View Brochure
                           </button>
                         </div>
                       )}
@@ -584,7 +425,7 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {activeTab === "calendar" && (
+          {activeTab === 'Calendar' && (
             <div>
               <h2 style={{ fontSize: "1.4rem", color: theme.colors.maroon, marginBottom: "1.5rem" }}>
                 My Calendar
@@ -596,7 +437,7 @@ export default function StudentDashboard() {
                 </div>
               ) : myEventsError ? (
                 <div style={styles.centreState}>
-                  <span style={{ fontSize: "2.5rem" }}>⚠️</span>
+                  <span style={{ fontSize: "2.5rem" }}>️</span>
                   <p style={styles.stateText}>{myEventsError}</p>
                 </div>
               ) : (
@@ -605,24 +446,32 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {(activeTab === "home" || activeTab === "Home") && (
+          {(activeTab === 'Dashboard') && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
               <div style={{ borderTop: '2px solid #EEE', paddingTop: '2rem' }}>
-                <h3 style={{ fontSize: '1.5rem', color: theme.colors.maroon, marginBottom: '0.5rem', fontWeight: 'bold' }}>🌟 Discover New Events</h3>
+                <h3 style={{ fontSize: '1.5rem', color: theme.colors.maroon, marginBottom: '0.5rem', fontWeight: 'bold' }}>Discover New Events</h3>
                 <p style={{ color: '#666', marginBottom: '1.5rem' }}>Browse all available university events and secure your spot.</p>
                 <StudentEvents />
               </div>
             </div>
           )}
 
-          {activeTab === "notifications" && (
+          {activeTab === 'Notifications' && (
             <NotificationView />
           )}
 
-          {activeTab === "settings" && <SettingsView user={user} />}
+          {activeTab === 'Settings' && <SettingsView user={user} />}
+
+          {activeTab === 'Reports' && (
+            <div>
+              <h2 style={{ fontSize: '1.4rem', color: theme.colors.maroon, marginBottom: '1.5rem' }}>
+                Reports
+              </h2>
+              <EventArchive role="student" />
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+    </DashboardLayout>
   );
 }
 

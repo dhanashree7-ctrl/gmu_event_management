@@ -132,7 +132,7 @@ const CertificateGenerator = forwardRef((props, ref) => {
             marginBottom: '1rem',
             color: theme.colors.maroon
           }}>
-            ⚜
+            
           </div>
 
           <h2 style={{

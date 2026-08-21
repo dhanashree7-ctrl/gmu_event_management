@@ -44,7 +44,7 @@ export default function AttendeeRoster({ eventId }) {
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {['participant','volunteer'].map(r => {
             const cnt = attendees.filter(a => a.registration_role === r).length;
-            const icons = { participant: '🎟️', volunteer: '🙋', coordinator: '🎤' };
+            const icons = { participant: '️', volunteer: '', coordinator: '' };
             const colors = { participant: '#1565C0', volunteer: '#6A1B9A', coordinator: '#2E7D32' };
             const bgs    = { participant: '#E3F2FD', volunteer: '#F3E5F5', coordinator: '#E8F5E9' };
             return cnt > 0 ? (
@@ -97,12 +97,12 @@ export default function AttendeeRoster({ eventId }) {
         </div>
       ) : error ? (
         <div style={styles.centreState}>
-          <span style={{ fontSize: "2rem" }}>⚠️</span>
+          <span style={{ fontSize: "2rem" }}>️</span>
           <p style={styles.stateText}>{error}</p>
         </div>
       ) : attendees.length === 0 ? (
         <div style={styles.centreState}>
-          <span style={{ fontSize: "2.5rem" }}>📭</span>
+          <span style={{ fontSize: "2.5rem" }}></span>
           <p style={styles.stateText}>No one has registered for this event yet.</p>
         </div>
       ) : (
@@ -130,9 +130,9 @@ export default function AttendeeRoster({ eventId }) {
                     {(() => {
                       const role = attendee.registration_role || 'participant';
                       const roleStyles = {
-                        participant:  { bg: '#E3F2FD', color: '#1565C0', icon: '🎟️' },
-                        volunteer:    { bg: '#F3E5F5', color: '#6A1B9A', icon: '🙋' },
-                        coordinator:  { bg: '#E8F5E9', color: '#2E7D32', icon: '🎤' },
+                        participant:  { bg: '#E3F2FD', color: '#1565C0', icon: '️' },
+                        volunteer:    { bg: '#F3E5F5', color: '#6A1B9A', icon: '' },
+                        coordinator:  { bg: '#E8F5E9', color: '#2E7D32', icon: '' },
                       };
                       const rs = roleStyles[role] || roleStyles.participant;
                       return (
@@ -159,11 +159,11 @@ export default function AttendeeRoster({ eventId }) {
                         return (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                             <span style={{ ...styles.statusBadge, ...styles.statusCheckedIn }}>
-                              ✅ Checked In — Attended
+                               Checked In — Attended
                             </span>
                             {attendee.check_in_time && (
                               <span style={{ fontSize: '0.75rem', color: '#2E7D32', paddingLeft: '2px' }}>
-                                🕑 {new Date(attendee.check_in_time).toLocaleTimeString('en-IN', {
+                                 {new Date(attendee.check_in_time).toLocaleTimeString('en-IN', {
                                   hour: '2-digit', minute: '2-digit', hour12: true
                                 })}
                               </span>
@@ -173,13 +173,13 @@ export default function AttendeeRoster({ eventId }) {
                       } else if (isPast || isToday) {
                         return (
                           <span style={{ ...styles.statusBadge, background: '#FFEBEE', color: '#C62828', border: '1px solid #FFCDD2' }}>
-                            ❌ Not Checked In — Not Attended
+                             Not Checked In — Not Attended
                           </span>
                         );
                       } else {
                         return (
                           <span style={{ ...styles.statusBadge, ...styles.statusRegistered }}>
-                            ⏳ Registered — Awaiting Event
+                             Registered — Awaiting Event
                           </span>
                         );
                       }

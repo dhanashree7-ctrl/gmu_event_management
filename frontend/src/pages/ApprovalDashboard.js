@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../config/api';
+import DashboardLayout from '../components/layout/DashboardLayout';
 import theme from '../theme';
-import NotificationBell from '../components/NotificationBell';
 
 const s = (...styles) => Object.assign({}, ...styles.filter(Boolean));
 
@@ -92,7 +92,7 @@ export default function ApprovalDashboard() {
         
         <nav style={styles.nav}>
           <button style={s(styles.navItem, styles.navItemActive)}>
-            📋 <span style={styles.navLabel}>Pending Approvals</span>
+             <span style={styles.navLabel}>Pending Approvals</span>
           </button>
         </nav>
 
@@ -130,7 +130,7 @@ export default function ApprovalDashboard() {
             <div style={{ padding: '2rem', textAlign: 'center', color: '#d32f2f' }}>Error: {error}</div>
           ) : events.length === 0 ? (
             <div style={styles.emptyState}>
-              <span style={{ fontSize: '3rem' }}>🎉</span>
+              <span style={{ fontSize: '3rem' }}></span>
               <h3 style={{ margin: '16px 0 8px', color: '#333' }}>No Pending Events</h3>
               <p style={{ margin: 0, color: theme.colors.midGray }}>You are all caught up!</p>
             </div>
@@ -153,13 +153,13 @@ export default function ApprovalDashboard() {
                       style={s(styles.btn, styles.rejectBtn)}
                       onClick={() => handleApprovalAction(ev.id, 'reject')}
                     >
-                      ✕ Reject
+                       Reject
                     </button>
                     <button 
                       style={s(styles.btn, styles.approveBtn)}
                       onClick={() => handleApprovalAction(ev.id, 'approve')}
                     >
-                      ✓ Approve
+                       Approve
                     </button>
                   </div>
                 </div>

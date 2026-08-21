@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../config/api';
+import DashboardLayout from '../components/layout/DashboardLayout';
 import theme from '../theme';
 import AttendeeRoster from './AttendeeRoster';
 import EventArchive from '../components/EventArchive';
 import ReportsView from '../components/ReportsView';
 import NotificationView from '../components/NotificationView';
-import NotificationBell from '../components/NotificationBell';
-import UserProfileDropdown from '../components/UserProfileDropdown';
 import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
 
@@ -307,148 +306,8 @@ export default function HODDashboard() {
   if (!user) return null;
 
   return (
-    <div style={styles.root}>
-      {/* ── Left Sidebar ────────────────────────────────────────── */}
-      <aside style={s(styles.sidebar, collapsed && styles.sidebarCollapsed)}>
-        <div style={styles.sidebarLogo}>
-          <span style={styles.sidebarCrest}>⚜</span>
-          {!collapsed && (
-            <div>
-              <div style={styles.sidebarLogoName}>GM University</div>
-              <div style={styles.sidebarLogoSub}>Event System</div>
-            </div>
-          )}
-        </div>
-
-        <div style={styles.divider} />
-
-        <nav style={styles.sidebarNav}>
-          <button
-            onClick={() => setActiveNav('dashboard')}
-            style={s(styles.navItem, activeNav === 'dashboard' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>📈</span>
-            {!collapsed && <span style={styles.navLabel}>Dashboard</span>}
-          </button>
-          
-          <button
-            onClick={() => setActiveNav('action-center')}
-            style={s(styles.navItem, activeNav === 'action-center' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>📊</span>
-            {!collapsed && (
-              <span style={s(styles.navLabel, { flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' })}>
-                Action Center
-                {(pendingEvents || []).some(e => e.immediate_approval) && (
-                  <span style={{ background: '#D32F2F', color: '#FFF', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '10px', fontWeight: 'bold' }}>
-                    {(pendingEvents || []).filter(e => e.immediate_approval).length}
-                  </span>
-                )}
-              </span>
-            )}
-          </button>
-          
-
-          <button
-            onClick={() => setActiveNav('my-proposals')}
-            style={s(styles.navItem, activeNav === 'my-proposals' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>📝</span>
-            {!collapsed && <span style={styles.navLabel}>My Proposals</span>}
-          </button>
-          
-          <button
-            onClick={() => setActiveNav('approved-history')}
-            style={s(styles.navItem, activeNav === 'approved-history' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>✅</span>
-            {!collapsed && <span style={styles.navLabel}>Approved by Me</span>}
-          </button>
-
-          <button
-            onClick={() => setActiveNav('calendar')}
-            style={s(styles.navItem, activeNav === 'calendar' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>📅</span>
-            {!collapsed && <span style={styles.navLabel}>Calendar</span>}
-          </button>
-          
-          <button
-            onClick={() => setActiveNav('reports')}
-            style={s(styles.navItem, activeNav === 'reports' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>📁</span>
-            {!collapsed && <span style={styles.navLabel}>Reports</span>}
-          </button>
-          
-          <button
-            onClick={() => setActiveNav('archive')}
-            style={s(styles.navItem, activeNav === 'archive' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>🏛️</span>
-            {!collapsed && <span style={styles.navLabel}>Archive</span>}
-          </button>
-
-          <button
-            onClick={() => setActiveNav('notifications')}
-            style={s(styles.navItem, activeNav === 'notifications' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>🔔</span>
-            {!collapsed && <span style={styles.navLabel}>Notifications</span>}
-          </button>
-          
-        </nav>
-
-        <div style={{ flex: 1 }} />
-
-        <div style={styles.sidebarUserCard}>
-          <div style={styles.userAvatar}>
-            {user.name?.charAt(0).toUpperCase()}
-          </div>
-          {!collapsed && (
-            <div style={styles.userInfo}>
-              <div style={styles.userName}>{user.name}</div>
-              <div style={styles.userRole}>HOD, {user.department_name}</div>
-            </div>
-          )}
-        </div>
-
-        <button 
-          style={styles.logoutBtn} 
-          onClick={() => {
-            localStorage.removeItem('user');
-            navigate('/login');
-          }}
-        >
-          <span style={styles.navIcon}>🚪</span>
-          {!collapsed && <span>Log Out</span>}
-        </button>
-      </aside>
-
-      {/* ── Main Content Area ────────────────────────────────────── */}
-      <main style={styles.main}>
-        {/* Top Header Bar */}
-        <header style={styles.topBar}>
-          <button 
-            style={styles.collapseBtn} 
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            {collapsed ? '▶' : '◀'}
-          </button>
-          <div style={styles.topBarCenter}>
-            <div style={styles.topBarTitle}>HOD Dashboard</div>
-            <div style={styles.topBarSub}>
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <NotificationBell />
-            <UserProfileDropdown user={user} />
-          </div>
-        </header>
-
-        {/* Scrollable Content View */}
-        <div style={styles.content}>
+    <DashboardLayout role="hod" activeNav={activeTab} onNavChange={setActiveTab}>
+      <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
           
           {/* Dashboard View */}
           {activeNav === 'dashboard' && (
@@ -497,7 +356,7 @@ export default function HODDashboard() {
                       <p>Loading events...</p>
                     ) : pendingEvents.length === 0 ? (
                       <div style={styles.emptyState}>
-                        <span style={styles.emptyIcon}>🎉</span>
+                        <span style={styles.emptyIcon}></span>
                         <p style={styles.emptyText}>All caught up! No events pending your approval.</p>
                       </div>
                     ) : (
@@ -517,14 +376,14 @@ export default function HODDashboard() {
                               {ev.event_title}
                               {ev.immediate_approval && (
                                 <span style={{ marginLeft: '8px', background: '#FFEBEE', color: '#C62828', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '4px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                                  🚨 URGENT
+                                   URGENT
                                 </span>
                               )}
                               <span 
                                 style={{ display: 'block', fontSize: '0.75rem', color: '#666', cursor: 'pointer', textDecoration: 'underline', marginTop: '4px', fontWeight: 'normal' }}
                                 onClick={() => navigate(`/event-details/${ev.id}`)}
                               >
-                                {ev.details?.is_festival ? 'View Timeline / Sub-Events 🔍' : 'View Timeline / Details 🔍'}
+                                {ev.details?.is_festival ? 'View Timeline / Sub-Events ' : 'View Timeline / Details '}
                               </span>
                             </span>
                             <span style={s(styles.tableCell, { flex: 2 })}>{ev.proposed_by}</span>
@@ -549,7 +408,7 @@ export default function HODDashboard() {
                                 onMouseEnter={(e) => { e.currentTarget.style.background = '#CEEAD6'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.background = '#E6F4EA'; e.currentTarget.style.transform = 'translateY(0)'; }}
                               >
-                                ✓ Approve
+                                 Approve
                               </button>
                               <button
                                 style={styles.rejectBtn}
@@ -557,7 +416,7 @@ export default function HODDashboard() {
                                 onMouseEnter={(e) => { e.currentTarget.style.background = '#FAD2CF'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.background = '#FCE8E6'; e.currentTarget.style.transform = 'translateY(0)'; }}
                               >
-                                ✕ Reject
+                                 Reject
                               </button>
                             </span>
                           </div>
@@ -665,7 +524,7 @@ export default function HODDashboard() {
                                 transition: 'all 0.2s ease',
                               }}
                             >
-                              {mode === 'offline' ? '🏢 Offline' : '💻 Online'}
+                              {mode === 'offline' ? ' Offline' : ' Online'}
                             </button>
                           ))}
                         </div>
@@ -698,7 +557,7 @@ export default function HODDashboard() {
                                   transition: 'all 0.2s ease',
                                 }}
                               >
-                                {ptype === 'solo' ? '👤 Solo' : '👥 Group'}
+                                {ptype === 'solo' ? ' Solo' : ' Group'}
                               </button>
                             ))}
                           </div>
@@ -756,7 +615,7 @@ export default function HODDashboard() {
                             disabled={proposeLoading}
                             style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
                           />
-                          🎉 This is a Festival / Mega-Event (Has Sub-Events)
+                           This is a Festival / Mega-Event (Has Sub-Events)
                         </label>
                         
                         {formData.is_festival && (
@@ -973,7 +832,7 @@ export default function HODDashboard() {
                             disabled={proposeLoading}
                             style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
                           />
-                          🚨 Needs Immediate Approval (Urgent)
+                           Needs Immediate Approval (Urgent)
                         </label>
                         <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem', marginLeft: '1.8rem' }}>
                           Check this only if the event requires urgent attention (e.g. Independence Day).
@@ -982,7 +841,7 @@ export default function HODDashboard() {
 
                       <div style={styles.submitRow}>
                         <button type="submit" style={styles.submitBtn} disabled={proposeLoading}>
-                          {proposeLoading ? 'Submitting...' : '🚀 Submit Proposal'}
+                          {proposeLoading ? 'Submitting...' : ' Submit Proposal'}
                         </button>
                       </div>
                     </form>
@@ -1009,7 +868,7 @@ export default function HODDashboard() {
                 <p>Loading...</p>
               ) : myEvents.length === 0 ? (
                 <div style={styles.emptyState}>
-                  <span style={styles.emptyIcon}>📝</span>
+                  <span style={styles.emptyIcon}></span>
                   <p style={styles.emptyText}>You haven't proposed any events yet.</p>
                 </div>
               ) : (
@@ -1041,7 +900,7 @@ export default function HODDashboard() {
                               fetchFeedbackData(ev.id);
                             }}
                           >
-                            Insights / Feedback 📊
+                            Insights / Feedback 
                           </button>
                         )}
                       </div>
@@ -1061,7 +920,7 @@ export default function HODDashboard() {
                 <p>Loading...</p>
               ) : approvedEvents.length === 0 ? (
                 <div style={styles.emptyState}>
-                  <span style={styles.emptyIcon}>✅</span>
+                  <span style={styles.emptyIcon}></span>
                   <p style={styles.emptyText}>No approved events found.</p>
                 </div>
               ) : (
@@ -1079,7 +938,7 @@ export default function HODDashboard() {
                           style={{ padding: '6px 12px', backgroundColor: '#e0e0e0', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
                           onClick={() => navigate(`/event-details/${ev.id}`)}
                         >
-                          Track Timeline 🔍
+                          Track Timeline 
                         </button>
                         {['published', 'completed', 'pending_report'].includes(ev.current_status?.toLowerCase()) && (
                           <button
@@ -1101,7 +960,7 @@ export default function HODDashboard() {
                               fetchFeedbackData(ev.id);
                             }}
                           >
-                            Insights / Feedback 📊
+                            Insights / Feedback 
                           </button>
                         )}
                       </div>
@@ -1133,7 +992,6 @@ export default function HODDashboard() {
           )}
 
         </div>
-      </main>
 
       {/* ── Attendee Roster Modal ──────────────────────────────── */}
       {rosterModalOpen && (
@@ -1162,7 +1020,7 @@ export default function HODDashboard() {
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 zIndex: 10,
               }}
-            >✕</button>
+            ></button>
             <div style={{ padding: '1rem' }}>
               <AttendeeRoster eventId={rosterEventId} />
             </div>
@@ -1194,12 +1052,12 @@ export default function HODDashboard() {
               borderBottom: '1px solid rgba(0,0,0,0.1)'
             }}>
               <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>
-                {remarksModal.action === 'approve' ? '✓ Approve Event' : '✕ Reject Event'}
+                {remarksModal.action === 'approve' ? ' Approve Event' : ' Reject Event'}
               </h3>
               <button
                 onClick={() => setRemarksModal({ open: false, eventId: null, action: null, scale: null, proposer_role: null })}
                 style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
-              >✕</button>
+              ></button>
             </div>
             <form onSubmit={submitActionWithRemarks} style={{ padding: '1.75rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#333', fontSize: '0.95rem' }}>
@@ -1259,7 +1117,7 @@ export default function HODDashboard() {
               flexShrink: 0
             }}>
               <div>
-                <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 700 }}>📊 Event Insights & Feedback</h2>
+                <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 700 }}> Event Insights & Feedback</h2>
                 <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.78rem' }}>Student ratings and comments</p>
               </div>
               <button
@@ -1269,7 +1127,7 @@ export default function HODDashboard() {
                   width: '32px', height: '32px', color: '#fff', fontSize: '1.2rem',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
-              >✕</button>
+              ></button>
             </div>
 
             <div style={{ padding: '1.5rem', overflowY: 'auto' }}>
@@ -1300,7 +1158,7 @@ export default function HODDashboard() {
                         <div key={idx} style={{ padding: '1rem', background: '#FAFAFA', borderRadius: '8px', border: '1px solid #EEE' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                             <strong style={{ color: '#444' }}>{fb.student_name}</strong>
-                            <span style={{ color: '#FBC02D' }}>{'★'.repeat(fb.rating)}{'☆'.repeat(5 - fb.rating)}</span>
+                            <span style={{ color: '#FBC02D' }}>{''.repeat(fb.rating)}{''.repeat(5 - fb.rating)}</span>
                           </div>
                           {fb.comments && <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#555' }}>{fb.comments}</p>}
                           <small style={{ color: '#999', fontSize: '0.75rem' }}>{new Date(fb.created_at).toLocaleDateString()}</small>
@@ -1314,7 +1172,7 @@ export default function HODDashboard() {
           </div>
         </div>
       )}
-    </div>
+    </DashboardLayout>
   );
 }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../theme';
 import QRScanner from './QRScanner';
+import DashboardLayout from '../components/layout/DashboardLayout';
 
 export default function VolunteerDashboard() {
   const navigate = useNavigate();
@@ -27,32 +28,8 @@ export default function VolunteerDashboard() {
   if (!user) return null;
 
   return (
-    <div style={styles.root}>
-      {/* Top Header */}
-      <header style={styles.header}>
-        <div style={styles.headerLeft}>
-          <span style={styles.crest}>⚜</span>
-          <div>
-            <div style={styles.title}>Volunteer Portal</div>
-            <div style={styles.subTitle}>GM University Event System</div>
-          </div>
-        </div>
-        <div style={styles.headerRight}>
-          <span style={styles.userInfo}>👤 {user.name}</span>
-          <button 
-            style={styles.logoutBtn} 
-            onClick={() => {
-              sessionStorage.removeItem('gmu_user');
-              navigate('/login');
-            }}
-          >
-            Log Out
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content Area: Renders the QR Scanner */}
-      <main style={styles.main}>
+    <DashboardLayout role="volunteer" activeNav="Scanner" onNavChange={() => {}}>
+      <div style={styles.main}>
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Event Check-In Scanner</h2>
           <p style={styles.cardDesc}>
@@ -62,8 +39,8 @@ export default function VolunteerDashboard() {
              <QRScanner isEmbedded={true} />
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
 

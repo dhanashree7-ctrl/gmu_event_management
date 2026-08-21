@@ -221,6 +221,7 @@ export default function StudentAffairsDashboard() {
   const [reportEventId, setReportEventId] = useState(null);
   const [reportSummary, setReportSummary] = useState('');
   const [reportFile, setReportFile] = useState(null);
+  const [galleryFiles, setGalleryFiles] = useState([]);
   const [reportSubmitting, setReportSubmitting] = useState(false);
 
   // The finalize mechanic
@@ -266,6 +267,10 @@ export default function StudentAffairsDashboard() {
       alert("Please provide either a report summary or a PDF file.");
       return;
     }
+    if (galleryFiles.length < 1 || galleryFiles.length > 10) {
+      alert("Please upload between 1 and 10 event photos for the gallery.");
+      return;
+    }
 
     setReportSubmitting(true);
     
@@ -276,6 +281,10 @@ export default function StudentAffairsDashboard() {
     if (reportFile) {
       formData.append('report_file', reportFile);
     }
+    // Attach gallery images
+    Array.from(galleryFiles).forEach((file) => {
+      formData.append('gallery_images[]', file);
+    });
 
     try {
       const res = await fetch(`${API_BASE}/submit_event_report.php`, {

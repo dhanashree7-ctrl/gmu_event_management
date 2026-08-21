@@ -84,7 +84,7 @@ export default function EventDetails() {
     if (history.length === 0) {
       return (
         <div style={styles.emptyTimeline}>
-          <span style={{ fontSize: '2rem' }}>⏳</span>
+          <span style={{ fontSize: '2rem' }}></span>
           <p style={{ marginTop: '10px', color: '#666' }}>No approval steps logged yet. The proposal is awaiting initial department head review.</p>
         </div>
       );
@@ -103,7 +103,7 @@ export default function EventDetails() {
               
               {/* Timeline marker/node */}
               <div style={{ ...styles.timelineNode, backgroundColor: statusColor, boxShadow: `0 0 0 4px ${statusColor}22` }}>
-                {step.action_taken.includes('reject') ? '❌' : '✓'}
+                {step.action_taken.includes('reject') ? '' : ''}
               </div>
 
               {/* Timeline content card */}
@@ -221,7 +221,7 @@ export default function EventDetails() {
                   borderRadius: '8px'
                 }}>
                   <h3 style={{ margin: '0 0 0.5rem 0', color: theme.colors.maroon, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    🎉 Festival Sub-Events
+                     Festival Sub-Events
                   </h3>
                   {eventData.details.sub_events_logistics && eventData.details.sub_events_logistics.length > 0 ? (
                     <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
@@ -229,8 +229,8 @@ export default function EventDetails() {
                         <div key={idx} style={{ background: '#fff', padding: '0.75rem', borderRadius: '6px', border: '1px solid #E0E0E0' }}>
                           <strong style={{ display: 'block', color: theme.colors.charcoal, marginBottom: '0.25rem' }}>{sub.name}</strong>
                           <div style={{ display: 'flex', gap: '1rem', fontSize: '0.8rem', color: '#555' }}>
-                            <span>📍 {sub.venue || 'TBA'}</span>
-                            <span>🕐 {sub.start_time || 'TBA'} - {sub.end_time || 'TBA'}</span>
+                            <span> {sub.venue || 'TBA'}</span>
+                            <span> {sub.start_time || 'TBA'} - {sub.end_time || 'TBA'}</span>
                           </div>
                         </div>
                       ))}

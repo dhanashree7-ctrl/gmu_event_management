@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../config/api';
 import theme from '../theme';
+import { Bell, MessageSquare, CheckCircle } from 'lucide-react';
 
 const s = (...styles) => Object.assign({}, ...styles.filter(Boolean));
 
@@ -51,7 +52,7 @@ export default function NotificationBell() {
       const res = await fetch(`${API_BASE}/get_notifications.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.username }),
+        body: JSON.stringify({ user_id: user.username, bell_only: true }),
       });
       const json = await res.json();
       if (json.success) {
@@ -97,9 +98,12 @@ export default function NotificationBell() {
 
   // ── Click a single notification ────────────────────────────────
   const handleNotificationClick = async (notif) => {
+    // Optimistic UI update for the bell
     setNotifications(prev => prev.filter(n => n.id !== notif.id));
     prevCountRef.current = Math.max(0, prevCountRef.current - 1);
     setIsOpen(false);
+    
+    // Also mark it read since they actually clicked to view it
     try {
       await fetch(`${API_BASE}/mark_notification_read.php`, {
         method: 'POST',
@@ -110,27 +114,50 @@ export default function NotificationBell() {
     } catch (err) {
       console.error('Failed to mark notification as read', err);
     }
-    if (notif.target_link) navigate(notif.target_link);
+    
+    if (notif.target_link) {
+      if (window.location.pathname === notif.target_link) {
+        window.dispatchEvent(new CustomEvent('navigate_tab', { detail: 'notifications' }));
+      } else {
+        navigate(notif.target_link);
+      }
+    } else {
+      window.dispatchEvent(new CustomEvent('navigate_tab', { detail: 'notifications' }));
+    }
   };
 
-  // ── Mark ALL as read ───────────────────────────────────────────
-  const handleMarkAllRead = async () => {
-    const ids = notifications.map(n => n.id);
+  // ── Dismiss a single notification from bell ──────────────────────
+  const handleDismiss = async (e, notif) => {
+    e.stopPropagation(); // prevent clicking the notification
+    setNotifications(prev => prev.filter(n => n.id !== notif.id));
+    prevCountRef.current = Math.max(0, prevCountRef.current - 1);
+    try {
+      await fetch(`${API_BASE}/dismiss_bell_notification.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notification_id: notif.id }),
+      });
+      // Do not trigger global update as this doesn't change read status
+    } catch (err) {
+      console.error('Failed to dismiss notification', err);
+    }
+  };
+
+  // ── Dismiss ALL from bell ───────────────────────────────────────────
+  const handleDismissAll = async () => {
     setNotifications([]);
     prevCountRef.current = 0;
     setIsOpen(false);
-    for (const id of ids) {
-      try {
-        await fetch(`${API_BASE}/mark_notification_read.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ notification_id: id }),
-        });
-      } catch (err) {
-        console.error('Failed to mark notification as read', err);
-      }
+    
+    try {
+      await fetch(`${API_BASE}/dismiss_all_bell_notifications.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.username }),
+      });
+    } catch (err) {
+      console.error('Failed to dismiss all notifications', err);
     }
-    window.dispatchEvent(new Event('notifications_updated'));
   };
 
   if (!user) return null;
@@ -147,7 +174,7 @@ export default function NotificationBell() {
         onClick={() => setIsOpen(o => !o)}
         aria-label="Notifications"
       >
-        <span style={styles.bellIcon}>🔔</span>
+        <Bell size={20} strokeWidth={2.5} style={{ color: theme.colors.charcoal }} />
         {hasUnread && (
           <span className="badge-pop" style={styles.badge}>
             {unreadCount > 99 ? '99+' : unreadCount}
@@ -162,8 +189,8 @@ export default function NotificationBell() {
           <div style={styles.dropdownHeader}>
             <h3 style={{ margin: 0, fontSize: '1rem', color: '#fff' }}>Notifications</h3>
             {hasUnread && (
-              <button onClick={handleMarkAllRead} style={styles.markAllBtn}>
-                Mark all as read
+              <button onClick={handleDismissAll} style={styles.markAllBtn}>
+                Dismiss all
               </button>
             )}
           </div>
@@ -172,7 +199,7 @@ export default function NotificationBell() {
           <div style={styles.dropdownBody}>
             {notifications.length === 0 ? (
               <div style={styles.emptyState}>
-                <span style={{ fontSize: '2rem' }}>🎉</span>
+                <CheckCircle size={32} color="#888" />
                 <p style={{ margin: '8px 0 0', color: '#888' }}>You're all caught up!</p>
               </div>
             ) : (
@@ -185,7 +212,7 @@ export default function NotificationBell() {
                   onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FFF8F8')}
                 >
                   <div style={styles.notifDot} />
-                  <div style={styles.notifIcon}>💬</div>
+                  <div style={styles.notifIcon}><MessageSquare size={16} color={theme.colors.maroon} /></div>
                   <div style={styles.notifContent}>
                     <p style={styles.notifMessage}>{notif.message}</p>
                     <span style={styles.notifTime}>
@@ -195,6 +222,13 @@ export default function NotificationBell() {
                       })}
                     </span>
                   </div>
+                  <button 
+                    style={styles.dismissBtn} 
+                    onClick={(e) => handleDismiss(e, notif)}
+                    aria-label="Dismiss"
+                  >
+                    ×
+                  </button>
                 </div>
               ))
             )}
@@ -249,7 +283,8 @@ const styles = {
     position: 'absolute',
     top: 'calc(100% + 8px)',
     right: '0',
-    width: '320px',
+    width: '90vw',
+    maxWidth: '320px',
     background: '#fff',
     borderRadius: '12px',
     boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
@@ -316,4 +351,14 @@ const styles = {
     fontSize: '0.75rem',
     color: '#999',
   },
+  dismissBtn: {
+    background: 'transparent',
+    border: 'none',
+    color: '#999',
+    fontSize: '1.2rem',
+    cursor: 'pointer',
+    padding: '0 4px',
+    marginLeft: '8px',
+    transition: 'color 0.2s'
+  }
 };

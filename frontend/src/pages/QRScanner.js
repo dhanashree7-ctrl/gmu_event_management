@@ -149,7 +149,7 @@ export default function QRScanner() {
             }
           }}
         >
-          ✖ Close Scanner
+           Close Scanner
         </button>
       </div>
       
@@ -233,7 +233,7 @@ export default function QRScanner() {
 
       {scanResult && !processing && (
         <div style={scanResult.success ? styles.successBox : styles.errorBox}>
-          <div style={styles.icon}>{scanResult.success ? "✅" : "❌"}</div>
+          <div style={styles.icon}>{scanResult.success ? "" : ""}</div>
           <h1 style={styles.mainMessage}>{scanResult.message}</h1>
           {scanResult.student_name && (
             <h2 style={styles.subMessage}>{scanResult.student_name}</h2>

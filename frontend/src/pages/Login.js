@@ -92,7 +92,7 @@ export default function Login() {
       <div style={styles.card}>
         {/* Logo */}
         <div style={styles.logoWrap}>
-          <span style={styles.crest}>⚜</span>
+          <span style={styles.crest}></span>
           <div>
             <p style={styles.logoName}>GM University</p>
             <p style={styles.logoSub}>Event Management System</p>
@@ -105,7 +105,7 @@ export default function Login() {
         {/* Error banner */}
         {error && (
           <div style={styles.errorBanner} role="alert">
-            <span>⚠</span> {error}
+            <span></span> {error}
           </div>
         )}
 
@@ -151,7 +151,7 @@ export default function Login() {
                 tabIndex={-1}
                 aria-label={showPass ? 'Hide password' : 'Show password'}
               >
-                {showPass ? '🙈' : '👁️'}
+                {showPass ? '' : '️'}
               </button>
             </div>
           </div>

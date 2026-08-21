@@ -176,15 +176,15 @@ export default function ReportsView({ user }) {
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h2 style={styles.title}>📊 Analytics & Reports</h2>
+          <h2 style={styles.title}> Analytics & Reports</h2>
           <p style={styles.subtitle}>Insights and event reports for completed events.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button onClick={handleExportExcel} style={{ padding: '0.5rem 1rem', background: '#2E7D32', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
-            📊 Export Excel
+             Export Excel
           </button>
           <button onClick={handleExportPDF} style={{ padding: '0.5rem 1rem', background: '#D32F2F', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
-            📄 Export PDF
+             Export PDF
           </button>
         </div>
       </div>
@@ -195,21 +195,21 @@ export default function ReportsView({ user }) {
           
           <div style={styles.metricsRow}>
              <div style={styles.metricCard}>
-              <div style={s(styles.metricIcon, { background: 'rgba(74,4,4,0.1)', color: theme.colors.maroon })}>👥</div>
+              <div style={s(styles.metricIcon, { background: 'rgba(74,4,4,0.1)', color: theme.colors.maroon })}></div>
               <div>
                 <div style={styles.metricValue}>{facultyReports.check_in_funnel.registered}</div>
                 <div style={styles.metricLabel}>Total Registered</div>
               </div>
             </div>
              <div style={styles.metricCard}>
-              <div style={s(styles.metricIcon, { background: 'rgba(46, 125, 50, 0.1)', color: '#2E7D32' })}>✅</div>
+              <div style={s(styles.metricIcon, { background: 'rgba(46, 125, 50, 0.1)', color: '#2E7D32' })}></div>
               <div>
                 <div style={styles.metricValue}>{facultyReports.check_in_funnel.checked_in}</div>
                 <div style={styles.metricLabel}>Total Checked-In</div>
               </div>
             </div>
              <div style={styles.metricCard}>
-              <div style={s(styles.metricIcon, { background: 'rgba(253,208,111,0.2)', color: '#C17F24' })}>⭐</div>
+              <div style={s(styles.metricIcon, { background: 'rgba(253,208,111,0.2)', color: '#C17F24' })}></div>
               <div>
                 <div style={styles.metricValue}>{facultyReports.average_score} / 5</div>
                 <div style={styles.metricLabel}>Avg Feedback ({facultyReports.total_feedbacks} ratings)</div>
@@ -359,11 +359,11 @@ export default function ReportsView({ user }) {
                 {hodReports.faculty_leaderboard.map((fac, idx) => (
                   <div key={idx} style={styles.tableRow}>
                     <div style={{ flex: 2, fontWeight: 500, color: '#333' }}>
-                      {idx === 0 ? '🥇 ' : idx === 1 ? '🥈 ' : idx === 2 ? '🥉 ' : ''}{fac.faculty_name}
+                      {idx === 0 ? ' ' : idx === 1 ? ' ' : idx === 2 ? ' ' : ''}{fac.faculty_name}
                     </div>
                     <div style={{ flex: 1, textAlign: 'center', color: '#555' }}>{fac.total_events}</div>
                     <div style={{ flex: 1, textAlign: 'center', fontWeight: 'bold', color: fac.average_rating >= 4 ? '#2E7D32' : '#C17F24' }}>
-                      {fac.average_rating > 0 ? `${fac.average_rating} ⭐` : '-'}
+                      {fac.average_rating > 0 ? `${fac.average_rating} ` : '-'}
                     </div>
                   </div>
                 ))}
@@ -456,14 +456,14 @@ export default function ReportsView({ user }) {
       {/* Top Level Metrics */}
       <div style={styles.metricsRow}>
         <div style={styles.metricCard}>
-          <div style={s(styles.metricIcon, { background: 'rgba(74,4,4,0.1)', color: theme.colors.maroon })}>✅</div>
+          <div style={s(styles.metricIcon, { background: 'rgba(74,4,4,0.1)', color: theme.colors.maroon })}></div>
           <div>
             <div style={styles.metricValue}>{metrics.total}</div>
             <div style={styles.metricLabel}>Completed Events</div>
           </div>
         </div>
         <div style={styles.metricCard}>
-          <div style={s(styles.metricIcon, { background: 'rgba(253,208,111,0.2)', color: '#C17F24' })}>⭐</div>
+          <div style={s(styles.metricIcon, { background: 'rgba(253,208,111,0.2)', color: '#C17F24' })}></div>
           <div>
             <div style={styles.metricValue}>{metrics.avgRating} / 5</div>
             <div style={styles.metricLabel}>Average Feedback Score</div>
@@ -514,7 +514,7 @@ export default function ReportsView({ user }) {
                 </div>
                 <div style={{ flex: 1, fontSize: '0.9rem' }}>{ev.category}</div>
                 <div style={{ flex: 1, textAlign: 'center', fontWeight: 'bold', color: ev.average_rating >= 4 ? '#2E7D32' : '#C17F24' }}>
-                  {ev.average_rating > 0 ? `${ev.average_rating} ⭐` : 'No ratings'}
+                  {ev.average_rating > 0 ? `${ev.average_rating} ` : 'No ratings'}
                 </div>
                 <div style={{ flex: 1.5, display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                   {ev.post_event_report || ev.report_file_path ? (
@@ -540,7 +540,7 @@ export default function ReportsView({ user }) {
           <div style={styles.modalContent}>
             <div style={styles.modalHeader}>
               <h3 style={{ margin: 0, fontSize: '1.2rem' }}>Report: {selectedReport.event_title}</h3>
-              <button style={styles.closeBtn} onClick={() => setSelectedReport(null)}>✕</button>
+              <button style={styles.closeBtn} onClick={() => setSelectedReport(null)}></button>
             </div>
             <div style={styles.modalBody}>
               {selectedReport.post_event_report && (
@@ -561,7 +561,7 @@ export default function ReportsView({ user }) {
                     rel="noreferrer"
                     style={styles.downloadLink}
                   >
-                    📄 Download Report PDF
+                     Download Report PDF
                   </a>
                 </div>
               )}

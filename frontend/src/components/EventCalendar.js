@@ -72,7 +72,7 @@ export default function EventCalendar({ events }) {
         <h2 style={styles.monthLabel}>
           {currentDate.toLocaleString('default', { month: 'long' })} {year}
         </h2>
-        <button onClick={handleNextMonth} style={styles.navBtn}>▶</button>
+        <button onClick={handleNextMonth} style={styles.navBtn}></button>
       </div>
       
       <div style={styles.grid}>
@@ -91,79 +91,97 @@ const styles = {
   calendarWrapper: {
     background: '#fff',
     borderRadius: '12px',
-    padding: '1.5rem',
+    padding: '1.25rem',
     boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-    border: '1px solid #eee'
+    border: '1px solid #eee',
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%', // Clamped to parent
+    flex: 1,
+    boxSizing: 'border-box'
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '1rem'
+    marginBottom: '1rem',
+    flexShrink: 0
   },
   navBtn: {
-    background: '#f0f0f0',
-    border: 'none',
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
     borderRadius: '8px',
-    padding: '0.5rem 1rem',
+    padding: '0.4rem 1rem',
     cursor: 'pointer',
-    fontSize: '1.1rem',
-    transition: 'background 0.2s'
+    fontSize: '1rem',
+    transition: 'background 0.2s, transform 0.1s',
+    color: '#334155'
   },
   monthLabel: {
     margin: 0,
-    fontSize: '1.4rem',
+    fontSize: '1.25rem',
+    fontWeight: '800',
     color: theme.colors.maroon
   },
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(7, 1fr)',
-    gap: '4px'
+    gridTemplateRows: 'auto repeat(6, 1fr)', // 1 row for days, 6 for weeks
+    gap: '6px',
+    flex: 1,
+    minHeight: 0, // Critical for grid to compress
   },
   dayHeader: {
     textAlign: 'center',
-    fontWeight: 'bold',
-    color: '#666',
-    padding: '0.5rem 0'
+    fontWeight: '700',
+    color: '#64748b',
+    padding: '0.25rem 0',
+    fontSize: '0.85rem'
   },
   emptyCell: {
-    background: '#fafafa',
-    borderRadius: '6px',
-    minHeight: '100px'
+    background: '#f8fafc',
+    borderRadius: '8px',
+    border: '1px dashed #e2e8f0'
   },
   cell: {
     background: '#fff',
-    border: '1px solid #eaeaea',
-    borderRadius: '6px',
-    minHeight: '100px',
-    padding: '0.5rem',
+    border: '1px solid #f1f5f9',
+    borderRadius: '8px',
+    padding: '0.4rem',
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    overflow: 'hidden', // Stop cells from breaking grid row height
+    transition: 'border-color 0.2s',
   },
   todayCell: {
-    background: '#fff9e6',
-    borderColor: theme.colors.gold
+    background: '#fffbf0',
+    borderColor: theme.colors.gold,
+    boxShadow: 'inset 0 0 0 1px #FDD06F'
   },
   dayNumber: {
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: '0.25rem'
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: '0.1rem',
+    fontSize: '0.85rem'
   },
   eventContainer: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '2px',
+    gap: '3px',
     overflowY: 'auto',
-    maxHeight: '70px'
+    flex: 1, // fill remaining cell space
+    minHeight: 0,
+    paddingRight: '2px'
   },
   eventBadge: {
     color: '#fff',
     fontSize: '0.65rem',
-    padding: '2px 4px',
+    padding: '2px 5px',
     borderRadius: '4px',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    fontWeight: '600'
   }
 };

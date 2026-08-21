@@ -1,10 +1,53 @@
 import React, { useState } from 'react';
 import theme from '../theme';
 import { API_BASE } from '../config/api';
+import { Lock, User, CheckCircle, XCircle, Mail, Building2, GraduationCap, Shield, Bell, Palette } from 'lucide-react';
 
-const s = (...styles) => Object.assign({}, ...styles);
+const s = (...styles) => Object.assign({}, ...styles.filter(Boolean));
 
-export default function SettingsView({ user }) {
+// Inject hover CSS once
+if (typeof document !== 'undefined' && !document.getElementById('gmu-settings-styles')) {
+  const el = document.createElement('style');
+  el.id = 'gmu-settings-styles';
+  el.textContent = `
+    .gmu-settings-input:focus {
+      border-color: #701a1e !important; background: #fff !important;
+      box-shadow: 0 0 0 3px rgba(112,26,30,0.1) !important; outline: none !important;
+    }
+    .gmu-settings-tab {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.65rem 1.1rem; cursor: pointer; border-radius: 10px;
+      font-size: 0.88rem; font-weight: 500; color: #64748b;
+      transition: all 0.2s ease; border: none; background: none;
+      width: 100%; text-align: left; font-family: inherit;
+    }
+    .gmu-settings-tab:hover { background: #f8fafc; color: #1e293b; transform: translateX(2px); }
+    .gmu-settings-tab.gmu-tab-active { background: linear-gradient(135deg, #701a1e, #8a2126); color: #fff; font-weight: 600; }
+    .gmu-save-btn {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      padding: 0.8rem 1.5rem; background: #701a1e; color: #fff; border: none;
+      border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s ease; font-family: inherit;
+    }
+    .gmu-save-btn:hover:not(:disabled) { background: #8a2126; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(112,26,30,0.3); }
+    .gmu-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .gmu-profile-field {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem;
+      background: #f8fafc; border-radius: 10px; border: 1px solid #f1f5f9;
+      transition: all 0.2s ease;
+    }
+    .gmu-profile-field:hover { background: #f1f5f9; border-color: #e2e8f0; transform: translateX(2px); }
+  `;
+  document.head.appendChild(el);
+}
+
+const TABS = [
+  { id: 'profile', label: 'Profile Info', icon: User },
+  { id: 'security', label: 'Security', icon: Shield },
+  { id: 'preferences', label: 'Preferences', icon: Palette },
+];
+
+export default function SettingsView({ user, onBack }) {
   const [activeTab, setActiveTab] = useState('profile');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -14,158 +57,161 @@ export default function SettingsView({ user }) {
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      setStatus({ type: 'error', message: 'New passwords do not match.' });
-      return;
-    }
-    
-    if (newPassword === currentPassword) {
-      setStatus({ type: 'error', message: 'New password must be different from current password.' });
-      return;
-    }
-
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(newPassword)) {
-      setStatus({ type: 'error', message: 'Password must be at least 8 characters long and contain both letters and numbers.' });
-      return;
-    }
-
-    setLoading(true);
-    setStatus({ type: '', message: '' });
-
+    if (newPassword !== confirmPassword) { setStatus({ type: 'error', message: 'Passwords do not match.' }); return; }
+    if (newPassword === currentPassword) { setStatus({ type: 'error', message: 'Must differ from current password.' }); return; }
+    const re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/;
+    if (!re.test(newPassword)) { setStatus({ type: 'error', message: 'Min 6 chars with letters and numbers.' }); return; }
+    setLoading(true); setStatus({ type: '', message: '' });
     try {
       const res = await fetch(`${API_BASE}/update_settings.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: user.username,
-          current_password: currentPassword,
-          new_password: newPassword
-        })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user.username, current_password: currentPassword, new_password: newPassword })
       });
-      
       const data = await res.json();
-      
-      if (data.success) {
-        setStatus({ type: 'success', message: data.message });
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-      } else {
-        setStatus({ type: 'error', message: data.message });
-      }
-    } catch (err) {
-      setStatus({ type: 'error', message: 'Network error. Please try again later.' });
-    } finally {
-      setLoading(false);
-    }
+      if (data.success) { setStatus({ type: 'success', message: data.message }); setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); }
+      else { setStatus({ type: 'error', message: data.message }); }
+    } catch { setStatus({ type: 'error', message: 'Network error. Try again.' }); }
+    finally { setLoading(false); }
   };
 
+  const profileFields = [
+    { icon: User, label: 'Full Name', value: user?.name },
+    { icon: Mail, label: 'Username / ID', value: user?.username },
+    { icon: GraduationCap, label: 'Role', value: user?.role?.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join(' ') },
+    { icon: Building2, label: 'Department', value: user?.department_name },
+    { icon: Building2, label: 'School', value: user?.school_name },
+  ].filter(f => f.value);
+
   return (
-    <div style={styles.container}>
-      <h2 style={styles.header}>Account Settings</h2>
+    <div style={st.pageWrap}>
+      {/* ── Left Tab Panel ── */}
+      <aside style={st.tabPanel}>
+        <div style={st.panelHeader}>
+          <div style={st.panelAvatar}><User size={28} color="#FDD06F" /></div>
+          <div>
+            <p style={st.panelName}>{user?.name?.split(' ')[0] || 'User'}</p>
+            <p style={st.panelRole}>{user?.role?.replace('_', ' ')}</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+          {TABS.map(tab => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                className={`gmu-settings-tab${activeTab === tab.id ? ' gmu-tab-active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <Icon size={15} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </aside>
 
-      {/* Tabs */}
-      <div style={styles.tabsContainer}>
-        <button 
-          style={s(styles.tabButton, activeTab === 'profile' && styles.tabButtonActive)}
-          onClick={() => setActiveTab('profile')}
-        >
-          👤 Profile Information
-        </button>
-        <button 
-          style={s(styles.tabButton, activeTab === 'security' && styles.tabButtonActive)}
-          onClick={() => {
-            setActiveTab('security');
-            setStatus({ type: '', message: '' });
-          }}
-        >
-          🔒 Security
-        </button>
-      </div>
-
-      <div style={styles.content}>
-        {/* Profile Section (Read-Only) */}
+      {/* ── Main Content ── */}
+      <div style={st.contentArea}>
         {activeTab === 'profile' && (
-          <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>Profile Information</h3>
-            <div style={styles.profileGrid}>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Name</span>
-                <span style={styles.profileValue}>{user?.name || 'N/A'}</span>
+          <div>
+            <h2 style={st.sectionTitle}>Profile Information</h2>
+            <p style={st.sectionSub}>Your personal and academic details from the university system.</p>
+            <div style={st.profileCard}>
+              <div style={st.profileBanner}>
+                <div style={st.profileAvatarLg}><User size={38} color="#FDD06F" /></div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: '#fff' }}>{user?.name || 'N/A'}</h3>
+                  <p style={{ margin: '3px 0 0', fontSize: '0.82rem', color: 'rgba(253,208,111,0.8)' }}>@{user?.username}</p>
+                </div>
               </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Username</span>
-                <span style={styles.profileValue}>{user?.username || 'N/A'}</span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Role</span>
-                <span style={styles.profileValue}>
-                  {user?.role?.replace('_', ' ') || 'N/A'}
-                </span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>Department</span>
-                <span style={styles.profileValue}>{user?.department_name || 'N/A'}</span>
-              </div>
-              <div style={styles.profileItem}>
-                <span style={styles.profileLabel}>School</span>
-                <span style={styles.profileValue}>{user?.school_name || 'N/A'}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1.25rem' }}>
+                {profileFields.map(field => {
+                  const Icon = field.icon;
+                  return (
+                    <div key={field.label} className="gmu-profile-field">
+                      <div style={st.fieldIconWrap}><Icon size={15} color="#701a1e" /></div>
+                      <div>
+                        <p style={st.fieldLabel}>{field.label}</p>
+                        <p style={st.fieldValue}>{field.value}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
         )}
 
-        {/* Security Section */}
         {activeTab === 'security' && (
-          <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>Security</h3>
-            <p style={styles.sectionDesc}>Update your account password below.</p>
-
-            <form onSubmit={handlePasswordUpdate} style={styles.form}>
-              {status.message && (
-                <div style={s(styles.statusAlert, status.type === 'error' ? styles.statusError : styles.statusSuccess)}>
-                  {status.message}
+          <div>
+            <h2 style={st.sectionTitle}>Account Security</h2>
+            <p style={st.sectionSub}>Update your password to keep your account secure.</p>
+            {status.message && (
+              <div style={s(st.statusAlert, status.type === 'error' ? st.statusError : st.statusSuccess)}>
+                {status.type === 'error' ? <XCircle size={16} /> : <CheckCircle size={16} />}
+                <span>{status.message}</span>
+              </div>
+            )}
+            <form onSubmit={handlePasswordUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {[
+                { label: 'Current Password', value: currentPassword, setter: setCurrentPassword, placeholder: 'Enter current password' },
+                { label: 'New Password', value: newPassword, setter: setNewPassword, placeholder: 'Min. 6 chars with letters + numbers' },
+                { label: 'Confirm New Password', value: confirmPassword, setter: setConfirmPassword, placeholder: 'Repeat new password' },
+              ].map(field => (
+                <div key={field.label} style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <label style={st.label}>{field.label}</label>
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={14} color="#94a3b8" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                    <input
+                      type="password"
+                      className="gmu-settings-input"
+                      placeholder={field.placeholder}
+                      value={field.value}
+                      onChange={e => field.setter(e.target.value)}
+                      style={st.input}
+                      required
+                    />
+                  </div>
                 </div>
-              )}
-
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Current Password</label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  style={styles.input}
-                  required
-                />
+              ))}
+              <div style={st.infoBanner}>
+                <Shield size={13} color="#B8860B" />
+                <span>Use at least 6 characters including letters and numbers.</span>
               </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.label}>New Password</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  style={styles.input}
-                  required
-                />
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Confirm New Password</label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  style={styles.input}
-                  required
-                />
-              </div>
-
-              <button type="submit" disabled={loading} style={s(styles.button, loading && styles.buttonDisabled)}>
+              <button type="submit" className="gmu-save-btn" disabled={loading}>
+                <Lock size={15} />
                 {loading ? 'Updating...' : 'Update Password'}
               </button>
             </form>
+          </div>
+        )}
+
+        {activeTab === 'preferences' && (
+          <div>
+            <h2 style={st.sectionTitle}>Preferences</h2>
+            <p style={st.sectionSub}>Customize your notification and display settings.</p>
+            <div style={{ background: '#f8fafc', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+              {[
+                { icon: Bell, label: 'Email Notifications', desc: 'Updates about event registrations and approvals', enabled: true },
+                { icon: Bell, label: 'Browser Notifications', desc: 'Instant alerts in your browser', enabled: false },
+              ].map((pref, i) => {
+                const Icon = pref.icon;
+                return (
+                  <div key={pref.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem', borderBottom: i === 0 ? '1px solid #f1f5f9' : 'none' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={st.fieldIconWrap}><Icon size={15} color="#701a1e" /></div>
+                      <div>
+                        <p style={{ margin: 0, fontWeight: 600, fontSize: '0.88rem', color: '#1e293b' }}>{pref.label}</p>
+                        <p style={{ margin: '2px 0 0', fontSize: '0.76rem', color: '#64748b' }}>{pref.desc}</p>
+                      </div>
+                    </div>
+                    <div style={{ width: '42px', height: '22px', borderRadius: '11px', background: pref.enabled ? '#701a1e' : '#e2e8f0', position: 'relative', cursor: 'pointer' }}>
+                      <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '3px', left: pref.enabled ? '23px' : '3px', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -173,150 +219,32 @@ export default function SettingsView({ user }) {
   );
 }
 
-const styles = {
-  container: {
-    padding: '2rem',
-    maxWidth: '800px',
-    margin: '0 auto',
-    fontFamily: theme.fonts.sansSerif,
-    color: theme.colors.darkGray,
+const st = {
+  pageWrap: { display: 'flex', gap: '1.5rem', fontFamily: '"Inter", sans-serif', alignItems: 'flex-start' },
+  tabPanel: {
+    width: '210px', flexShrink: 0, background: '#fff', borderRadius: '16px',
+    border: '1px solid #e2e8f0', padding: '1.25rem', display: 'flex', flexDirection: 'column',
+    gap: '1rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
   },
-  header: {
-    fontSize: '2rem',
-    color: theme.colors.maroon,
-    marginBottom: '1rem',
-  },
-  tabsContainer: {
-    display: 'flex',
-    gap: '1rem',
-    marginBottom: '1.5rem',
-    borderBottom: `2px solid ${theme.colors.lightGray}`,
-    paddingBottom: '0.5rem',
-  },
-  tabButton: {
-    background: 'none',
-    border: 'none',
-    padding: '0.75rem 1rem',
-    fontSize: '1rem',
-    fontWeight: theme.fontWeights.semiBold,
-    color: theme.colors.midGray,
-    cursor: 'pointer',
-    borderRadius: '8px 8px 0 0',
-    transition: 'all 0.2s',
-  },
-  tabButtonActive: {
-    color: theme.colors.maroon,
-    backgroundColor: 'rgba(74,4,4,0.05)',
-    boxShadow: `inset 0 -3px 0 ${theme.colors.maroon}`,
-  },
-  content: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2.5rem',
-  },
-  section: {
-    background: '#ffffff',
-    borderRadius: theme.radii.lg,
-    padding: '2.5rem',
-    boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
-    border: '1px solid rgba(0,0,0,0.05)',
-  },
-  sectionTitle: {
-    fontSize: '1.35rem',
-    color: theme.colors.maroon,
-    marginBottom: '0.75rem',
-    fontWeight: theme.fontWeights.bold,
-  },
-  sectionDesc: {
-    fontSize: '0.9rem',
-    color: theme.colors.midGray,
-    marginBottom: '1.5rem',
-  },
-  profileGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '1.25rem',
-  },
-  profileItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.35rem',
-    background: theme.colors.offWhite,
-    padding: '1.25rem',
-    borderRadius: theme.radii.md,
-    border: '1px solid rgba(0,0,0,0.03)',
-  },
-  profileLabel: {
-    fontSize: '0.8rem',
-    color: theme.colors.midGray,
-    textTransform: 'uppercase',
-    letterSpacing: '0.08em',
-    fontWeight: theme.fontWeights.semiBold,
-  },
-  profileValue: {
-    fontSize: '1.1rem',
-    color: theme.colors.charcoal,
-    fontWeight: theme.fontWeights.semiBold,
-    textTransform: 'capitalize',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.25rem',
-    maxWidth: '400px',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-  },
-  label: {
-    fontSize: '0.95rem',
-    fontWeight: theme.fontWeights.semiBold,
-    color: theme.colors.charcoal,
-    marginBottom: '0.25rem',
-  },
-  input: {
-    padding: '0.85rem',
-    borderRadius: theme.radii.md,
-    border: '1px solid #E0E0E0',
-    background: '#FAFAFA',
-    fontSize: '1rem',
-    outline: 'none',
-    transition: 'all 0.2s ease',
-  },
-  button: {
-    padding: '0.85rem 1.5rem',
-    background: `linear-gradient(135deg, ${theme.colors.maroon} 0%, ${theme.colors.maroonDark} 100%)`,
-    color: theme.colors.white,
-    border: 'none',
-    borderRadius: theme.radii.full,
-    fontSize: '1rem',
-    fontWeight: theme.fontWeights.bold,
-    cursor: 'pointer',
-    marginTop: '1.5rem',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 4px 15px rgba(74,4,4,0.2)',
-  },
-  buttonDisabled: {
-    background: theme.colors.midGray,
-    boxShadow: 'none',
-    cursor: 'not-allowed',
-  },
-  statusAlert: {
-    padding: '1rem',
-    borderRadius: theme.radii.md,
-    fontSize: '0.9rem',
-    fontWeight: theme.fontWeights.medium,
-  },
-  statusSuccess: {
-    background: '#E8F5E9',
-    color: '#2E7D32',
-    border: '1px solid #A5D6A7',
-  },
-  statusError: {
-    background: '#FFEBEE',
-    color: '#C62828',
-    border: '1px solid #EF9A9A',
-  }
+  panelHeader: { display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' },
+  panelAvatar: { width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, #701a1e, #8a2126)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  panelName: { margin: 0, fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' },
+  panelRole: { margin: '2px 0 0', fontSize: '0.7rem', color: '#64748b', textTransform: 'capitalize' },
+  contentArea: { flex: 1, background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '1.75rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' },
+  sectionTitle: { fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.25rem' },
+  sectionSub: { fontSize: '0.85rem', color: '#64748b', margin: '0 0 1.25rem' },
+  profileCard: { border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden' },
+  profileBanner: { background: 'linear-gradient(135deg, #701a1e 0%, #4a0404 100%)', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' },
+  profileAvatarLg: { width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(253,208,111,0.2)', border: '2px solid rgba(253,208,111,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  fieldIconWrap: { width: '30px', height: '30px', borderRadius: '7px', background: '#FFF5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  fieldLabel: { margin: 0, fontSize: '0.68rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' },
+  fieldValue: { margin: '2px 0 0', fontSize: '0.88rem', color: '#1e293b', fontWeight: 600 },
+  label: { fontSize: '0.83rem', fontWeight: 600, color: '#0f172a' },
+  input: { width: '100%', boxSizing: 'border-box', padding: '0.75rem 1rem 0.75rem 2.4rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '0.88rem', color: '#334155', transition: 'all 0.2s ease', fontFamily: 'inherit' },
+  infoBanner: { display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#FFF8E1', color: '#8D6E63', padding: '0.6rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 500 },
+  statusAlert: { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.7rem 0.9rem', borderRadius: '8px', fontSize: '0.83rem', fontWeight: 600, marginBottom: '0.75rem' },
+  statusSuccess: { background: '#E8F5E9', color: '#2E7D32', border: '1px solid #A5D6A7' },
+  statusError: { background: '#FFEBEE', color: '#C62828', border: '1px solid #EF9A9A' },
 };
+
+

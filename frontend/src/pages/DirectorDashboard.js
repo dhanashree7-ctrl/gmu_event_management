@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../config/api';
+import DashboardLayout from '../components/layout/DashboardLayout';
 import theme from '../theme';
 
 const s = (...styles) => Object.assign({}, ...styles);
@@ -48,7 +49,7 @@ export default function DirectorDashboard() {
 
       if (json.success) {
         setPendingEvents((prev) => prev.filter((e) => e.id !== eventId));
-        const verb = newStatus === 'rejected' ? 'rejected ❌' : 'approved ✅';
+        const verb = newStatus === 'rejected' ? 'rejected ' : 'approved ';
         setToast({ type: 'success', message: `"${json.event_title || 'Event'}" has been ${verb}.` });
       } else {
         setToast({ type: 'error', message: json.message || 'Action failed.' });
@@ -66,44 +67,12 @@ export default function DirectorDashboard() {
   };
 
   return (
-    <div style={styles.root}>
-      {/* Sidebar Placeholder */}
-      <aside style={styles.sidebar}>
-        <div style={styles.sidebarLogo}>
-          <span style={styles.sidebarCrest}>⚜</span>
-          <div>
-            <p style={styles.sidebarLogoName}>GM University</p>
-            <p style={styles.sidebarLogoSub}>Event System</p>
-          </div>
-        </div>
-        <nav style={styles.sidebarNav}>
-          <div style={s(styles.navItem, styles.navItemActive)}>
-            <span style={styles.navIcon}>⏳</span>
-            <span style={styles.navLabel}>Pending Approvals</span>
-          </div>
-        </nav>
-        <div style={{ flex: 1 }} />
-        <div style={styles.sidebarUserCard}>
-          <div style={styles.userInfo}>
-            <p style={styles.userName}>{user?.name ?? 'Director'}</p>
-            <p style={styles.userRole}>{user?.role_name ?? ''}</p>
-          </div>
-        </div>
-        <button onClick={handleLogout} style={styles.logoutBtn}>
-          <span>🚪</span><span>Logout</span>
-        </button>
-      </aside>
-
-      <div style={styles.main}>
-        <header style={styles.topBar}>
-          <h1 style={styles.topBarTitle}>Director Approval Dashboard</h1>
-        </header>
-
-        <div style={styles.content}>
+    <DashboardLayout role="director" activeNav={activeTab} onNavChange={setActiveTab}>
+      <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
           {toast && (
             <div style={s(styles.toast, toast.type === 'success' ? styles.toastSuccess : styles.toastError)}>
               {toast.message}
-              <button onClick={() => setToast(null)} style={styles.toastClose}>✕</button>
+              <button onClick={() => setToast(null)} style={styles.toastClose}></button>
             </div>
           )}
 
@@ -143,8 +112,7 @@ export default function DirectorDashboard() {
             )}
           </div>
         </div>
-      </div>
-    </div>
+    </DashboardLayout>
   );
 }
 

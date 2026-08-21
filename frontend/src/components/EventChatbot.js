@@ -62,10 +62,10 @@ export default function EventChatbot() {
         <div style={styles.chatWindow}>
           <div style={styles.header}>
             <div style={styles.headerInfo}>
-              <span style={styles.headerAvatar}>🤖</span>
+              <span style={styles.headerAvatar}></span>
               <span style={styles.headerTitle}>GMU Assistant</span>
             </div>
-            <button style={styles.closeBtn} onClick={() => setIsOpen(false)}>✕</button>
+            <button style={styles.closeBtn} onClick={() => setIsOpen(false)}></button>
           </div>
           
           <div style={styles.messagesContainer}>
@@ -122,10 +122,10 @@ export default function EventChatbot() {
         className="chatbot-fab-pulse"
       >
         {isOpen ? (
-          <span style={{ fontSize: '24px' }}>✕</span>
+          <span style={{ fontSize: '24px' }}></span>
         ) : (
           <>
-            <span style={{ fontSize: '28px', marginRight: '8px' }}>🤖</span>
+            <span style={{ fontSize: '28px', marginRight: '8px' }}></span>
             <span style={{ fontWeight: 'bold', fontSize: '1rem' }}>Ask AI</span>
           </>
         )}

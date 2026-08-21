@@ -30,7 +30,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function DashboardMetrics({ data, type = 'status', barName = 'Count', title, pieTitle }) {
+export default function DashboardMetrics({ data, type = 'status', barName = 'Count', title, pieTitle, chartType = 'both', height = 'min(250px, 25vh)' }) {
   const COLORS = {
     'Pending': '#E3A008', // More vibrant orange/gold
     'Approved': '#10B981', // Vibrant emerald
@@ -72,78 +72,83 @@ export default function DashboardMetrics({ data, type = 'status', barName = 'Cou
 
   return (
     <div style={styles.metricsContainer}>
-      <div style={styles.chartCard}>
-        <h3 style={styles.chartTitle}>{title || (type === 'status' ? 'Events by Status' : 'Overview Breakdown')}</h3>
-        <div style={{ width: '100%', height: 350 }}>
-          <ResponsiveContainer>
-            <BarChart data={filteredData} margin={{ top: 20, right: 30, left: 0, bottom: 40 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="name" tick={false} axisLine={{ stroke: '#e2e8f0' }} tickLine={false} height={20} />
-              <YAxis allowDecimals={false} tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
-              <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
-              <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
-              <Bar 
-                dataKey="count" 
-                name={barName} 
-                radius={[6, 6, 0, 0]} 
-                animationDuration={1500} 
-                animationEasing="ease-out"
-                maxBarSize={60}
-              >
-                {filteredData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+      {(chartType === 'both' || chartType === 'bar') && (
+        <div style={styles.chartCard}>
+          <h3 style={styles.chartTitle}>{title || (type === 'status' ? 'Events by Status' : 'Overview Breakdown')}</h3>
+          <div style={{ width: '100%', height }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={filteredData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={false} axisLine={{ stroke: '#e2e8f0' }} tickLine={false} height={10} />
+                <YAxis allowDecimals={false} tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
+                <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+                <Legend wrapperStyle={{ paddingTop: '10px' }} iconType="circle" />
+                <Bar 
+                  dataKey="count" 
+                  name={barName} 
+                  radius={[6, 6, 0, 0]} 
+                  animationDuration={1500} 
+                  animationEasing="ease-out"
+                  maxBarSize={60}
+                >
+                  {filteredData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div style={styles.chartCard}>
-        <h3 style={styles.chartTitle}>{pieTitle || 'Distribution'}</h3>
-        <div style={{ width: '100%', height: 350 }}>
-          <ResponsiveContainer>
-            <PieChart data={filteredData}>
-              <Pie
-                data={filteredData}
-                cx="50%"
-                cy="50%"
-                innerRadius="65%"
-                outerRadius="85%"
-                paddingAngle={6}
-                dataKey="count"
-                label={false}
-                labelLine={false}
-                animationDuration={1500}
-                animationEasing="ease-out"
-                stroke="none"
-              >
-                {filteredData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Pie>
-              <RechartsTooltip content={<CustomTooltip />} />
-              <Legend 
-                verticalAlign="bottom" 
-                wrapperStyle={{ paddingTop: '20px', maxHeight: '100px', overflowY: 'auto' }} 
-                iconType="circle"
-              />
-            </PieChart>
-          </ResponsiveContainer>
+      {(chartType === 'both' || chartType === 'pie') && (
+        <div style={styles.chartCard}>
+          <h3 style={styles.chartTitle}>{pieTitle || 'Distribution'}</h3>
+          <div style={{ width: '100%', height }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart data={filteredData}>
+                <Pie
+                  data={filteredData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="60%"
+                  outerRadius="80%"
+                  paddingAngle={6}
+                  dataKey="count"
+                  label={false}
+                  labelLine={false}
+                  animationDuration={1500}
+                  animationEasing="ease-out"
+                  stroke="none"
+                >
+                  {filteredData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <RechartsTooltip content={<CustomTooltip />} />
+                <Legend 
+                  verticalAlign="bottom" 
+                  wrapperStyle={{ paddingTop: '10px', maxHeight: '100px', overflowY: 'auto' }} 
+                  iconType="circle"
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 const styles = {
   metricsContainer: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+    display: 'flex',
+    flexDirection: 'row',
     gap: '1.5rem',
-    marginTop: '1.5rem',
+    width: '100%'
   },
   chartCard: {
+    flex: 1,
     background: '#ffffff',
     borderRadius: '16px',
     padding: '1.5rem',

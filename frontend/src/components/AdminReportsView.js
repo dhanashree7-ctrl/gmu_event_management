@@ -234,19 +234,19 @@ export default function AdminReportsView({ user }) {
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <span style={{ alignSelf: 'center', fontWeight: 600, color: '#555', fontSize: '0.85rem', marginRight: '0.5rem' }}>Participants:</span>
             <button onClick={handleExportExcel} style={s(styles.btn, { background: '#2E7D32', color: '#fff', fontSize: '0.85rem' })}>
-              📊 Excel
+               Excel
             </button>
             <button onClick={handleExportPDF} style={s(styles.btn, { background: '#D32F2F', color: '#fff', fontSize: '0.85rem' })}>
-              📄 PDF
+               PDF
             </button>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <span style={{ alignSelf: 'center', fontWeight: 600, color: '#555', fontSize: '0.85rem', marginRight: '0.5rem' }}>Events:</span>
             <button onClick={handleExportEventsExcel} style={s(styles.btn, { background: '#2E7D32', color: '#fff', fontSize: '0.85rem' })}>
-              📊 Excel
+               Excel
             </button>
             <button onClick={handleExportEventsPDF} style={s(styles.btn, { background: '#D32F2F', color: '#fff', fontSize: '0.85rem' })}>
-              📄 PDF
+               PDF
             </button>
           </div>
         </div>
@@ -359,7 +359,7 @@ export default function AdminReportsView({ user }) {
                     rel="noopener noreferrer"
                     style={styles.pdfButton}
                   >
-                    📄 View Report: {ev.title}
+                     View Report: {ev.title}
                   </a>
                 ))}
               </div>

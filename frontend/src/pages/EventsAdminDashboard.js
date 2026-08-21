@@ -13,18 +13,19 @@ import theme from "../theme";
 import EventArchive from '../components/EventArchive';
 import AdminReportsView from '../components/AdminReportsView';
 import DashboardMetrics from '../components/DashboardMetrics';
+import DashboardLayout from '../components/layout/DashboardLayout';
 
 // ── Utility ─────────────────────────────────────────────────────────────────
 const s = (...styles) => Object.assign({}, ...styles);
 
 // ── Constants ───────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
-  { icon: '📈', label: 'Dashboard', active: true },
-  { icon: '📋', label: 'Current Routings', active: false },
-  { icon: '⚙️', label: 'Configure Routing', active: false },
-  { icon: '👥', label: 'Manage Users', active: false },
-  { icon: '📊', label: 'Reports & Analytics', active: false },
-  { icon: '🏛️', label: 'Archive', active: false },
+  { icon: '', label: 'Dashboard', active: true },
+  { icon: '', label: 'Current Routings', active: false },
+  { icon: '️', label: 'Configure Routing', active: false },
+  { icon: '', label: 'Manage Users', active: false },
+  { icon: '', label: 'Reports & Analytics', active: false },
+  { icon: '️', label: 'Archive', active: false },
 ];
 
 const roleBankGlobal = [
@@ -37,50 +38,7 @@ const roleBankGlobal = [
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-function Sidebar({ user, onLogout, collapsed, activeNav, setActiveNav }) {
-  return (
-    <aside style={s(styles.sidebar, collapsed && styles.sidebarCollapsed)}>
-      <div style={styles.sidebarLogo}>
-        <span style={styles.sidebarCrest}>⚜</span>
-        {!collapsed && (
-          <div>
-            <p style={styles.sidebarLogoName}>GM University</p>
-            <p style={styles.sidebarLogoSub}>Event System</p>
-          </div>
-        )}
-      </div>
-      <div style={styles.divider} />
-      <nav style={styles.sidebarNav}>
-        {NAV_ITEMS.map((item) => (
-          <div
-            key={item.label}
-            onClick={() => setActiveNav(item.label)}
-            style={s(styles.navItem, activeNav === item.label && styles.navItemActive, { cursor: 'pointer' })}
-          >
-            <span style={styles.navIcon}>{item.icon}</span>
-            {!collapsed && <span style={styles.navLabel}>{item.label}</span>}
-          </div>
-        ))}
-      </nav>
-      <div style={{ flex: 1 }} />
-      {!collapsed && (
-        <div style={styles.sidebarUserCard}>
-          <div style={styles.userAvatar}>
-            {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
-          </div>
-          <div style={styles.userInfo}>
-            <p style={styles.userName}>{user?.name ?? 'Admin'}</p>
-            <p style={styles.userRole}>Events Admin</p>
-          </div>
-        </div>
-      )}
-      <button onClick={onLogout} style={styles.logoutBtn}>
-        <span>🚪</span>
-        {!collapsed && <span>Logout</span>}
-      </button>
-    </aside>
-  );
-}
+// (Global Sidebar is now used)
 
 // ── Views ────────────────────────────────────────────────────────────────────
 
@@ -107,7 +65,7 @@ function CurrentRoutingsView({ rules }) {
                     <React.Fragment key={`${rule.id}-${idx}`}>
                       <div style={styles.pill}>{roleDef ? roleDef.label : roleValue}</div>
                       {idx < rule.required_chain.length - 1 && (
-                        <span style={styles.arrow}>➔</span>
+                        <span style={styles.arrow}></span>
                       )}
                     </React.Fragment>
                   );
@@ -460,37 +418,7 @@ export default function EventsAdminDashboard() {
   if (loading) return <div style={styles.loading}>Loading configurations...</div>;
 
   return (
-    <div style={styles.layout}>
-      <Sidebar
-        user={user}
-        onLogout={handleLogout}
-        collapsed={collapsed}
-        activeNav={activeNav}
-        setActiveNav={setActiveNav}
-      />
-      <div style={styles.mainArea}>
-        <header style={{ ...styles.topHeader, justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button onClick={() => setCollapsed(!collapsed)} style={styles.hamburger}>
-              ☰
-            </button>
-            <div>
-              <h2 style={styles.headerTitle}>{activeNav}</h2>
-              <p style={styles.headerSubtitle}>Events Admin Portal</p>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={styles.headerProfile}>
-              <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#333' }}>{user?.name || 'Admin'}</div>
-              <div style={{ fontSize: '0.75rem', color: '#666', textTransform: 'capitalize' }}>{user?.role?.replace('_', ' ')}</div>
-            </div>
-            <button onClick={handleLogout} style={styles.headerLogoutBtn}>
-              Logout
-            </button>
-          </div>
-        </header>
-
-        <main style={styles.contentArea}>
+    <DashboardLayout role="events_admin" activeNav={activeNav} onNavChange={setActiveNav}>
           {activeNav === 'Dashboard' && (
             <div style={styles.viewContainer}>
               <div style={styles.topBar}>
@@ -523,9 +451,7 @@ export default function EventsAdminDashboard() {
               onAddNew={handleAddNewScale}
             />
           )}
-        </main>
-      </div>
-    </div>
+    </DashboardLayout>
   );
 }
 
