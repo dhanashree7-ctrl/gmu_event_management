@@ -10,13 +10,13 @@ import ReportsView from '../components/ReportsView';
 import NotificationView from '../components/NotificationView';
 import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
-
+import { Clock, CheckSquare, FileText, X } from 'lucide-react';
 export default function HODDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   
   // Navigation state
-  const [activeNav, setActiveNav] = useState('dashboard'); // dashboard, action-center, propose-event, my-proposals, approved-history
+  const [activeNav, setActiveNav] = useState('Dashboard'); // dashboard, action-center, propose-event, my-proposals, approved-history
   const [collapsed, setCollapsed] = useState(false);
   
   // Tab state within Action Center
@@ -306,23 +306,55 @@ export default function HODDashboard() {
   if (!user) return null;
 
   return (
-    <DashboardLayout role="hod" activeNav={activeTab} onNavChange={setActiveTab}>
+    <DashboardLayout role="hod" activeNav={activeNav} onNavChange={setActiveNav}>
       <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
           
           {/* Dashboard View */}
-          {activeNav === 'dashboard' && (
-            <div style={styles.contentCard}>
-              <h2 style={styles.sectionTitle}>Dashboard</h2>
-              <p style={styles.sectionSub}>Department Metrics & Overview</p>
-              
+          {activeNav === 'Dashboard' && (
+            <>
+              <div style={{
+                background: 'linear-gradient(135deg, #7A110A 0%, #2A0404 100%)',
+                borderRadius: '16px',
+                padding: '2rem',
+                color: '#fff',
+                marginBottom: '2rem',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 10px 30px rgba(122,17,10,0.2)'
+              }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>
+                    Good {getGreeting()}, {user?.name?.split(' ')[0]} 👋
+                  </h2>
+                  <p style={{ margin: '0.5rem 0 0', opacity: 0.9, fontSize: '1.1rem' }}>
+                    Manage department approvals and review event metrics.
+                  </p>
+                </div>
+                <div style={{
+                  position: 'absolute', right: '-20px', top: '-20px', fontSize: '120px', opacity: 0.1, transform: 'rotate(15deg)'
+                }}>
+                  🏛️
+                </div>
+              </div>
+
               <div style={styles.statsRow}>
                 <div style={styles.statCard}>
-                  <div style={styles.statTitle}>Pending Reviews</div>
-                  <div style={styles.statValue}>{pendingEvents.length}</div>
+                  <div style={{...styles.statIcon, background: '#C17F2418'}}>
+                    <span style={styles.statEmoji}>⏳</span>
+                  </div>
+                  <div>
+                    <p style={styles.statValue}>{pendingEvents.length}</p>
+                    <p style={styles.statLabel}>Pending Reviews</p>
+                  </div>
                 </div>
                 <div style={styles.statCard}>
-                  <div style={styles.statTitle}>My Approvals</div>
-                  <div style={styles.statValue}>{approvedEvents.length}</div>
+                  <div style={{...styles.statIcon, background: '#2E7D3218'}}>
+                    <span style={styles.statEmoji}>✅</span>
+                  </div>
+                  <div>
+                    <p style={styles.statValue}>{approvedEvents.length}</p>
+                    <p style={styles.statLabel}>My Approvals</p>
+                  </div>
                 </div>
               </div>
 
@@ -342,11 +374,11 @@ export default function HODDashboard() {
                   <DashboardMetrics data={categoryData} type="category" barName="Total Events" />
                 </div>
               )}
-            </div>
+            </>
           )}
 
           {/* Action Center Content */}
-          {activeNav === 'action-center' && (
+          {activeNav === 'Action Center' && (
             <div style={styles.contentCard}>
               <div>
                     <h2 style={styles.sectionTitle}>Pending Approvals ({user.department_name})</h2>
@@ -394,7 +426,7 @@ export default function HODDashboard() {
                               <span style={styles.categoryChip}>{ev.category}</span>
                             </span>
                             <span style={s(styles.tableCell, { flex: 1 })}>
-                              ₹{Number(ev.budget).toLocaleString('en-IN')}
+                              {Number(ev.budget).toLocaleString('en-IN')}
                             </span>
                             <span style={s(styles.tableCell, { flex: 1 })}>
                               {(ev.brochure_file_path || ev.brochure_path) ? (
@@ -428,7 +460,7 @@ export default function HODDashboard() {
           )}
 
           {/* Propose Event Content */}
-          {activeNav === 'my-proposals' && showProposeForm && (
+          {activeNav === 'Events' && showProposeForm && (
             <div style={styles.contentCard}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                 <div>
@@ -439,7 +471,7 @@ export default function HODDashboard() {
                   onClick={() => setShowProposeForm(false)}
                   style={{ padding: '0.6rem 1.2rem', backgroundColor: '#e0e0e0', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
-                  ← Back to List
+                   Back to List
                 </button>
               </div>
               <div>
@@ -495,7 +527,7 @@ export default function HODDashboard() {
                           </select>
                         </div>
                         <div style={{...styles.formGroup, flex: 1}}>
-                          <label style={styles.formLabel}>Budget (₹) <span style={styles.required}>*</span></label>
+                          <label style={styles.formLabel}>Budget () <span style={styles.required}>*</span></label>
                           <input style={styles.formInput} type="number" name="budget" value={formData.budget} onChange={handleProposeChange} required />
                         </div>
                       </div>
@@ -531,10 +563,10 @@ export default function HODDashboard() {
                         <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem' }}>
                           {formData.event_mode === 'offline'
                             ? 'Venue is required for offline events (set during logistics).'
-                            : 'No venue needed — event will be held virtually.'}
+                            : 'No venue needed  event will be held virtually.'}
                         </p>
                       </div>
-                                      {/* Participation Type — Solo / Group toggle */}
+                                      {/* Participation Type  Solo / Group toggle */}
                       <div style={styles.formRow}>
                         <div style={styles.formGroup}>
                           <label style={styles.formLabel}>Participation Type <span style={styles.required}>*</span></label>
@@ -850,7 +882,7 @@ export default function HODDashboard() {
           )}
 
           {/* My Proposals Content */}
-          {activeNav === 'my-proposals' && !showProposeForm && (
+          {activeNav === 'Events' && !showProposeForm && (
             <div style={styles.contentCard}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                 <div>
@@ -876,8 +908,17 @@ export default function HODDashboard() {
                   {myEvents.map(ev => (
                     <div key={ev.id} style={styles.eventCard}>
                       <h3 style={styles.eventTitle}>{ev.event_title}</h3>
+                      <p style={styles.eventDetail}><strong>Scale:</strong> <span style={{textTransform:'capitalize'}}>{ev.event_scale || 'N/A'}</span></p>
                       <p style={styles.eventDetail}><strong>Category:</strong> {ev.category}</p>
-                      <p style={styles.eventDetail}><strong>Budget:</strong> ₹{Number(ev.budget).toLocaleString('en-IN')}</p>
+                      <p style={styles.eventDetail}><strong>Budget:</strong> {Number(ev.budget).toLocaleString('en-IN')}</p>
+                      {ev.brochure_path && (
+                        <button
+                          style={{ padding: '6px 12px', backgroundColor: '#333', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start', marginTop: '0.2rem' }}
+                          onClick={() => window.open(`${API_BASE}/${ev.brochure_path.startsWith('uploads/') ? ev.brochure_path : `uploads/${ev.brochure_path}`}`, '_blank')}
+                        >
+                          View Brochure
+                        </button>
+                      )}
                       <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
                         <span style={{alignSelf: 'flex-start', ...styles.statusBadge(ev.current_status)}}>{ev.current_status}</span>
                         {['published', 'completed', 'pending_report'].includes(ev.current_status?.toLowerCase()) && (
@@ -912,7 +953,7 @@ export default function HODDashboard() {
           )}
 
           {/* Approved History Content */}
-          {activeNav === 'approved-history' && (
+          {activeNav === 'Approved by me' && (
             <div style={styles.contentCard}>
               <h2 style={styles.sectionTitle}>Events Approved by Me</h2>
               <p style={styles.sectionSub}>Historical log of all departmental events you have approved.</p>
@@ -931,7 +972,7 @@ export default function HODDashboard() {
                       <p style={styles.eventDetail}><strong>Proposed By:</strong> {ev.proposed_by}</p>
                       <p style={styles.eventDetail}><strong>Scale:</strong> <span style={styles.scaleChip}>{ev.event_scale}</span></p>
                       <p style={styles.eventDetail}><strong>Category:</strong> {ev.category}</p>
-                      <p style={styles.eventDetail}><strong>Budget:</strong> ₹{Number(ev.budget).toLocaleString('en-IN')}</p>
+                      <p style={styles.eventDetail}><strong>Budget:</strong> {Number(ev.budget).toLocaleString('en-IN')}</p>
                       <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
                         <span style={{alignSelf: 'flex-start', ...styles.statusBadge(ev.current_status)}}>{ev.current_status}</span>
                         <button
@@ -971,7 +1012,7 @@ export default function HODDashboard() {
             </div>
           )}
 
-          {activeNav === 'calendar' && (
+          {activeNav === 'Calendar' && (
             <div style={styles.contentCard}>
               <h2 style={styles.sectionTitle}>Event Calendar</h2>
               <p style={styles.sectionSub}>View your proposed and upcoming events.</p>
@@ -979,21 +1020,21 @@ export default function HODDashboard() {
             </div>
           )}
 
-          {activeNav === 'reports' && (
+          {activeNav === 'Reports' && (
             <ReportsView user={user} />
           )}
 
-          {activeNav === 'archive' && (
+          {activeNav === 'Archive' && (
             <EventArchive user={user} />
           )}
 
-          {activeNav === 'notifications' && (
+          {activeNav === 'Notifications' && (
             <NotificationView user={user} />
           )}
 
         </div>
 
-      {/* ── Attendee Roster Modal ──────────────────────────────── */}
+      {/*  Attendee Roster Modal  */}
       {rosterModalOpen && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1000,
@@ -1018,9 +1059,9 @@ export default function HODDashboard() {
                 background: 'rgba(0,0,0,0.05)', border: 'none', borderRadius: '50%',
                 width: '32px', height: '32px', color: '#555', fontSize: '1.2rem',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 10,
+                zIndex: 100,
               }}
-            ></button>
+            ><X size={20} /></button>
             <div style={{ padding: '1rem' }}>
               <AttendeeRoster eventId={rosterEventId} />
             </div>
@@ -1028,7 +1069,7 @@ export default function HODDashboard() {
         </div>
       )}
 
-      {/* ── Remarks Modal ──────────────────────────────── */}
+      {/*  Remarks Modal  */}
       {remarksModal.open && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1100,
@@ -1092,7 +1133,7 @@ export default function HODDashboard() {
         </div>
       )}
 
-      {/* ── Feedback Insights Modal ──────────────────────────────── */}
+      {/*  Feedback Insights Modal  */}
       {feedbackModalOpen && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 1000,
@@ -1126,8 +1167,9 @@ export default function HODDashboard() {
                   background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
                   width: '32px', height: '32px', color: '#fff', fontSize: '1.2rem',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  zIndex: 100,
                 }}
-              ></button>
+              ><X size={20} /></button>
             </div>
 
             <div style={{ padding: '1.5rem', overflowY: 'auto' }}>
@@ -1176,8 +1218,14 @@ export default function HODDashboard() {
   );
 }
 
-// ── Styles (Matching FacultyDashboard) ────────────────────────────────────────────────────────
+//  Styles (Matching FacultyDashboard) 
 const styles = {
+  statIcon: {
+    width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem', flexShrink: 0
+  },
+  statEmoji: { fontSize: '1.5rem' },
+  statValue: { fontSize: '1.75rem', fontWeight: 'bold', margin: '0 0 0.25rem 0', color: '#111827' },
+  statLabel: { margin: 0, color: '#6B7280', fontSize: '0.875rem', fontWeight: '500' },
   statsRow: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -1185,15 +1233,13 @@ const styles = {
     marginBottom: '2rem'
   },
   statCard: {
-    background: '#fff',
-    borderRadius: '12px',
-    padding: '1.5rem',
+    background: 'linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%)',
+    borderRadius: '16px',
+    padding: '1rem 1.25rem',
     boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
     border: '1px solid #eee',
     display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center'
+    alignItems: 'center'
   },
   statTitle: {
     fontSize: '0.9rem',
@@ -1317,3 +1363,5 @@ const styles = {
     return { background: bg, color: color, padding: '0.3rem 0.75rem', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.7rem' };
   }
 };
+
+function getGreeting() { const h = new Date().getHours(); if (h < 12) return 'Morning'; if (h < 17) return 'Afternoon'; return 'Evening'; }

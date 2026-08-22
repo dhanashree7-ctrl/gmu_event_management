@@ -25,14 +25,30 @@ $faculty_id     = isset($_POST['faculty_id'])      ? (int)$_POST['faculty_id']  
 $report_summary = trim($_POST['report_summary']   ?? '');
 $has_file       = isset($_FILES['report_file']) && $_FILES['report_file']['error'] !== UPLOAD_ERR_NO_FILE;
 
+$has_gallery    = isset($_FILES['gallery_images']) && count($_FILES['gallery_images']['name']) > 0 && $_FILES['gallery_images']['error'][0] !== UPLOAD_ERR_NO_FILE;
+
 if ($event_id <= 0 || $faculty_id <= 0) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Missing required IDs.']);
     exit;
 }
+
 if ($report_summary === '' && !$has_file) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Provide either a written summary or a PDF report.']);
+    exit;
+}
+
+if (!$has_gallery) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'You must upload at least one photo (1-10 max) for the event gallery.']);
+    exit;
+}
+
+$gallery_count = count($_FILES['gallery_images']['name']);
+if ($gallery_count > 10) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'You can upload a maximum of 10 photos.']);
     exit;
 }
 
@@ -67,10 +83,12 @@ if ($event['CURRENT_STATUS'] === 'completed') {
 }
 $check_stmt->close();
 
-// Handle file upload
+// Handle file upload for report
 $file_path = null;
 if ($has_file) {
     $upload_dir = __DIR__ . '/uploads/reports/';
+    if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+    
     $file_info  = $_FILES['report_file'];
     if ($file_info['error'] !== UPLOAD_ERR_OK) {
         echo json_encode(['success' => false, 'message' => 'File upload error code: ' . $file_info['error']]);
@@ -94,6 +112,33 @@ if ($has_file) {
     }
 }
 
+// Handle gallery images
+$gallery_paths = [];
+if ($has_gallery) {
+    $upload_dir = __DIR__ . '/uploads/gallery/';
+    if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
+
+    for ($i = 0; $i < $gallery_count; $i++) {
+        if ($_FILES['gallery_images']['error'][$i] === UPLOAD_ERR_OK) {
+            $file_ext = strtolower(pathinfo($_FILES['gallery_images']['name'][$i], PATHINFO_EXTENSION));
+            if (!in_array($file_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                continue; // Skip invalid formats
+            }
+            $unique_name = 'gallery_evt_' . $event_id . '_' . time() . '_' . $i . '.' . $file_ext;
+            if (move_uploaded_file($_FILES['gallery_images']['tmp_name'][$i], $upload_dir . $unique_name)) {
+                $gallery_paths[] = 'uploads/gallery/' . $unique_name;
+            }
+        }
+    }
+}
+
+if (empty($gallery_paths)) {
+    echo json_encode(['success' => false, 'message' => 'Failed to upload gallery images, or format not supported (JPG/PNG/WEBP).']);
+    $conn->close(); exit;
+}
+
+$gallery_json = json_encode($gallery_paths);
+
 // Update event_master
 $update_stmt = $conn->prepare("UPDATE event_master SET CURRENT_STATUS = 'completed' WHERE SL_NO = ?");
 if (!$update_stmt) {
@@ -105,12 +150,12 @@ $update_stmt->execute();
 $update_stmt->close();
 
 // Update event_metadata
-$meta_stmt = $conn->prepare("UPDATE event_metadata SET POST_EVENT_REPORT = ?, REPORT_PDF_PATH = ? WHERE EVENT_ID = ?");
+$meta_stmt = $conn->prepare("UPDATE event_metadata SET POST_EVENT_REPORT = ?, REPORT_PDF_PATH = ?, GALLERY_IMAGES = ? WHERE EVENT_ID = ?");
 if (!$meta_stmt) {
     echo json_encode(['success' => false, 'message' => 'Internal Server Error (prepare update meta).']);
     $conn->close(); exit;
 }
-$meta_stmt->bind_param('ssi', $report_summary, $file_path, $event_id);
+$meta_stmt->bind_param('sssi', $report_summary, $file_path, $gallery_json, $event_id);
 if ($meta_stmt->execute()) {
     echo json_encode(['success' => true, 'message' => 'Report submitted. Event marked as completed!']);
 } else {

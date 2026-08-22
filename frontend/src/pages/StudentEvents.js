@@ -61,6 +61,12 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
           {evt.event_time && (
             <span style={styles.metaItem}> {formatTime(evt.event_time)}</span>
           )}
+          {evt.event_scale && (
+            <span style={styles.metaItem}> Scale: {evt.event_scale}</span>
+          )}
+          {evt.budget && (
+            <span style={styles.metaItem}> Budget: ₹{Number(evt.budget).toLocaleString('en-IN')}</span>
+          )}
           {evt.registration_deadline && (
             <span style={s(styles.metaItem, { color: theme.colors.maroon, fontWeight: 600 })}>
                Register By: {formatDate(evt.registration_deadline)} {formatTime(new Date(evt.registration_deadline).toTimeString().substring(0,5))}
@@ -630,7 +636,7 @@ export default function StudentEvents() {
       {showModal && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
-            <button style={styles.closeBtn} onClick={closeModal}></button>
+            <button style={styles.closeBtn} onClick={closeModal}>&times;</button>
             
             {ticketData ? (
               <div style={styles.ticketContainer}>
@@ -895,7 +901,7 @@ export default function StudentEvents() {
       {feedbackModalOpen && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
-            <button style={styles.closeBtn} onClick={() => setFeedbackModalOpen(false)}></button>
+            <button style={styles.closeBtn} onClick={() => setFeedbackModalOpen(false)}>&times;</button>
             <h2 style={styles.modalTitle}>Rate Your Experience</h2>
             <p style={styles.modalSub}>Your feedback helps us improve future events.</p>
             

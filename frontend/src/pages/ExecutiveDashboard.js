@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../config/api';
+import DashboardLayout from '../components/layout/DashboardLayout';
 import theme from '../theme';
 import AttendeeRoster from './AttendeeRoster';
 import EventArchive from '../components/EventArchive';
 import ReportsView from '../components/ReportsView';
 import NotificationView from '../components/NotificationView';
+import SettingsView from '../components/SettingsView';
 import NotificationBell from '../components/NotificationBell';
 import UserProfileDropdown from '../components/UserProfileDropdown';
 import EventCalendar from '../components/EventCalendar';
@@ -16,7 +18,7 @@ export default function ExecutiveDashboard() {
   const [user, setUser] = useState(null);
   
   // Navigation state
-  const [activeNav, setActiveNav] = useState('dashboard'); // dashboard, action-center, my-proposals, approved-history
+  const [activeNav, setActiveNav] = useState('Dashboard'); // dashboard, action-center, my-proposals, approved-history
   const [collapsed, setCollapsed] = useState(false);
   
   // Tab state within My Proposals
@@ -317,155 +319,37 @@ export default function ExecutiveDashboard() {
   if (user.role === 'vc') title = 'VC Dashboard';
 
   return (
-    <div style={styles.root}>
-      {/* ── Left Sidebar ────────────────────────────────────────── */}
-      <aside style={s(styles.sidebar, collapsed && styles.sidebarCollapsed)}>
-        <div style={styles.sidebarLogo}>
-          <span style={styles.sidebarCrest}>⚜</span>
-          {!collapsed && (
-            <div>
-              <div style={styles.sidebarLogoName}>GM University</div>
-              <div style={styles.sidebarLogoSub}>Event System</div>
+    <DashboardLayout role={user.role} activeNav={activeNav} onNavChange={setActiveNav} onOpenSettings={() => setActiveNav('Settings')}>
+      <>
+        {/* Dashboard View */}
+        {activeNav === 'Dashboard' && (
+          <>
+            <div style={{
+              background: 'linear-gradient(135deg, #7A110A 0%, #2A0404 100%)',
+              borderRadius: '16px',
+              padding: '2rem',
+              color: '#fff',
+              marginBottom: '2rem',
+              position: 'relative',
+              overflow: 'hidden',
+              boxShadow: '0 10px 30px rgba(122,17,10,0.2)'
+            }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>
+                  Good {getGreeting()}, {user?.name?.split(' ')[0]} 👋
+                </h2>
+                <p style={{ margin: '0.5rem 0 0', opacity: 0.9, fontSize: '1.1rem' }}>
+                  Metrics & Overview
+                </p>
+              </div>
+              <div style={{
+                position: 'absolute', right: '-20px', top: '-20px', fontSize: '120px', opacity: 0.1, transform: 'rotate(15deg)'
+              }}>
+                🏛️
+              </div>
             </div>
-          )}
-        </div>
-
-        <div style={styles.divider} />
-
-        <nav style={styles.sidebarNav}>
-          <button
-            onClick={() => setActiveNav('dashboard')}
-            style={s(styles.navItem, activeNav === 'dashboard' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>🏠</span>
-            {!collapsed && <span style={styles.navLabel}>Dashboard</span>}
-          </button>
-          
-          <button
-            onClick={() => setActiveNav('action-center')}
-            style={s(styles.navItem, activeNav === 'action-center' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>📊</span>
-            {!collapsed && (
-              <span style={s(styles.navLabel, { flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' })}>
-                Action Center
-                {(pendingEvents || []).some(e => e.immediate_approval) && (
-                  <span style={{ background: '#D32F2F', color: '#FFF', fontSize: '0.65rem', padding: '2px 6px', borderRadius: '10px', fontWeight: 'bold' }}>
-                    {(pendingEvents || []).filter(e => e.immediate_approval).length}
-                  </span>
-                )}
-              </span>
-            )}
-          </button>
-          
-          <button
-            onClick={() => setActiveNav('my-proposals')}
-            style={s(styles.navItem, activeNav === 'my-proposals' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>📝</span>
-            {!collapsed && <span style={styles.navLabel}>My Proposals</span>}
-          </button>
-          
-          <button
-            onClick={() => setActiveNav('approved-history')}
-            style={s(styles.navItem, activeNav === 'approved-history' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>✅</span>
-            {!collapsed && <span style={styles.navLabel}>Approved by Me</span>}
-          </button>
-
-          <button
-            onClick={() => setActiveNav('calendar')}
-            style={s(styles.navItem, activeNav === 'calendar' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>📅</span>
-            {!collapsed && <span style={styles.navLabel}>Calendar</span>}
-          </button>
-          
-          <button
-            onClick={() => setActiveNav('reports')}
-            style={s(styles.navItem, activeNav === 'reports' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>📁</span>
-            {!collapsed && <span style={styles.navLabel}>Reports</span>}
-          </button>
-          
-          <button
-            onClick={() => setActiveNav('archive')}
-            style={s(styles.navItem, activeNav === 'archive' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>🏛️</span>
-            {!collapsed && <span style={styles.navLabel}>Archive</span>}
-          </button>
-          
-          <button
-            onClick={() => setActiveNav('notifications')}
-            style={s(styles.navItem, activeNav === 'notifications' && styles.navItemActive)}
-          >
-            <span style={styles.navIcon}>🔔</span>
-            {!collapsed && <span style={styles.navLabel}>Notifications</span>}
-          </button>
-          
-        </nav>
-
-        <div style={{ flex: 1 }} />
-
-        <div style={styles.sidebarUserCard}>
-          <div style={styles.userAvatar}>
-            {user.name?.charAt(0).toUpperCase()}
-          </div>
-          {!collapsed && (
-            <div style={styles.userInfo}>
-              <div style={styles.userName}>{user.name}</div>
-              <div style={styles.userRole}>{user.role.toUpperCase()}</div>
-            </div>
-          )}
-        </div>
-
-        <button 
-          style={styles.logoutBtn} 
-          onClick={() => {
-            sessionStorage.removeItem('gmu_user');
-            navigate('/login');
-          }}
-        >
-          <span style={styles.navIcon}>🚪</span>
-          {!collapsed && <span>Log Out</span>}
-        </button>
-      </aside>
-
-      {/* ── Main Content Area ────────────────────────────────────── */}
-      <main style={styles.main}>
-        {/* Top Header Bar */}
-        <header style={styles.topBar}>
-          <button 
-            style={styles.collapseBtn} 
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            {collapsed ? '▶' : '◀'}
-          </button>
-          <div style={styles.topBarCenter}>
-            <div style={styles.topBarTitle}>{title}</div>
-            <div style={styles.topBarSub}>
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <NotificationBell />
-            <UserProfileDropdown user={user} />
-          </div>
-        </header>
-
-        {/* Scrollable Content View */}
-        <div style={styles.content}>
-          
-          {/* Dashboard View */}
-          {activeNav === 'dashboard' && (
-            <div style={styles.contentCard}>
-              <h2 style={styles.sectionTitle}>Dashboard</h2>
-              <p style={styles.sectionSub}>Metrics & Overview</p>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
                 <div style={{ padding: '1.5rem', background: '#FAFAFA', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
                   <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Pending Reviews</div>
                   <div style={{ fontSize: '2rem', color: theme.colors.maroon, fontWeight: 'bold' }}>{pendingEvents.length}</div>
@@ -476,27 +360,33 @@ export default function ExecutiveDashboard() {
                 </div>
               </div>
 
-              <DashboardMetrics 
-                data={[
-                  { name: 'Pending Approvals', count: pendingEvents.length },
-                  { name: 'Approved Events', count: approvedEvents.length },
-                  { name: 'My Proposals', count: myEvents.length }
-                ]} 
-                type="overview" 
-                barName="Total Items"
-              />
-              
-              {systemEvents.length > 0 && (
-                <div style={{ marginTop: '2rem' }}>
-                  <h3 style={{ fontSize: '1.2rem', color: '#555', marginBottom: '1rem' }}>Global Event Distribution</h3>
-                  <DashboardMetrics data={categoryData} type="category" barName="Total Events" />
+              <div style={{ display: 'grid', gridTemplateColumns: systemEvents.length > 0 ? '1fr 1fr' : '1fr', gap: '1.5rem', marginTop: '2rem' }}>
+                <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
+                  <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
+                  <DashboardMetrics 
+                    data={[
+                      { name: 'Pending Approvals', count: pendingEvents.length },
+                      { name: 'Approved Events', count: approvedEvents.length },
+                      { name: 'My Proposals', count: myEvents.length }
+                    ]} 
+                    type="overview" 
+                    barName="Total Items"
+                    chartType="bar"
+                  />
                 </div>
-              )}
-            </div>
+                
+                {systemEvents.length > 0 && (
+                  <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
+                    <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Global Event Distribution</h3>
+                    <DashboardMetrics data={categoryData} type="category" barName="Total Events" chartType="pie" />
+                  </div>
+                )}
+              </div>
+            </>
           )}
 
           {/* Action Center Content */}
-          {activeNav === 'action-center' && (
+          {activeNav === 'Action Center' && (
             <div style={styles.contentCard}>
               <div>
                     <h2 style={styles.sectionTitle}>Pending Approvals</h2>
@@ -580,7 +470,7 @@ export default function ExecutiveDashboard() {
           )}
 
           {/* My Proposals Content */}
-          {activeNav === 'my-proposals' && (
+          {activeNav === 'Events' && (
             <div style={styles.contentCard}>
               <div style={styles.tabContainer}>
                 <button 
@@ -614,8 +504,17 @@ export default function ExecutiveDashboard() {
                   {myEvents.map(ev => (
                     <div key={ev.id} style={styles.eventCard}>
                       <h3 style={styles.eventTitle}>{ev.event_title}</h3>
+                      <p style={styles.eventDetail}><strong>Scale:</strong> {ev.event_scale}</p>
                       <p style={styles.eventDetail}><strong>Category:</strong> {ev.category}</p>
                       <p style={styles.eventDetail}><strong>Budget:</strong> ₹{Number(ev.budget).toLocaleString('en-IN')}</p>
+                      <p style={styles.eventDetail}>
+                        <strong>Brochure:</strong>{' '}
+                        {ev.brochure_path ? (
+                          <a href={`${API_BASE}/${ev.brochure_path}`} target="_blank" rel="noopener noreferrer" style={{ color: theme.colors.maroon }}>
+                            View Brochure
+                          </a>
+                        ) : 'N/A'}
+                      </p>
                       <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
                         <span style={{alignSelf: 'flex-start', ...styles.statusBadge(ev.current_status)}}>{ev.current_status}</span>
                         {['published', 'completed', 'pending_report'].includes(ev.current_status?.toLowerCase()) && (
@@ -1093,7 +992,7 @@ export default function ExecutiveDashboard() {
           )}
 
           {/* Approved History Content */}
-          {activeNav === 'approved-history' && (
+          {activeNav === 'Approved by me' && (
             <div style={styles.contentCard}>
               <h2 style={styles.sectionTitle}>Events Approved by Me</h2>
               <p style={styles.sectionSub}>Historical log of all events you have approved in the pipeline.</p>
@@ -1153,7 +1052,7 @@ export default function ExecutiveDashboard() {
             </div>
           )}
 
-          {activeNav === 'calendar' && (
+          {activeNav === 'Calendar' && (
             <div style={styles.contentCard}>
               <h2 style={styles.sectionTitle}>Event Calendar</h2>
               <p style={styles.sectionSub}>View your proposed and upcoming events.</p>
@@ -1161,19 +1060,18 @@ export default function ExecutiveDashboard() {
             </div>
           )}
 
-          {activeNav === 'reports' && (
+          {activeNav === 'Reports' && (
             <ReportsView user={user} />
           )}
 
-          {activeNav === 'archive' && (
+          {activeNav === 'Archive' && (
             <EventArchive user={user} />
           )}
 
-          {activeNav === 'notifications' && (
+          {activeNav === 'Notifications' && (
             <NotificationView />
           )}
-        </div>
-      </main>
+        </>
 
       {/* ── Attendee Roster Modal ──────────────────────────────── */}
       {rosterModalOpen && (
@@ -1358,7 +1256,7 @@ export default function ExecutiveDashboard() {
           </div>
         </div>
       )}
-    </div>
+    </DashboardLayout>
   );
 }
 
@@ -1457,3 +1355,4 @@ const styles = {
     return { background: bg, color: color, padding: '0.3rem 0.75rem', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.7rem' };
   }
 };
+function getGreeting() { const h = new Date().getHours(); if (h < 12) return 'Morning'; if (h < 17) return 'Afternoon'; return 'Evening'; }

@@ -30,9 +30,6 @@ import NotificationBell from '../components/NotificationBell';
 import UserProfileDropdown from '../components/UserProfileDropdown';
 import SettingsView from '../components/SettingsView';
 import ReportsView from '../components/ReportsView';
-import DashboardLayout from '../components/layout/DashboardLayout';
-import EventArchive from '../components/EventArchive';
-import EventCalendar from '../components/EventCalendar';
 
 // ── Utility ─────────────────────────────────────────────────────────────────
 const s = (...styles) => Object.assign({}, ...styles);
@@ -50,17 +47,14 @@ const STAT_CARDS = [
 ];
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', icon: '🏠' },
-  { label: 'Action Center', icon: '✅' },
-  { label: 'Events', icon: '🎫' },
-  { label: 'Calendar', icon: '📅' },
-  { label: 'Archive', icon: '📦' },
-  { label: 'Reports', icon: '📊' },
-  { label: 'Notifications', icon: '🔔' },
-  { label: 'Settings', icon: '⚙️' },
+  { icon: '📊', label: 'Dashboard', active: true },
+  { icon: '📝', label: 'New Request', active: false },
+  { icon: '📋', label: 'My Events', active: false },
+  { icon: '📷', label: 'Scanner', active: false },
+  { icon: '📁', label: 'Reports', active: false },
+  { icon: '🔔', label: 'Notifications', active: false },
+  { icon: '⚙️', label: 'Settings', active: false },
 ];
-
-
 
 // ── Initial form state ───────────────────────────────────────────────────────
 const EMPTY_FORM = {
@@ -498,26 +492,43 @@ export default function StudentAffairsDashboard() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <DashboardLayout role="student_affairs" activeNav={activeNav} onNavChange={setActiveNav} onOpenSettings={() => setActiveNav('Settings')}>
-      <>
-        {toast && (
-          <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
-        )}
+    <div style={styles.root}>
 
-        {/* Welcome banner */}
-        {activeNav === 'Dashboard' && (
-          <div style={styles.welcomeBanner}>
-            <div>
-              <h2 style={styles.welcomeTitle}>
-                Good {getGreeting()}, {user?.name?.split(' ')[0]}
-              </h2>
-              <p style={styles.welcomeSub}>
-                Here is what's happening with student affairs today.
-              </p>
-            </div>
-            <div style={styles.welcomeDecor}></div>
+      {/* ── Sidebar ─────────────────────────────────────────── */}
+      <Sidebar user={user} onLogout={handleLogout} collapsed={collapsed} activeNav={activeNav} setActiveNav={setActiveNav} />
+
+      {/* ── Main area ───────────────────────────────────────── */}
+      <div style={styles.main}>
+
+        {/* ── Top bar ───────────────────────────────────────── */}
+        <header style={styles.topBar}>
+          {/* Hamburger to toggle sidebar */}
+          <button
+            style={styles.collapseBtn}
+            onClick={() => setCollapsed((c) => !c)}
+            aria-label="Toggle sidebar"
+          >
+            {collapsed ? '→' : '←'}
+          </button>
+
+          <div style={styles.topBarCenter}>
+            <h1 style={styles.topBarTitle}>Student Affairs Dashboard</h1>
+            <p style={styles.topBarSub}>
+              {new Date().toLocaleDateString('en-IN', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+              })}
+            </p>
           </div>
-        )}
+
+          {/* Notification Bell + User pill */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <NotificationBell />
+            <UserProfileDropdown user={user} />
+          </div>
+        </header>
+
+        {/* ── Scrollable content ────────────────────────────── */}
+        <div style={styles.content}>
 
           {/* Toast notification */}
           {toast && (
@@ -952,7 +963,7 @@ export default function StudentAffairsDashboard() {
           )}
 
           {/* ── Recent Submissions ────────────────────────── */}
-          {activeNav === 'Events' && (
+          {activeNav === 'My Events' && (
             <div style={styles.recentCard}>
             <h3 style={styles.recentTitle}>📋 My Recent Submissions</h3>
 
@@ -1070,7 +1081,8 @@ export default function StudentAffairsDashboard() {
             <ReportsView user={user} />
           )}
 
-
+        </div> {/* /content */}
+      </div> {/* /main */}
 
       {/* ── Attendee Roster Modal ──────────────────────────────── */}
       {rosterModalOpen && (
@@ -1353,8 +1365,7 @@ export default function StudentAffairsDashboard() {
           </div>
         </div>
       )}
-      </>
-    </DashboardLayout>
+    </div>
   );
 }
 

@@ -25,6 +25,7 @@ import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import EventArchive from '../components/EventArchive';
+import ReportsView from '../components/ReportsView';
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 const s = (...styles) => Object.assign({}, ...styles);
@@ -234,7 +235,7 @@ export default function StudentDashboard() {
                     {/* Reliability Score */}
                     <div style={{ gridColumn: 'span 4', background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1', display: 'flex', flexDirection: 'column' }}>
                       <h3 style={{ fontSize: '1rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '1rem' }}>Reliability Score</h3>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                           <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 600 }}>Attended {gamificationData.reliability.attended} of {gamificationData.reliability.total} Registrations</span>
                           <span style={{ fontSize: '0.85rem', color: theme.colors.maroon, fontWeight: 'bold' }}>{gamificationData.reliability.score}%</span>
@@ -346,7 +347,11 @@ export default function StudentDashboard() {
                           <span style={styles.metaItem}> {formatDate(evt.event_date || evt.date)}</span>
                           <span style={styles.metaItem}> {formatTime(evt.event_time || evt.time)}</span>
                         </div>
-
+                        <div style={{ ...styles.metaRow, marginTop: '0.2rem', paddingTop: '0.4rem', borderTop: '1px dashed #EEE' }}>
+                          <span style={styles.metaItem}> Scale: <strong style={{color:'#333', textTransform:'capitalize'}}>{evt.event_scale || 'N/A'}</strong></span>
+                          <span style={styles.metaItem}> Cat: <strong style={{color:'#333', textTransform:'capitalize'}}>{evt.category || 'N/A'}</strong></span>
+                          <span style={styles.metaItem}> Budget: <strong style={{color:'#333'}}>₹{evt.budget || '0'}</strong></span>
+                        </div>
                         {/* Attendance Status Badge */}
                         {(() => {
                           const checkedIn = evt.check_in_status === 'checked_in';
@@ -462,12 +467,18 @@ export default function StudentDashboard() {
 
           {activeTab === 'Settings' && <SettingsView user={user} />}
 
-          {activeTab === 'Reports' && (
+          {activeTab === 'Archive' && (
             <div>
               <h2 style={{ fontSize: '1.4rem', color: theme.colors.maroon, marginBottom: '1.5rem' }}>
-                Reports
+                Archive
               </h2>
-              <EventArchive role="student" />
+              <EventArchive user={user} />
+            </div>
+          )}
+
+          {activeTab === 'Reports' && (
+            <div>
+              <ReportsView user={user} />
             </div>
           )}
         </div>
@@ -742,6 +753,7 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
     gap: "1.5rem",
+    alignItems: "flex-start",
   },
 
   // ── Event card ────────────────────────────────────────────────────

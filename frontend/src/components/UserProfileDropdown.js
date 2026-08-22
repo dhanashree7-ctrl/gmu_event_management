@@ -5,7 +5,7 @@ import theme from '../theme';
 
 const s = (...styles) => Object.assign({}, ...styles.filter(Boolean));
 
-export default function UserProfileDropdown({ user }) {
+export default function UserProfileDropdown({ user, onOpenSettings }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +58,7 @@ export default function UserProfileDropdown({ user }) {
             style={styles.menuItem} 
             onClick={() => {
               setIsOpen(false);
-              alert("Settings page coming soon!");
+              if (onOpenSettings) onOpenSettings();
             }}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = '#f5f5f5'}
             onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}

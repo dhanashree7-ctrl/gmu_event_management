@@ -1,8 +1,8 @@
 <?php
 /**
- * backend/get_notifications.php
+ * backend/dismiss_bell_notification.php
  * ---------------------------------------------------------------
- * Fetches all unread notifications for a specific user.
+ * Dismisses a notification from the bell popup without marking it as read.
  */
 
 declare(strict_types=1);
@@ -28,11 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/config/db.php';
 
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
-$user_id = $input['user_id'] ?? $_POST['user_id'] ?? null;
+$notification_id = $input['notification_id'] ?? $_POST['notification_id'] ?? null;
 
-if (empty($user_id)) {
+if (empty($notification_id)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'user_id is required.']);
+    echo json_encode(['success' => false, 'message' => 'notification_id is required.']);
     exit;
 }
 
@@ -44,15 +44,7 @@ try {
     exit;
 }
 
-$sql = "SELECT id, message, target_link, created_at FROM Notifications WHERE user_id = ? AND is_read = FALSE";
-
-$bell_only = $input['bell_only'] ?? $_POST['bell_only'] ?? false;
-if ($bell_only) {
-    $sql .= " AND is_bell_dismissed = FALSE";
-}
-
-$sql .= " ORDER BY created_at DESC";
-
+$sql = "UPDATE Notifications SET is_bell_dismissed = TRUE WHERE id = ?";
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -62,7 +54,7 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param('s', $user_id);
+$stmt->bind_param('i', $notification_id);
 
 if (!$stmt->execute()) {
     http_response_code(500);
@@ -72,18 +64,8 @@ if (!$stmt->execute()) {
     exit;
 }
 
-$result = $stmt->get_result();
-$notifications = [];
-
-while ($row = $result->fetch_assoc()) {
-    $notifications[] = $row;
-}
-
 $stmt->close();
 $conn->close();
 
-echo json_encode([
-    'success' => true,
-    'data' => $notifications
-]);
+echo json_encode(['success' => true, 'message' => 'Notification dismissed from bell']);
 ?>

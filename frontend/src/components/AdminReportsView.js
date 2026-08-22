@@ -82,17 +82,56 @@ export default function AdminReportsView({ user }) {
     const filteredData = reportData.participants || [];
     if (!filteredData.length) return alert('No data to export');
     const doc = new jsPDF();
-    doc.text("Admin Event Reports & Analytics", 14, 15);
+    
+    // Draw text "logo"
+    doc.setFontSize(22);
+    doc.setTextColor(107, 21, 25); // Maroon
+    doc.text("GM University", 14, 20);
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Event System", 14, 26);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Admin Event Reports & Analytics", 14, 38);
     
     const tableColumn = ["Event", "Name", "USN", "Role", "Faculty", "School", "Sem", "Dept"];
     const tableRows = filteredData.map(p => [
       p.event_title, p.participant_name, p.usn, p.role, p.faculty_name, p.school_name, p.semester, p.department
     ]);
 
+    const roleCounts = filteredData.reduce((acc, p) => {
+      let r = p.role;
+      if (!r || r === 'Unknown') r = 'Other';
+      acc[r] = (acc[r] || 0) + 1;
+      return acc;
+    }, {});
+    
+    let currentY = 48;
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Role Breakdown", 14, currentY);
+    currentY += 6;
+    
+    const maxCount = Math.max(...Object.values(roleCounts), 1);
+    
+    Object.entries(roleCounts).forEach(([role, count]) => {
+      doc.setFontSize(10);
+      doc.setTextColor(50, 50, 50);
+      doc.text(role, 14, currentY);
+      doc.setFillColor(107, 21, 25);
+      const barWidth = (count / maxCount) * 100;
+      doc.rect(50, currentY - 3, barWidth, 4, 'F');
+      doc.text(count.toString(), 55 + barWidth, currentY);
+      currentY += 7;
+    });
+    
+    const tableStartY = currentY + 10;
+
     autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
-      startY: 20,
+      startY: tableStartY,
       styles: { fontSize: 8 }
     });
     
@@ -120,17 +159,55 @@ export default function AdminReportsView({ user }) {
     const data = reportData.events_info || [];
     if (!data.length) return alert('No event data to export');
     const doc = new jsPDF();
-    doc.text("Admin Event Analytics", 14, 15);
+    
+    // Draw text "logo"
+    doc.setFontSize(22);
+    doc.setTextColor(107, 21, 25); // Maroon
+    doc.text("GM University", 14, 20);
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Event System", 14, 26);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Admin Event Analytics", 14, 38);
     
     const tableColumn = ["ID", "Title", "Category", "Scale", "Dept", "Rating", "Budget"];
     const tableRows = data.map(e => [
       e.id, e.event_title, e.category, e.event_scale, e.department, e.average_rating, e.budget
     ]);
 
+    const categoryCounts = data.reduce((acc, ev) => {
+      const cat = ev.category || 'Other';
+      acc[cat] = (acc[cat] || 0) + 1;
+      return acc;
+    }, {});
+    
+    let currentY = 48;
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Category Breakdown", 14, currentY);
+    currentY += 6;
+    
+    const maxCount = Math.max(...Object.values(categoryCounts), 1);
+    
+    Object.entries(categoryCounts).forEach(([cat, count]) => {
+      doc.setFontSize(10);
+      doc.setTextColor(50, 50, 50);
+      doc.text(cat, 14, currentY);
+      doc.setFillColor(107, 21, 25);
+      const barWidth = (count / maxCount) * 100;
+      doc.rect(50, currentY - 3, barWidth, 4, 'F');
+      doc.text(count.toString(), 55 + barWidth, currentY);
+      currentY += 7;
+    });
+    
+    const tableStartY = currentY + 10;
+
     autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
-      startY: 20,
+      startY: tableStartY,
       styles: { fontSize: 8 }
     });
     

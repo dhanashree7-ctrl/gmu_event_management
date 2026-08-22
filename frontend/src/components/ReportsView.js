@@ -150,26 +150,63 @@ export default function ReportsView({ user }) {
     XLSX.writeFile(wb, `Reports_${new Date().getTime()}.xlsx`);
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!events.length) return alert('No data to export');
-    const doc = new jsPDF();
-    doc.text("Event Analytics & Reports", 14, 15);
     
-    const tableColumn = ["Event Name", "Date", "Category", "Rating"];
-    const tableRows = events.map(e => [
-      e.event_title, 
-      e.event_date ? new Date(e.event_date).toLocaleDateString() : 'N/A', 
-      e.category, 
-      e.average_rating > 0 ? e.average_rating : 'No ratings'
-    ]);
-
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 20,
-    });
+    // Fallback if not browser environment
+    if (typeof window === 'undefined') return;
     
-    doc.save(`Reports_${new Date().getTime()}.pdf`);
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const reportElement = document.getElementById('reports-container-for-pdf');
+      
+      if (reportElement) {
+        // Show a brief loading indicator (optional, but good UX)
+        const btn = document.activeElement;
+        const oldText = btn.innerText;
+        if (btn) btn.innerText = 'Generating...';
+        
+        const canvas = await html2canvas(reportElement, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/png');
+        
+        let doc = new jsPDF('p', 'mm', 'a4');
+        
+        doc.setFontSize(22);
+        doc.setTextColor(107, 21, 25);
+        doc.text("Event Analytics & Reports", 14, 25);
+        
+        const pdfWidth = doc.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        doc.addImage(imgData, 'PNG', 0, 35, pdfWidth, pdfHeight);
+        
+        // Next page for the raw data table
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.text("Raw Event Data", 14, 20);
+        
+        const tableColumn = ["Event Name", "Date", "Category", "Rating"];
+        const tableRows = events.map(e => [
+          e.event_title, 
+          e.event_date ? new Date(e.event_date).toLocaleDateString() : 'N/A', 
+          e.category, 
+          e.average_rating > 0 ? e.average_rating : 'No ratings'
+        ]);
+        
+        autoTable(doc, {
+          head: [tableColumn],
+          body: tableRows,
+          startY: 30,
+        });
+        
+        doc.save(`Reports_${new Date().getTime()}.pdf`);
+        
+        if (btn) btn.innerText = oldText;
+      }
+    } catch (err) {
+      console.error('Failed to export PDF with charts:', err);
+      alert('Failed to generate full report. Check console for details.');
+    }
   };
 
   return (
@@ -189,6 +226,7 @@ export default function ReportsView({ user }) {
         </div>
       </div>
 
+      <div id="reports-container-for-pdf">
       {user?.role === 'faculty' && facultyReports && (
         <div style={{ marginBottom: '3rem' }}>
           <h3 style={styles.sectionTitle}>My Faculty Insights</h3>
@@ -569,7 +607,7 @@ export default function ReportsView({ user }) {
           </div>
         </div>
       )}
-
+      </div>
     </div>
   );
 }

@@ -1,0 +1,27 @@
+/** Stat card widget */
+function StatCard({ stat, value }) {
+  return (
+    <div style={styles.statCard}>
+      <div style={s(styles.statIcon, { background: `${stat.color}18` })}>
+        <span style={styles.statEmoji}>{stat.icon}</span>
+      </div>
+      <div>
+        <p style={styles.statValue}>{value}</p>
+        <p style={styles.statLabel}>{stat.label}</p>
+      </div>
+    </div>
+  );
+}
+
+/** Success / error toast notification */
+function Toast({ type, message, onClose }) {
+  const isSuccess = type === 'success';
+  return (
+    <div style={s(styles.toast, isSuccess ? styles.toastSuccess : styles.toastError)}>
+      <span style={styles.toastIcon}>{isSuccess ? '✅' : '⚠️'}</span>
+      <span style={styles.toastMsg}>{message}</span>
+      <button onClick={onClose} style={styles.toastClose}>✕</button>
+    </div>
+  );
+}
+

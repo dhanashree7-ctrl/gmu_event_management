@@ -1,8 +1,6 @@
 <?php
 /**
- * backend/get_notifications.php
- * ---------------------------------------------------------------
- * Fetches all unread notifications for a specific user.
+ * backend/dismiss_all_bell_notifications.php
  */
 
 declare(strict_types=1);
@@ -44,15 +42,7 @@ try {
     exit;
 }
 
-$sql = "SELECT id, message, target_link, created_at FROM Notifications WHERE user_id = ? AND is_read = FALSE";
-
-$bell_only = $input['bell_only'] ?? $_POST['bell_only'] ?? false;
-if ($bell_only) {
-    $sql .= " AND is_bell_dismissed = FALSE";
-}
-
-$sql .= " ORDER BY created_at DESC";
-
+$sql = "UPDATE Notifications SET is_bell_dismissed = TRUE WHERE user_id = ? AND is_read = FALSE";
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -72,18 +62,8 @@ if (!$stmt->execute()) {
     exit;
 }
 
-$result = $stmt->get_result();
-$notifications = [];
-
-while ($row = $result->fetch_assoc()) {
-    $notifications[] = $row;
-}
-
 $stmt->close();
 $conn->close();
 
-echo json_encode([
-    'success' => true,
-    'data' => $notifications
-]);
+echo json_encode(['success' => true, 'message' => 'All notifications dismissed from bell']);
 ?>

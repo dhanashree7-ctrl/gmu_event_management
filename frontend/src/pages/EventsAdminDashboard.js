@@ -434,6 +434,7 @@ export default function EventsAdminDashboard() {
                   { name: 'Department Level', count: rules.filter(r => r.scale_name === 'department').length },
                 ]} 
                 type="overview" 
+                chartType="bar"
               />
             </div>
           )}

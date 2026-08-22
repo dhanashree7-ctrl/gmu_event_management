@@ -42,6 +42,7 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
+  const [bellSeen, setBellSeen] = useState(false);
   const dropdownRef = useRef(null);
   const prevCountRef = useRef(0);
 
@@ -60,6 +61,7 @@ export default function NotificationBell() {
         // Shake the bell when new notifications arrive
         if (newCount > prevCountRef.current) {
           setIsShaking(true);
+          setBellSeen(false); // Reset bell seen status so dot shows again
           setTimeout(() => setIsShaking(false), 700);
         }
         prevCountRef.current = newCount;
@@ -103,16 +105,16 @@ export default function NotificationBell() {
     prevCountRef.current = Math.max(0, prevCountRef.current - 1);
     setIsOpen(false);
     
-    // Also mark it read since they actually clicked to view it
+    // Only dismiss from the bell, do not mark as read globally
     try {
-      await fetch(`${API_BASE}/mark_notification_read.php`, {
+      await fetch(`${API_BASE}/dismiss_bell_notification.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notification_id: notif.id }),
       });
-      window.dispatchEvent(new Event('notifications_updated'));
+      // Do not dispatch notifications_updated because it's still unread in the sidebar
     } catch (err) {
-      console.error('Failed to mark notification as read', err);
+      console.error('Failed to dismiss notification from bell', err);
     }
     
     if (notif.target_link) {
@@ -163,7 +165,7 @@ export default function NotificationBell() {
   if (!user) return null;
 
   const unreadCount = notifications.length;
-  const hasUnread = unreadCount > 0;
+  const hasUnread = unreadCount > 0 && !bellSeen;
 
   return (
     <div ref={dropdownRef} style={styles.container}>
@@ -171,7 +173,7 @@ export default function NotificationBell() {
       <button
         className={isShaking ? 'bell-shake' : ''}
         style={s(styles.bellBtn, hasUnread && styles.bellBtnActive)}
-        onClick={() => setIsOpen(o => !o)}
+        onClick={() => { setIsOpen(o => !o); setBellSeen(true); }}
         aria-label="Notifications"
       >
         <Bell size={20} strokeWidth={2.5} style={{ color: theme.colors.charcoal }} />

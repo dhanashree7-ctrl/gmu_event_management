@@ -27,11 +27,11 @@ import AttendeeRoster from './AttendeeRoster';
 import SettingsView from '../components/SettingsView';
 import EventArchive from '../components/EventArchive';
 import NotificationView from '../components/NotificationView';
-import NotificationBell from '../components/NotificationBell';
-import UserProfileDropdown from '../components/UserProfileDropdown';
 import ReportsView from '../components/ReportsView';
 import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
+import DashboardLayout from '../components/layout/DashboardLayout';
+import { X,  FileText, Clock, CheckCircle, CheckSquare, AlertTriangle } from 'lucide-react';
 
 
 // ── Utility ─────────────────────────────────────────────────────────────────
@@ -41,22 +41,22 @@ const s = (...styles) => Object.assign({}, ...styles);
 const CATEGORIES = ['Academic', 'Cultural', 'Sports'];
 
 const STAT_CARDS = [
-  { label: 'Total Submitted', key: 'total', icon: '📋', color: theme.colors.maroon },
-  { label: 'Pending Approval', key: 'pending', icon: '⏳', color: '#C17F24' },
-  { label: 'Approved', key: 'approved', icon: '✅', color: '#2E7D32' },
-  { label: 'Completed', key: 'completed', icon: '🏆', color: '#1565C0' },
+  { label: 'Total Submitted', key: 'total',     icon: <FileText   size={22} />, color: '#701a1e' },
+  { label: 'Pending Approval',key: 'pending',   icon: <Clock      size={22} />, color: '#C17F24' },
+  { label: 'Approved',        key: 'approved',  icon: <CheckCircle size={22} />, color: '#2E7D32' },
+  { label: 'Completed',       key: 'completed', icon: <CheckSquare size={22} />, color: '#1565C0' },
 ];
 
 const NAV_ITEMS = [
-  { icon: '📊', label: 'Dashboard', active: true },
-  { icon: '📝', label: 'New Request', active: false },
-  { icon: '📋', label: 'My Events', active: false },
-  { icon: '📅', label: 'Calendar', active: false },
-  { icon: '🏛️', label: 'Archive', active: false },
-  { icon: '📷', label: 'Scanner', active: false },
-  { icon: '📁', label: 'Reports', active: false },
-  { icon: '🔔', label: 'Notifications', active: false },
-  { icon: '⚙️', label: 'Settings', active: false },
+  { icon: '', label: 'Dashboard', active: true },
+  { icon: '', label: 'New Request', active: false },
+  { icon: '', label: 'My Events', active: false },
+  { icon: '', label: 'Calendar', active: false },
+  { icon: '', label: 'Archive', active: false },
+  { icon: '', label: 'Scanner', active: false },
+  { icon: '', label: 'Reports', active: false },
+  { icon: '', label: 'Notifications', active: false },
+  { icon: '', label: 'Settings', active: false },
 ];
 
 // ── Initial form state ───────────────────────────────────────────────────────
@@ -86,73 +86,6 @@ const EMPTY_FORM = {
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-/** Sidebar navigation */
-function Sidebar({ user, onLogout, collapsed, activeNav, setActiveNav }) {
-  return (
-    <aside style={s(styles.sidebar, collapsed && styles.sidebarCollapsed)}>
-      {/* Logo */}
-      <div style={styles.sidebarLogo}>
-        <span style={styles.sidebarCrest}>⚜</span>
-        {!collapsed && (
-          <div>
-            <p style={styles.sidebarLogoName}>GM University</p>
-            <p style={styles.sidebarLogoSub}>Event System</p>
-          </div>
-        )}
-      </div>
-
-      {/* Divider */}
-      <div style={styles.divider} />
-
-      {/* Navigation */}
-      <nav style={styles.sidebarNav}>
-        {NAV_ITEMS.map((item) => (
-          <div
-            key={item.label}
-            onClick={() => {
-              if (item.label === 'Scanner') {
-                window.open('/scanner', '_blank');
-              } else {
-                setActiveNav(item.label);
-              }
-            }}
-            style={s(styles.navItem, activeNav === item.label && styles.navItemActive, { cursor: 'pointer' })}
-          >
-            <span style={styles.navIcon}>{item.icon}</span>
-            {!collapsed && <span style={styles.navLabel}>{item.label}</span>}
-          </div>
-        ))}
-      </nav>
-
-      {/* Spacer */}
-      <div style={{ flex: 1 }} />
-
-      {/* User card */}
-      {!collapsed && (
-        <div style={styles.sidebarUserCard}>
-          <div style={styles.userAvatar}>
-            {user?.name?.charAt(0)?.toUpperCase() ?? '?'}
-          </div>
-          <div style={styles.userInfo}>
-            <p style={styles.userName}>{user?.name ?? 'User'}</p>
-            <p style={styles.userRole}>
-              {user?.role_name?.toLowerCase() === 'admin'
-                ? 'Faculty'
-                : user?.role_name?.replace('_', ' ') ?? ''}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Logout */}
-      <button onClick={onLogout} style={styles.logoutBtn}>
-        <span>🚪</span>
-        {!collapsed && <span>Logout</span>}
-      </button>
-    </aside>
-  );
-}
-
 /** Stat card widget */
 function StatCard({ stat, value }) {
   return (
@@ -173,9 +106,9 @@ function Toast({ type, message, onClose }) {
   const isSuccess = type === 'success';
   return (
     <div style={s(styles.toast, isSuccess ? styles.toastSuccess : styles.toastError)}>
-      <span style={styles.toastIcon}>{isSuccess ? '✅' : '⚠️'}</span>
+      <span style={styles.toastIcon}>{isSuccess ? <CheckCircle size={15} color="#1B5E20" /> : <AlertTriangle size={15} color="#B71C1C" />}</span>
       <span style={styles.toastMsg}>{message}</span>
-      <button onClick={onClose} style={styles.toastClose}>✕</button>
+      <button onClick={onClose} style={styles.toastClose}><X size={20} /></button>
     </div>
   );
 }
@@ -184,9 +117,6 @@ function Toast({ type, message, onClose }) {
 export default function FacultyDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  // Layout state
-  const [collapsed, setCollapsed] = useState(false);
   const [activeNav, setActiveNav] = useState('Dashboard');
 
   // Event form state
@@ -541,7 +471,7 @@ export default function FacultyDashboard() {
           pending: prev.pending + 1,
         }));
         setForm(EMPTY_FORM);
-        setToast({ type: 'success', message: 'Event request submitted successfully! 🎉' });
+        setToast({ type: 'success', message: 'Event request submitted successfully! ' });
       } else {
         setToast({ type: 'error', message: json.message || 'Submission failed. Please try again.' });
       }
@@ -556,43 +486,8 @@ export default function FacultyDashboard() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={styles.root}>
-
-      {/* ── Sidebar ─────────────────────────────────────────── */}
-      <Sidebar user={user} onLogout={handleLogout} collapsed={collapsed} activeNav={activeNav} setActiveNav={setActiveNav} />
-
-      {/* ── Main area ───────────────────────────────────────── */}
-      <div style={styles.main}>
-
-        {/* ── Top bar ───────────────────────────────────────── */}
-        <header style={styles.topBar}>
-          {/* Hamburger to toggle sidebar */}
-          <button
-            style={styles.collapseBtn}
-            onClick={() => setCollapsed((c) => !c)}
-            aria-label="Toggle sidebar"
-          >
-            {collapsed ? '→' : '←'}
-          </button>
-
-          <div style={styles.topBarCenter}>
-            <h1 style={styles.topBarTitle}>Faculty Dashboard</h1>
-            <p style={styles.topBarSub}>
-              {new Date().toLocaleDateString('en-IN', {
-                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-              })}
-            </p>
-          </div>
-
-          {/* Notification Bell + User pill */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <NotificationBell />
-            <UserProfileDropdown user={user} />
-          </div>
-        </header>
-
-        {/* ── Scrollable content ────────────────────────────── */}
-        <div style={styles.content}>
+    <DashboardLayout role="faculty" activeNav={activeNav} onNavChange={setActiveNav} onOpenSettings={() => setActiveNav('Settings')}>
+      <>
 
           {/* Toast notification */}
           {toast && (
@@ -608,14 +503,14 @@ export default function FacultyDashboard() {
             <div style={styles.welcomeBanner}>
               <div>
                 <h2 style={styles.welcomeTitle}>
-                  Good {getGreeting()}, {user?.name?.split(' ')[0]} 👋
+                  Good {getGreeting()}, {user?.name?.split(' ')[0]} 
                 </h2>
                 <p style={styles.welcomeSub}>
                   Submit a new event request or track the status of your existing proposals.
                 </p>
               </div>
               <div style={styles.welcomeDecor}>
-                <span style={styles.welcomeIcon}>🎓</span>
+                <span style={styles.welcomeIcon}></span>
               </div>
             </div>
           )}
@@ -629,34 +524,36 @@ export default function FacultyDashboard() {
             </div>
           )}
 
-          {/* Dashboard Metrics */}
+          {/* Dashboard Metrics — side-by-side grid to stay above the fold */}
           {activeNav === 'Dashboard' && (
-            <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '2rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1', marginTop: '1.5rem' }}>
-              <DashboardMetrics 
-                data={[
-                  { name: 'Pending', count: stats.pending },
-                  { name: 'Approved', count: stats.approved },
-                  { name: 'Completed', count: stats.completed }
-                ]} 
-                barName="Total Items"
-              />
-            </div>
-          )}
-
-          {activeNav === 'Dashboard' && systemEvents.length > 0 && (
-            <div style={{ marginTop: '2rem', background: '#fff', borderRadius: theme.radii.xl, padding: '2rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
-              <h3 style={{ fontSize: '1.3rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '1.5rem', fontFamily: theme.fonts.serif }}>Department Event Distribution</h3>
-              <DashboardMetrics 
-                data={Object.entries(
-                  systemEvents.reduce((acc, ev) => {
-                    const cat = ev.category || 'Other';
-                    acc[cat] = (acc[cat] || 0) + 1;
-                    return acc;
-                  }, {})
-                ).map(([name, count]) => ({ name, count }))} 
-                type="category" 
-                barName="Total Events" 
-              />
+            <div style={{ display: 'grid', gridTemplateColumns: systemEvents.length > 0 ? '1fr 1fr' : '1fr', gap: '1.5rem' }}>
+              <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
+                <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
+                <DashboardMetrics 
+                  data={[
+                    { name: 'Pending', count: stats.pending },
+                    { name: 'Approved', count: stats.approved },
+                    { name: 'Completed', count: stats.completed }
+                  ]} 
+                  barName="Total Items"
+                />
+              </div>
+              {systemEvents.length > 0 && (
+                <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
+                  <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Department Distribution</h3>
+                  <DashboardMetrics 
+                    data={Object.entries(
+                      systemEvents.reduce((acc, ev) => {
+                        const cat = ev.category || 'Other';
+                        acc[cat] = (acc[cat] || 0) + 1;
+                        return acc;
+                      }, {})
+                    ).map(([name, count]) => ({ name, count }))} 
+                    type="category" 
+                    chartType="pie"
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -668,7 +565,7 @@ export default function FacultyDashboard() {
 
               <div style={styles.formCardHeader}>
                 <div>
-                  <h2 style={styles.formCardTitle}>📝 New Event Request</h2>
+                  <h2 style={styles.formCardTitle}> New Event Request</h2>
                   <p style={styles.formCardSub}>
                     Complete the form below. Your request will be routed for approval automatically.
                   </p>
@@ -771,7 +668,7 @@ export default function FacultyDashboard() {
                           transition: 'all 0.2s ease',
                         }}
                       >
-                        {mode === 'offline' ? '🏢 Offline' : '💻 Online'}
+                        {mode === 'offline' ? ' Offline' : ' Online'}
                       </button>
                     ))}
                   </div>
@@ -802,7 +699,7 @@ export default function FacultyDashboard() {
                             transition: 'all 0.2s ease',
                           }}
                         >
-                          {ptype === 'solo' ? '👤 Solo' : '👥 Group'}
+                          {ptype === 'solo' ? ' Solo' : ' Group'}
                         </button>
                       ))}
                     </div>
@@ -898,7 +795,7 @@ export default function FacultyDashboard() {
                       disabled={loading}
                       style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
                     />
-                    🎉 This is a Festival / Mega-Event (Has Sub-Events)
+                     This is a Festival / Mega-Event (Has Sub-Events)
                   </label>
                   
                   {form.is_festival && (
@@ -1173,7 +1070,7 @@ export default function FacultyDashboard() {
                       disabled={loading}
                       style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
                     />
-                    🚨 Needs Immediate Approval (Urgent)
+                     Needs Immediate Approval (Urgent)
                   </label>
                   <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem', marginLeft: '1.8rem' }}>
                     Check this only if the event requires urgent attention (e.g. Independence Day).
@@ -1200,7 +1097,7 @@ export default function FacultyDashboard() {
                         <span style={styles.spinner} /> Submitting…
                       </>
                     ) : (
-                      '🚀 Submit Event Request'
+                      ' Submit Event Request'
                     )}
                   </button>
                 </div>
@@ -1209,9 +1106,9 @@ export default function FacultyDashboard() {
           )}
 
           {/* ── Recent Submissions ────────────────────────── */}
-          {activeNav === 'My Events' && (
+          {activeNav === 'Events' && (
             <div style={styles.recentCard}>
-              <h3 style={styles.recentTitle}>📋 My Recent Submissions</h3>
+              <h3 style={styles.recentTitle}> My Recent Submissions</h3>
 
               {fetchLoading ? (
                 /* Loading spinner while API call is in-flight */
@@ -1221,7 +1118,7 @@ export default function FacultyDashboard() {
                 </div>
               ) : recentEvents.length === 0 ? (
                 <div style={styles.emptyState}>
-                  <span style={styles.emptyIcon}>🗂️</span>
+                  <span style={styles.emptyIcon}></span>
                   <p style={styles.emptyText}>No submissions yet. Use the form above to get started!</p>
                 </div>
               ) : (
@@ -1232,6 +1129,7 @@ export default function FacultyDashboard() {
                     <span style={s(styles.tableCell, { flex: 1 })}>Scale</span>
                     <span style={s(styles.tableCell, { flex: 1 })}>Category</span>
                     <span style={s(styles.tableCell, { flex: 1 })}>Budget</span>
+                    <span style={s(styles.tableCell, { flex: 1 })}>Brochure</span>
                     <span style={s(styles.tableCell, { flex: 1 })}>Status</span>
                   </div>
                   {recentEvents.map((evt) => (
@@ -1255,7 +1153,7 @@ export default function FacultyDashboard() {
                             style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: '#e0e0e0', color: '#333', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%', fontWeight: '500' }}
                             onClick={() => navigate(`/event-details/${evt.id}`)}
                           >
-                            Track Status 🔍
+                            Track Status 
                           </button>
                         )}
                         {evt.remarks && (
@@ -1317,7 +1215,7 @@ export default function FacultyDashboard() {
                               fetchFeedbackData(evt.id);
                             }}
                           >
-                            Insights / Feedback 📊
+                            Insights / Feedback 
                           </button>
                         )}
                       </span>
@@ -1330,9 +1228,11 @@ export default function FacultyDashboard() {
 
           {/* Calendar Content */}
           {activeNav === 'Calendar' && (
-            <div style={styles.contentCard}>
-              <h2 style={styles.sectionTitle}>Event Calendar</h2>
-              <p style={styles.sectionSub}>View your proposed and upcoming events.</p>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+              <div style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
+                <h2 style={styles.sectionTitle}>Event Calendar</h2>
+                <p style={styles.sectionSub}>View your proposed and upcoming events.</p>
+              </div>
               <EventCalendar events={recentEvents} />
             </div>
           )}
@@ -1346,16 +1246,15 @@ export default function FacultyDashboard() {
           )}
 
           {activeNav === 'Settings' && (
-            <SettingsView user={user} />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+              <SettingsView user={user} />
+            </div>
           )}
 
           {/* ── Reports ────────────────────────────────── */}
           {(activeNav === 'Reports') && (
             <ReportsView user={user} />
           )}
-
-        </div> {/* /content */}
-      </div> {/* /main */}
 
       {/* ── Attendee Roster Modal ──────────────────────────────── */}
       {rosterModalOpen && (
@@ -1382,9 +1281,9 @@ export default function FacultyDashboard() {
                 background: 'rgba(0,0,0,0.05)', border: 'none', borderRadius: '50%',
                 width: '32px', height: '32px', color: '#555', fontSize: '1.2rem',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 10,
+                zIndex: 100,
               }}
-            >✕</button>
+            ><X size={20} /></button>
             <div style={{ padding: '1rem' }}>
               <AttendeeRoster eventId={rosterEventId} />
             </div>
@@ -1420,7 +1319,7 @@ export default function FacultyDashboard() {
             }}>
               <div>
                 <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 700 }}>
-                  📊 Event Insights & Feedback
+                   Event Insights & Feedback
                 </h2>
                 <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.78rem' }}>
                   Student ratings and comments
@@ -1432,8 +1331,9 @@ export default function FacultyDashboard() {
                   background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
                   width: '32px', height: '32px', color: '#fff', fontSize: '1.2rem',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  zIndex: 100,
                 }}
-              >✕</button>
+              ><X size={20} /></button>
             </div>
 
             {/* Modal body */}
@@ -1475,7 +1375,7 @@ export default function FacultyDashboard() {
                         <div key={idx} style={{ padding: '1rem', background: '#FAFAFA', borderRadius: '8px', border: '1px solid #EEE' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                             <strong style={{ color: '#444' }}>{fb.student_name}</strong>
-                            <span style={{ color: '#FBC02D' }}>{'★'.repeat(fb.rating)}{'☆'.repeat(5 - fb.rating)}</span>
+                            <span style={{ color: '#FBC02D' }}>{''.repeat(fb.rating)}{''.repeat(5 - fb.rating)}</span>
                           </div>
                           {fb.comments && <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#555' }}>{fb.comments}</p>}
                           <small style={{ color: '#999', fontSize: '0.75rem' }}>
@@ -1517,7 +1417,7 @@ export default function FacultyDashboard() {
             }}>
               <div>
                 <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 700 }}>
-                  📄 Submit Post-Event Report
+                   Submit Post-Event Report
                 </h2>
                 <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.78rem' }}>
                   Mark event as completed by providing a summary or uploading a PDF.
@@ -1530,41 +1430,60 @@ export default function FacultyDashboard() {
                   width: '32px', height: '32px', color: '#fff', fontSize: '1.2rem',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'background 0.2s',
+                  zIndex: 100,
                 }}
                 onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
                 onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-              >✕</button>
+              ><X size={20} /></button>
             </div>
 
             <form onSubmit={handleReportSubmit} style={{ padding: '1.75rem' }}>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Written Summary (Optional)</label>
+                <label style={{...styles.label, fontWeight: 600, color: '#333'}}>Written Summary (Optional)</label>
                 <textarea
-                  style={{ ...styles.input, minHeight: '100px', resize: 'vertical' }}
+                  style={{ ...styles.input, minHeight: '120px', resize: 'vertical', borderRadius: '12px', padding: '1rem', border: '1px solid #E0E0E0', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
                   value={reportSummary}
                   onChange={(e) => setReportSummary(e.target.value)}
-                  placeholder="Summarize key highlights..."
+                  placeholder="Summarize key highlights, achievements, and feedback..."
                 />
               </div>
 
-              <div style={{ ...styles.formGroup, marginTop: '1rem' }}>
-                <label style={styles.label}>Upload PDF Report (Optional)</label>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => setReportFile(e.target.files[0] || null)}
-                  style={{
-                    padding: '0.5rem',
-                    border: '1px dashed #ccc',
-                    borderRadius: '8px',
-                    background: '#FAFAFA',
-                    fontSize: '0.9rem',
-                    color: '#555'
-                  }}
-                />
-                <small style={{ color: '#666', fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                  Max size: 5MB
-                </small>
+              <div style={{ ...styles.formGroup, marginTop: '1.5rem' }}>
+                <label style={{...styles.label, fontWeight: 600, color: '#333'}}>Upload PDF Report (Optional)</label>
+                <div style={{
+                  position: 'relative',
+                  border: '2px dashed #BDBDBD',
+                  borderRadius: '12px',
+                  background: '#FAFAFA',
+                  padding: '2rem 1rem',
+                  textAlign: 'center',
+                  transition: 'all 0.2s',
+                  cursor: 'pointer'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.borderColor = '#1565C0'; e.currentTarget.style.background = '#F0F7FF'; }}
+                onMouseOut={(e) => { e.currentTarget.style.borderColor = '#BDBDBD'; e.currentTarget.style.background = '#FAFAFA'; }}
+                >
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => setReportFile(e.target.files[0] || null)}
+                    style={{
+                      position: 'absolute', inset: 0, width: '100%', height: '100%',
+                      opacity: 0, cursor: 'pointer'
+                    }}
+                  />
+                  <div style={{ pointerEvents: 'none' }}>
+                    <div style={{ marginBottom: '0.5rem', color: '#1565C0' }}>
+                      <FileText size={32} style={{ margin: '0 auto' }} />
+                    </div>
+                    <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600, color: '#333' }}>
+                      {reportFile ? reportFile.name : 'Click or drag PDF here to upload'}
+                    </p>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#666' }}>
+                      {reportFile ? `${(reportFile.size / (1024*1024)).toFixed(2)} MB` : 'Max size: 5MB (PDF only)'}
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
@@ -1613,7 +1532,7 @@ export default function FacultyDashboard() {
             }}>
               <div>
                 <h2 style={{ margin: 0, color: '#FDD06F', fontSize: '1.15rem', fontWeight: 700 }}>
-                  🎯 Finalize Event
+                   Finalize Event
                 </h2>
                 <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.78rem' }}>
                   Lock in logistics and upload the event brochure
@@ -1626,8 +1545,9 @@ export default function FacultyDashboard() {
                   width: '32px', height: '32px', color: '#fff', fontSize: '1rem',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   lineHeight: 1,
+                  zIndex: 100,
                 }}
-              >✕</button>
+              ><X size={20} /></button>
             </div>
 
             {/* Modal body */}
@@ -1637,7 +1557,7 @@ export default function FacultyDashboard() {
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    📅 Event Date
+                     Event Date
                   </label>
                   <input
                     type="date" required
@@ -1655,7 +1575,7 @@ export default function FacultyDashboard() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    🕐 {selectedEventDetails?.is_festival ? 'Main Event / Inauguration Time' : 'Event Time'}
+                     {selectedEventDetails?.is_festival ? 'Main Event / Inauguration Time' : 'Event Time'}
                   </label>
                   <input
                     type="time" required
@@ -1676,7 +1596,7 @@ export default function FacultyDashboard() {
               {selectedEventMode === 'offline' ? (
                 <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    📍 {selectedEventDetails?.is_festival ? 'Main Event / Inauguration Venue' : 'Venue'} <span style={{ color: '#C62828' }}>*</span>
+                     {selectedEventDetails?.is_festival ? 'Main Event / Inauguration Venue' : 'Venue'} <span style={{ color: '#C62828' }}>*</span>
                   </label>
                   <input
                     type="text" placeholder="e.g., Main Auditorium, Block A" required
@@ -1693,14 +1613,14 @@ export default function FacultyDashboard() {
                 </div>
               ) : (
                 <div style={{ background: '#E3F2FD', borderRadius: '8px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '1.1rem' }}>💻</span>
+                  <span style={{ fontSize: '1.1rem' }}></span>
                   <span style={{ fontSize: '0.85rem', color: '#1565C0', fontWeight: 500 }}>This is an online event — no venue required.</span>
                 </div>
               )}
 
               {selectedEventDetails?.is_festival && selectedEventMode === 'offline' && (
                 <div style={{ marginTop: '0.5rem', padding: '1rem', background: '#FAFAFA', borderRadius: '8px', border: '1px solid #E0E0E0' }}>
-                  <h4 style={{ margin: '0 0 1rem 0', color: theme.colors.maroon }}>🎉 Sub-Events Allocation</h4>
+                  <h4 style={{ margin: '0 0 1rem 0', color: theme.colors.maroon }}> Sub-Events Allocation</h4>
                   {logistics.sub_events_logistics.map((sub, idx) => (
                     <div key={idx} style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: idx === logistics.sub_events_logistics.length - 1 ? 'none' : '1px solid #EEE' }}>
                       <strong style={{ display: 'block', marginBottom: '0.5rem', color: '#333' }}>{sub.name}</strong>
@@ -1738,7 +1658,7 @@ export default function FacultyDashboard() {
               {/* Registration Deadline */}
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  ⏳ Registration Deadline <span style={{ color: '#C62828' }}>*</span>
+                   Registration Deadline <span style={{ color: '#C62828' }}>*</span>
                 </label>
                 <input
                   type="datetime-local" required
@@ -1791,14 +1711,15 @@ export default function FacultyDashboard() {
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  🚀 Upload &amp; Finalize
+                   Upload &amp; Finalize
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </>
+    </DashboardLayout>
   );
 }
 
@@ -2104,7 +2025,7 @@ const styles = {
   welcomeBanner: {
     background: theme.gradients.header,
     borderRadius: theme.radii.xl,
-    padding: '1.75rem 2rem',
+    padding: '1rem 1.5rem',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -2133,16 +2054,18 @@ const styles = {
   // Stat cards
   statsRow: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
     gap: '1rem',
+    width: '100%',
+    boxSizing: 'border-box',
   },
   statCard: {
     background: 'linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%)',
     borderRadius: theme.radii.xl,
-    padding: '1.5rem',
+    padding: '1rem 1.25rem',
     display: 'flex',
     alignItems: 'center',
-    gap: '1.25rem',
+    gap: '1rem',
     boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
     border: '1px solid #f0ebe1',
     transition: 'transform 0.2s ease, box-shadow 0.2s ease',

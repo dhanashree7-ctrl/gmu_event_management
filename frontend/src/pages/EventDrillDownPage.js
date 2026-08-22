@@ -308,7 +308,7 @@ export default function EventDrillDownPage() {
           <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h2 style={{ margin: 0, color: theme.colors.maroon, fontSize: '1.5rem' }}>External Colleges</h2>
-              <button onClick={() => setShowCollegesModal(false)} style={styles.closeBtn}></button>
+              <button onClick={() => setShowCollegesModal(false)} style={styles.closeBtn}>&times;</button>
             </div>
             <ul style={styles.collegesList}>
               {metrics.external_colleges_list.map((college, idx) => (

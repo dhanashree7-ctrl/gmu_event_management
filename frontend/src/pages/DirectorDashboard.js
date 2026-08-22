@@ -72,7 +72,7 @@ export default function DirectorDashboard() {
           {toast && (
             <div style={s(styles.toast, toast.type === 'success' ? styles.toastSuccess : styles.toastError)}>
               {toast.message}
-              <button onClick={() => setToast(null)} style={styles.toastClose}></button>
+              <button onClick={() => setToast(null)} style={styles.toastClose}>&times;</button>
             </div>
           )}
 

@@ -97,7 +97,7 @@ const GALLERY_IMAGES = [
   { title: 'Yoga and Gymnasium', src: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800' },
   { title: 'Sports Activity - GM League', src: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&q=80&w=800' },
   { title: 'Mallika - 2025', src: '/assets/mallika.png' },
-  { title: 'Mallika Awards', src: '/assets/mallika.png' },
+  { title: 'Mallika Awards', src: '/assets/mallika_awards.jpg' },
   { title: 'Kannada Kala Vaibhava - 2024', src: '/assets/kannada_kalavaibhava.png' },
   { title: 'Dandiya Nights', src: '/assets/dandiya_night.png' },
 ];

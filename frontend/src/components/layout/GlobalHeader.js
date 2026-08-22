@@ -1,22 +1,52 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../NotificationBell';
 import UserProfileDropdown from '../UserProfileDropdown';
 
-export default function GlobalHeader() {
+// Maps nav ID → human-readable page title
+const PAGE_TITLES = {
+  Dashboard:           'Dashboard',
+  'Action Center':     'Action Center',
+  'Approved by me':    'Approved by Me',
+  Events:              'My Events',
+  'My Events':         'My Events',
+  'Registered Events': 'Registered Events',
+  Calendar:            'Calendar',
+  Archive:             'Event Archive',
+  Reports:             'Reports',
+  Notifications:       'Notifications',
+  Settings:            'Settings',
+  Scanner:             'QR Scanner',
+  'Configure Routing': 'Configure Approval Routing',
+  'Present Routing':   'Present Routing',
+};
+
+export default function GlobalHeader({ activeNav, onOpenSettings }) {
   const { user } = useAuth();
+
+  const roleLabel = formatRole(user?.role);
+  let pageTitle = PAGE_TITLES[activeNav] ?? (activeNav || 'Dashboard');
+  
+  if (pageTitle === 'Dashboard' && roleLabel) {
+    pageTitle = `${roleLabel} Dashboard`;
+  }
 
   return (
     <header style={styles.header}>
+      {/* Left: page title */}
       <div style={styles.headerLeft}>
-        <h2 style={styles.pageTitle}>
-          {user?.role ? `${formatRole(user.role)} Dashboard` : 'Dashboard'}
-        </h2>
+        <h2 style={styles.pageTitle}>{pageTitle}</h2>
+        <p style={styles.pageDate}>
+          {new Date().toLocaleDateString('en-IN', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+          })}
+        </p>
       </div>
-      
+
+      {/* Right: notification bell + user pill */}
       <div style={styles.headerRight}>
         <NotificationBell />
-        <UserProfileDropdown user={user} />
+        <UserProfileDropdown user={user} onOpenSettings={onOpenSettings} />
       </div>
     </header>
   );
@@ -32,115 +62,36 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '1.5rem 2.5rem',
-    backgroundColor: 'rgba(248, 250, 252, 0.9)',
+    padding: '0.85rem 2rem',
+    backgroundColor: 'rgba(248, 250, 252, 0.95)',
     backdropFilter: 'blur(8px)',
     borderBottom: '1px solid #e2e8f0',
     position: 'sticky',
     top: 0,
     zIndex: 10,
+    flexShrink: 0,
   },
-  headerLeft: {},
+  headerLeft: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.1rem',
+  },
   pageTitle: {
-    fontSize: '1.5rem',
+    fontSize: '1.35rem',
     fontWeight: '700',
     color: '#0f172a',
     margin: 0,
+    lineHeight: 1.2,
+  },
+  pageDate: {
+    fontSize: '0.75rem',
+    color: '#64748b',
+    margin: 0,
+    fontWeight: 400,
   },
   headerRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1.5rem',
-  },
-  notificationWrapper: {
-    position: 'relative',
-    cursor: 'pointer',
-    padding: '0.6rem',
-    borderRadius: '50%',
-    backgroundColor: '#fff',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    transition: 'all 0.2s ease',
-  },
-  notificationHover: {
-    transform: 'translateY(-2px)',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    backgroundColor: '#f8fafc',
-  },
-  notificationDropdown: {
-    position: 'absolute',
-    top: '120%',
-    right: 0,
-    width: '280px',
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-    border: '1px solid #e2e8f0',
-    overflow: 'hidden',
-    zIndex: 50,
-    animation: 'fadeSlideDown 0.2s ease',
-  },
-  notificationHeader: {
-    padding: '1rem',
-    borderBottom: '1px solid #e2e8f0',
-    fontWeight: 'bold',
-    color: '#0f172a',
-    backgroundColor: '#f8fafc',
-  },
-  notificationBody: {
-    padding: '1.5rem 1rem',
-    color: '#64748b',
-    fontSize: '0.9rem',
-    textAlign: 'center',
-  },
-  badge: {
-    position: 'absolute',
-    top: '-2px',
-    right: '-2px',
-    backgroundColor: '#ef4444',
-    color: '#fff',
-    fontSize: '0.65rem',
-    fontWeight: 'bold',
-    borderRadius: '50%',
-    width: '16px',
-    height: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userProfile: {
-    display: 'flex',
-    alignItems: 'center',
     gap: '1rem',
-    padding: '0.5rem 0.75rem',
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    cursor: 'pointer',
   },
-  userInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-  },
-  userName: {
-    fontSize: '0.9rem',
-    fontWeight: '600',
-    color: '#1e293b',
-  },
-  userRole: {
-    fontSize: '0.75rem',
-    color: '#64748b',
-  },
-  avatar: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    backgroundColor: '#701a1e',
-    color: '#FDD06F',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: 'bold',
-    fontSize: '1rem',
-  }
 };

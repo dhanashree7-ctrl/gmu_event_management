@@ -1,77 +1,118 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Settings, 
-  Bell, 
-  Archive, 
+import {
+  LayoutDashboard,
+  Calendar,
+  CalendarCheck,
+  Settings,
+  Bell,
+  Archive,
   FileText,
-  ClipboardList,
   CheckSquare,
+  ClipboardCheck,
   Route,
   LogOut,
   ChevronLeft,
   ChevronRight,
   Ticket,
-  PlusSquare,
-  Shield,
-  UserCheck
+  UserCheck,
+  ScanLine,
+  ListChecks,
 } from 'lucide-react';
 import theme from '../../theme';
 
-const ROLE_NAV_CONFIG = {
-  faculty: [
-    { label: 'Dashboard', icon: LayoutDashboard, id: 'Dashboard' },
-    { label: 'Events', icon: Ticket, id: 'Events' },
-    { label: 'Scanner', icon: UserCheck, id: 'Scanner' },
-    { label: 'Calendar', icon: Calendar, id: 'Calendar' },
-    { label: 'Archive', icon: Archive, id: 'Archive' },
-    { label: 'Reports', icon: FileText, id: 'Reports' },
-    { label: 'Notifications', icon: Bell, id: 'Notifications' },
-    { label: 'Settings', icon: Settings, id: 'Settings' }
-  ],
-  events_admin: [
-    { label: 'Dashboard', icon: LayoutDashboard, id: 'Dashboard' },
-    { label: 'Action Center', icon: CheckSquare, id: 'Action Center' },
-    { label: 'Events', icon: Ticket, id: 'Events' },
-    { label: 'Configure Routing', icon: Route, id: 'Configure Routing' },
-    { label: 'Present Routing', icon: Route, id: 'Present Routing' },
-    { label: 'Scanner', icon: UserCheck, id: 'Scanner' },
-    { label: 'Calendar', icon: Calendar, id: 'Calendar' },
-    { label: 'Archive', icon: Archive, id: 'Archive' },
-    { label: 'Reports', icon: FileText, id: 'Reports' },
-    { label: 'Notifications', icon: Bell, id: 'Notifications' },
-    { label: 'Settings', icon: Settings, id: 'Settings' }
-  ],
-  student: [
-    { label: 'Dashboard', icon: LayoutDashboard, id: 'Dashboard' },
-    { label: 'Events', icon: Ticket, id: 'Events' },
-    { label: 'Scanner', icon: UserCheck, id: 'Scanner' },
-    { label: 'Calendar', icon: Calendar, id: 'Calendar' },
-    { label: 'Reports', icon: FileText, id: 'Reports' },
-    { label: 'Notifications', icon: Bell, id: 'Notifications' },
-    { label: 'Settings', icon: Settings, id: 'Settings' }
-  ],
-  volunteer: [
-    { label: 'Scanner', icon: UserCheck, id: 'Scanner' }
-  ]
+// ── Role alias map ─────────────────────────────────────────────────────────
+// Maps exact DB role strings → config key used in ROLE_NAV_CONFIG
+const ROLE_ALIAS = {
+  faculty:        'faculty',
+  organiser:      'faculty',
+  organizer:      'faculty',
+  hod:            'hod',
+  director:       'executive',
+  dean:           'executive',
+  provc:          'executive',
+  pro_vc:         'executive',
+  vc:             'executive',
+  student_affairs:'student_affairs',
+  events_admin:   'events_admin',
+  admin:          'events_admin',
+  student:        'student',
+  volunteer:      'volunteer',
 };
 
-const DEFAULT_APPROVER_NAV = [
-  { label: 'Dashboard', icon: LayoutDashboard, id: 'Dashboard' },
-  { label: 'Action Center', icon: CheckSquare, id: 'Action Center' },
-  { label: 'Events', icon: Ticket, id: 'Events' },
-  { label: 'Scanner', icon: UserCheck, id: 'Scanner' },
-  { label: 'Calendar', icon: Calendar, id: 'Calendar' },
-  { label: 'Archive', icon: Archive, id: 'Archive' },
-  { label: 'Reports', icon: FileText, id: 'Reports' },
-  { label: 'Notifications', icon: Bell, id: 'Notifications' },
-  { label: 'Settings', icon: Settings, id: 'Settings' }
-];
+// ── Role-based nav configs ─────────────────────────────────────────────────
+const ROLE_NAV_CONFIG = {
+  faculty: [
+    { label: 'Dashboard',      icon: LayoutDashboard, id: 'Dashboard' },
+    { label: 'My Events',      icon: Ticket,          id: 'Events' },
+    { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
+    { label: 'Archive',        icon: Archive,         id: 'Archive' },
+    { label: 'Reports',        icon: FileText,        id: 'Reports' },
+    { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
+    { label: 'Settings',       icon: Settings,        id: 'Settings' },
+  ],
+  hod: [
+    { label: 'Dashboard',      icon: LayoutDashboard, id: 'Dashboard' },
+    { label: 'Action Center',  icon: CheckSquare,     id: 'Action Center' },
+    { label: 'Approved by me', icon: ClipboardCheck,  id: 'Approved by me' },
+    { label: 'My Events',      icon: Ticket,          id: 'Events' },
+    { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
+    { label: 'Archive',        icon: Archive,         id: 'Archive' },
+    { label: 'Reports',        icon: FileText,        id: 'Reports' },
+    { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
+    { label: 'Settings',       icon: Settings,        id: 'Settings' },
+  ],
+  executive: [
+    { label: 'Dashboard',      icon: LayoutDashboard, id: 'Dashboard' },
+    { label: 'Action Center',  icon: CheckSquare,     id: 'Action Center' },
+    { label: 'Approved by me', icon: ClipboardCheck,  id: 'Approved by me' },
+    { label: 'My Events',      icon: Ticket,          id: 'Events' },
+    { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
+    { label: 'Archive',        icon: Archive,         id: 'Archive' },
+    { label: 'Reports',        icon: FileText,        id: 'Reports' },
+    { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
+    { label: 'Settings',       icon: Settings,        id: 'Settings' },
+  ],
+  student_affairs: [
+    { label: 'Dashboard',      icon: LayoutDashboard, id: 'Dashboard' },
+    { label: 'Action Center',  icon: CheckSquare,     id: 'Action Center' },
+    { label: 'Approved by me', icon: ClipboardCheck,  id: 'Approved by me' },
+    { label: 'My Events',      icon: Ticket,          id: 'Events' },
+    { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
+    { label: 'Archive',        icon: Archive,         id: 'Archive' },
+    { label: 'Reports',        icon: FileText,        id: 'Reports' },
+    { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
+    { label: 'Settings',       icon: Settings,        id: 'Settings' },
+  ],
+  events_admin: [
+    { label: 'Dashboard',         icon: LayoutDashboard, id: 'Dashboard' },
+    { label: 'Action Center',     icon: CheckSquare,     id: 'Action Center' },
+    { label: 'Approved by me',    icon: ClipboardCheck,  id: 'Approved by me' },
+    { label: 'My Events',         icon: Ticket,          id: 'Events' },
+    { label: 'Configure Routing', icon: Route,           id: 'Configure Routing' },
+    { label: 'Present Routing',   icon: ListChecks,      id: 'Present Routing' },
+    { label: 'Calendar',          icon: Calendar,        id: 'Calendar' },
+    { label: 'Archive',           icon: Archive,         id: 'Archive' },
+    { label: 'Reports',           icon: FileText,        id: 'Reports' },
+    { label: 'Notifications',     icon: Bell,            id: 'Notifications' },
+    { label: 'Settings',          icon: Settings,        id: 'Settings' },
+  ],
+  student: [
+    { label: 'Dashboard',      icon: LayoutDashboard, id: 'Dashboard' },
+    { label: 'My Events',      icon: CalendarCheck,   id: 'Events' },
+    { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
+    { label: 'Archive',        icon: Archive,         id: 'Archive' },
+    { label: 'Reports',        icon: FileText,        id: 'Reports' },
+    { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
+    { label: 'Settings',       icon: Settings,        id: 'Settings' },
+  ],
+  volunteer: [
+    { label: 'Scanner', icon: ScanLine, id: 'Scanner' },
+  ],
+};
 
-// Inject global CSS for hover transitions once
+// ── Global CSS injection ───────────────────────────────────────────────────
 if (typeof document !== 'undefined' && !document.getElementById('gmu-sidebar-styles')) {
   const styleEl = document.createElement('style');
   styleEl.id = 'gmu-sidebar-styles';
@@ -108,6 +149,29 @@ if (typeof document !== 'undefined' && !document.getElementById('gmu-sidebar-sty
       border-left-color: #FDD06F;
       font-weight: 600;
     }
+    .gmu-nav-item-collapsed {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.65rem 0;
+      margin: 0 0.4rem;
+      cursor: pointer;
+      transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+      color: rgba(255,255,255,0.62);
+      border-radius: 10px;
+      border-left: 3px solid transparent;
+    }
+    .gmu-nav-item-collapsed:hover {
+      color: #fff;
+      background: rgba(253,208,111,0.09);
+      border-left-color: rgba(253,208,111,0.45);
+    }
+    .gmu-nav-item-collapsed.gmu-active {
+      color: #FDD06F;
+      background: rgba(253,208,111,0.13);
+      border-left-color: #FDD06F;
+    }
     .gmu-nav-icon {
       display: flex;
       align-items: center;
@@ -118,11 +182,13 @@ if (typeof document !== 'undefined' && !document.getElementById('gmu-sidebar-sty
       transition: all 0.22s ease;
       flex-shrink: 0;
     }
-    .gmu-nav-item:hover .gmu-nav-icon {
+    .gmu-nav-item:hover .gmu-nav-icon,
+    .gmu-nav-item-collapsed:hover .gmu-nav-icon {
       background: rgba(253,208,111,0.14);
       color: #FDD06F;
     }
-    .gmu-nav-item.gmu-active .gmu-nav-icon {
+    .gmu-nav-item.gmu-active .gmu-nav-icon,
+    .gmu-nav-item-collapsed.gmu-active .gmu-nav-icon {
       background: rgba(253,208,111,0.18);
       color: #FDD06F;
     }
@@ -147,26 +213,51 @@ if (typeof document !== 'undefined' && !document.getElementById('gmu-sidebar-sty
       border-color: rgba(253,208,111,0.35);
       transform: translateX(3px);
     }
-    .gmu-logout-btn:active {
-      transform: translateX(1px) scale(0.98);
-    }
-    .gmu-logo-crest {
-      transition: transform 0.3s ease;
-      display: inline-block;
-    }
-    .gmu-logo-area:hover .gmu-logo-crest {
-      transform: rotate(-6deg) scale(1.08);
-    }
+    .gmu-logout-btn:active { transform: translateX(1px) scale(0.98); }
+    .gmu-logo-crest { transition: transform 0.3s ease; display: inline-block; }
+    .gmu-logo-area:hover .gmu-logo-crest { transform: rotate(-6deg) scale(1.08); }
     .gmu-sidebar-nav::-webkit-scrollbar { width: 0; }
+    /* Tooltip for collapsed mode */
+    .gmu-tooltip {
+      position: absolute;
+      left: calc(100% + 12px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: #1e293b;
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .gmu-tooltip::before {
+      content: '';
+      position: absolute;
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 5px solid transparent;
+      border-right-color: #1e293b;
+    }
+    .gmu-nav-item-collapsed:hover .gmu-tooltip { opacity: 1; }
   `;
   document.head.appendChild(styleEl);
 }
 
+// ── Component ──────────────────────────────────────────────────────────────
 export default function GlobalSidebar({ role, activeNav, onNavChange, collapsed, setCollapsed }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  let navItems = ROLE_NAV_CONFIG[role] || DEFAULT_APPROVER_NAV;
+  // Resolve role alias → nav config key
+  const configKey = ROLE_ALIAS[role] || 'faculty';
+  const navItems = ROLE_NAV_CONFIG[configKey] || ROLE_NAV_CONFIG.faculty;
 
   const handleLogout = async () => {
     try {
@@ -182,24 +273,30 @@ export default function GlobalSidebar({ role, activeNav, onNavChange, collapsed,
       ...styles.sidebar,
       width: collapsed ? '4.5rem' : '15.5rem',
     }}>
-      
+
       {/* ── Toggle Button ── */}
-      <button 
+      <button
         className="gmu-toggle-btn"
-        style={styles.toggleBtn} 
+        style={styles.toggleBtn}
         onClick={() => setCollapsed(!collapsed)}
         title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+        aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
       >
         {collapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
       </button>
 
-      {/* ── Logo ── */}
+      {/* ── Logo / Brand ── */}
       <div className="gmu-logo-area" style={{
         ...styles.sidebarLogo,
         justifyContent: collapsed ? 'center' : 'flex-start',
         padding: collapsed ? '1.25rem 0' : '1.25rem 1.25rem',
       }}>
-        <span className="gmu-logo-crest" style={{ fontSize: '1.8rem', color: '#FDD06F', flexShrink: 0, lineHeight: 1 }}></span>
+        {/* University crest using SVG shield — no emoji */}
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" className="gmu-logo-crest" style={{ flexShrink: 0 }}>
+          <path d="M14 2L3 7v7c0 6.08 4.66 11.76 11 13 6.34-1.24 11-6.92 11-13V7L14 2z" fill="#FDD06F" opacity="0.18" />
+          <path d="M14 2L3 7v7c0 6.08 4.66 11.76 11 13 6.34-1.24 11-6.92 11-13V7L14 2z" stroke="#FDD06F" strokeWidth="1.5" strokeLinejoin="round" />
+          <text x="14" y="17" textAnchor="middle" fill="#FDD06F" fontSize="8" fontWeight="bold" fontFamily="serif">GM</text>
+        </svg>
         {!collapsed && (
           <div>
             <p style={styles.sidebarLogoName}>GM University</p>
@@ -208,54 +305,62 @@ export default function GlobalSidebar({ role, activeNav, onNavChange, collapsed,
         )}
       </div>
 
-      {/* ── Role Pill ── */}
-      {!collapsed && role && (
-        <div style={styles.rolePill}>
-          <span style={styles.rolePillDot} />
-          <span style={styles.rolePillText}>{formatRole(role)}</span>
-        </div>
-      )}
-
       {/* ── Navigation ── */}
       <nav className="gmu-sidebar-nav" style={styles.sidebarNav}>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeNav === item.id || activeNav === item.label;
+
+          if (collapsed) {
+            return (
+              <div
+                key={item.id}
+                className={`gmu-nav-item-collapsed${isActive ? ' gmu-active' : ''}`}
+                onClick={() => onNavChange(item.id)}
+              >
+                <div className="gmu-nav-icon">
+                  <Icon size={17} strokeWidth={isActive ? 2.5 : 1.8} />
+                </div>
+                {/* Active dot */}
+                {isActive && (
+                  <span style={{
+                    position: 'absolute', right: '5px', top: '50%', transform: 'translateY(-50%)',
+                    width: '4px', height: '4px', borderRadius: '50%', background: '#FDD06F',
+                    boxShadow: '0 0 5px rgba(253,208,111,0.8)',
+                  }} />
+                )}
+                {/* Tooltip */}
+                <span className="gmu-tooltip">{item.label}</span>
+              </div>
+            );
+          }
+
           return (
-            <div 
-              key={item.label}
+            <div
+              key={item.id}
               className={`gmu-nav-item${isActive ? ' gmu-active' : ''}`}
-              style={collapsed ? { justifyContent: 'center', margin: '0 0.4rem', padding: '0.65rem 0' } : {}}
               onClick={() => onNavChange(item.id)}
-              title={collapsed ? item.label : undefined}
             >
               <div className="gmu-nav-icon">
                 <Icon size={17} strokeWidth={isActive ? 2.5 : 1.8} />
               </div>
-              {!collapsed && (
-                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
-                  {item.label}
-                </span>
-              )}
-              {isActive && collapsed && (
-                <span style={{
-                  position: 'absolute', right: '5px', top: '50%', transform: 'translateY(-50%)',
-                  width: '4px', height: '4px', borderRadius: '50%', background: '#FDD06F',
-                  boxShadow: '0 0 5px rgba(253,208,111,0.8)',
-                }} />
-              )}
+              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
+                {item.label}
+              </span>
             </div>
           );
         })}
       </nav>
 
-      {/* ── Footer ── */}
+      {/* ── Footer — brand + logout only ── */}
       <div style={styles.sidebarFooter}>
-        <div 
+        <div
           className="gmu-logout-btn"
           style={{ justifyContent: collapsed ? 'center' : 'flex-start' }}
           onClick={handleLogout}
           title={collapsed ? 'Logout' : undefined}
+          role="button"
+          aria-label="Logout"
         >
           <LogOut size={17} color="#FDD06F" strokeWidth={2} />
           {!collapsed && <span style={styles.logoutText}>Logout</span>}
@@ -265,9 +370,9 @@ export default function GlobalSidebar({ role, activeNav, onNavChange, collapsed,
   );
 }
 
-function formatRole(role) {
-  if (!role) return '';
-  return role.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+function formatRole(key) {
+  if (!key) return '';
+  return key.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
 const styles = {
@@ -283,17 +388,18 @@ const styles = {
     transition: 'width 0.3s cubic-bezier(0.4,0,0.2,1)',
     borderRight: '1px solid rgba(253,208,111,0.1)',
     boxShadow: '4px 0 24px rgba(0,0,0,0.18)',
-    overflow: 'hidden',
+    overflow: 'visible',
+    zIndex: 100,
   },
   toggleBtn: {
     position: 'absolute',
     top: '20px',
-    right: '-12px',
-    width: '24px',
-    height: '24px',
+    right: '-14px',
+    width: '28px',
+    height: '28px',
     backgroundColor: '#701a1e',
     color: '#FDD06F',
-    border: '1.5px solid rgba(253,208,111,0.3)',
+    border: '2px solid rgba(253,208,111,0.6)',
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
@@ -362,7 +468,7 @@ const styles = {
     gap: '0.1rem',
   },
   sidebarFooter: {
-    padding: '0.65rem 0.65rem',
+    padding: '0.65rem',
     borderTop: '1px solid rgba(255,255,255,0.06)',
   },
   logoutText: {
@@ -372,5 +478,3 @@ const styles = {
     whiteSpace: 'nowrap',
   },
 };
-
-

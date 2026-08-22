@@ -35,6 +35,7 @@ $sql = "
         COALESCE(u.full_name, 'System / Legacy') AS proposed_by,
         emd.POST_EVENT_REPORT AS post_event_report,
         emd.REPORT_PDF_PATH AS report_file_path,
+        emd.GALLERY_IMAGES AS gallery_images,
         emd.MAX_PARTICIPANTS AS max_participants,
         (SELECT COUNT(*) FROM event_registrations er WHERE er.EVENT_ID = em.SL_NO) AS total_participants,
         COALESCE(AVG(er2.FEEDBACK_RATING), 0) AS average_rating
@@ -43,7 +44,7 @@ $sql = "
     LEFT JOIN event_registrations er2 ON er2.EVENT_ID = em.SL_NO AND er2.FEEDBACK_RATING IS NOT NULL
     LEFT JOIN users u ON em.CREATED_BY = u.id
     WHERE em.CURRENT_STATUS = 'completed'
-    GROUP BY em.SL_NO, emd.POST_EVENT_REPORT, emd.REPORT_PDF_PATH, emd.MAX_PARTICIPANTS, u.full_name
+    GROUP BY em.SL_NO, emd.POST_EVENT_REPORT, emd.REPORT_PDF_PATH, emd.GALLERY_IMAGES, emd.MAX_PARTICIPANTS, u.full_name
     ORDER BY em.START_DATE DESC
 ";
 
@@ -65,6 +66,8 @@ while ($row = $result->fetch_assoc()) {
     }
     $row['academic_year']  = $academic_year;
     $row['average_rating'] = round((float)$row['average_rating'], 1);
+    // Parse gallery_images JSON string -> array
+    $row['gallery_images'] = $row['gallery_images'] ? json_decode($row['gallery_images'], true) : [];
     $events[] = $row;
 }
 

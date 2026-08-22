@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import theme from '../theme';
 import { API_BASE } from '../config/api';
 import { Lock, User, CheckCircle, XCircle, Mail, Building2, GraduationCap, Shield, Bell, Palette } from 'lucide-react';
@@ -54,6 +54,27 @@ export default function SettingsView({ user, onBack }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [status, setStatus] = useState({ type: '', message: '' });
   const [loading, setLoading] = useState(false);
+  const [emailNotifs, setEmailNotifs] = useState(() => {
+    return localStorage.getItem(`emailNotifs_${user?.username}`) !== 'false';
+  });
+  const [browserNotifs, setBrowserNotifs] = useState(() => {
+    return localStorage.getItem(`browserNotifs_${user?.username}`) === 'true';
+  });
+
+  useEffect(() => {
+    if (user?.username) {
+      localStorage.setItem(`emailNotifs_${user.username}`, emailNotifs);
+    }
+  }, [emailNotifs, user?.username]);
+
+  useEffect(() => {
+    if (user?.username) {
+      localStorage.setItem(`browserNotifs_${user.username}`, browserNotifs);
+      if (browserNotifs && Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      }
+    }
+  }, [browserNotifs, user?.username]);
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
@@ -192,8 +213,8 @@ export default function SettingsView({ user, onBack }) {
             <p style={st.sectionSub}>Customize your notification and display settings.</p>
             <div style={{ background: '#f8fafc', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
               {[
-                { icon: Bell, label: 'Email Notifications', desc: 'Updates about event registrations and approvals', enabled: true },
-                { icon: Bell, label: 'Browser Notifications', desc: 'Instant alerts in your browser', enabled: false },
+                { icon: Bell, label: 'Email Notifications', desc: 'Updates about event registrations and approvals', enabled: emailNotifs, setter: setEmailNotifs },
+                { icon: Bell, label: 'Browser Notifications', desc: 'Instant alerts in your browser', enabled: browserNotifs, setter: setBrowserNotifs },
               ].map((pref, i) => {
                 const Icon = pref.icon;
                 return (
@@ -205,7 +226,7 @@ export default function SettingsView({ user, onBack }) {
                         <p style={{ margin: '2px 0 0', fontSize: '0.76rem', color: '#64748b' }}>{pref.desc}</p>
                       </div>
                     </div>
-                    <div style={{ width: '42px', height: '22px', borderRadius: '11px', background: pref.enabled ? '#701a1e' : '#e2e8f0', position: 'relative', cursor: 'pointer' }}>
+                    <div onClick={() => pref.setter(!pref.enabled)} style={{ width: '42px', height: '22px', borderRadius: '11px', background: pref.enabled ? '#701a1e' : '#e2e8f0', position: 'relative', cursor: 'pointer' }}>
                       <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '3px', left: pref.enabled ? '23px' : '3px', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                     </div>
                   </div>
@@ -220,29 +241,37 @@ export default function SettingsView({ user, onBack }) {
 }
 
 const st = {
-  pageWrap: { display: 'flex', gap: '1.5rem', fontFamily: '"Inter", sans-serif', alignItems: 'flex-start' },
-  tabPanel: {
-    width: '210px', flexShrink: 0, background: '#fff', borderRadius: '16px',
-    border: '1px solid #e2e8f0', padding: '1.25rem', display: 'flex', flexDirection: 'column',
-    gap: '1rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
+  pageWrap: {
+    display: 'flex',
+    gap: '1.5rem',
+    fontFamily: '"Inter", sans-serif',
+    alignItems: 'stretch',
+    height: '100%',
+    overflow: 'hidden',
+    minHeight: 0,
   },
-  panelHeader: { display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid #f1f5f9' },
-  panelAvatar: { width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, #701a1e, #8a2126)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  panelName: { margin: 0, fontWeight: 700, fontSize: '0.9rem', color: '#1e293b' },
-  panelRole: { margin: '2px 0 0', fontSize: '0.7rem', color: '#64748b', textTransform: 'capitalize' },
-  contentArea: { flex: 1, background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '1.75rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' },
-  sectionTitle: { fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.25rem' },
-  sectionSub: { fontSize: '0.85rem', color: '#64748b', margin: '0 0 1.25rem' },
+  tabPanel: {
+    width: '200px', flexShrink: 0, background: '#fff', borderRadius: '16px',
+    border: '1px solid #e2e8f0', padding: '1rem', display: 'flex', flexDirection: 'column',
+    gap: '0.75rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', overflow: 'hidden',
+  },
+  panelHeader: { display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.65rem', borderBottom: '1px solid #f1f5f9' },
+  panelAvatar: { width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #701a1e, #8a2126)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  panelName: { margin: 0, fontWeight: 700, fontSize: '0.875rem', color: '#1e293b' },
+  panelRole: { margin: '2px 0 0', fontSize: '0.68rem', color: '#64748b', textTransform: 'capitalize' },
+  contentArea: { flex: 1, background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '1.5rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', overflowY: 'auto', minHeight: 0 },
+  sectionTitle: { fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: '0 0 0.2rem' },
+  sectionSub: { fontSize: '0.82rem', color: '#64748b', margin: '0 0 1rem' },
   profileCard: { border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden' },
-  profileBanner: { background: 'linear-gradient(135deg, #701a1e 0%, #4a0404 100%)', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' },
-  profileAvatarLg: { width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(253,208,111,0.2)', border: '2px solid rgba(253,208,111,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  fieldIconWrap: { width: '30px', height: '30px', borderRadius: '7px', background: '#FFF5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  fieldLabel: { margin: 0, fontSize: '0.68rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' },
-  fieldValue: { margin: '2px 0 0', fontSize: '0.88rem', color: '#1e293b', fontWeight: 600 },
+  profileBanner: { background: 'linear-gradient(135deg, #701a1e 0%, #4a0404 100%)', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.85rem' },
+  profileAvatarLg: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(253,208,111,0.2)', border: '2px solid rgba(253,208,111,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  fieldIconWrap: { width: '28px', height: '28px', borderRadius: '7px', background: '#FFF5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  fieldLabel: { margin: 0, fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' },
+  fieldValue: { margin: '2px 0 0', fontSize: '0.85rem', color: '#1e293b', fontWeight: 600 },
   label: { fontSize: '0.83rem', fontWeight: 600, color: '#0f172a' },
-  input: { width: '100%', boxSizing: 'border-box', padding: '0.75rem 1rem 0.75rem 2.4rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '0.88rem', color: '#334155', transition: 'all 0.2s ease', fontFamily: 'inherit' },
-  infoBanner: { display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#FFF8E1', color: '#8D6E63', padding: '0.6rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 500 },
-  statusAlert: { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.7rem 0.9rem', borderRadius: '8px', fontSize: '0.83rem', fontWeight: 600, marginBottom: '0.75rem' },
+  input: { width: '100%', boxSizing: 'border-box', padding: '0.65rem 1rem 0.65rem 2.4rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '0.88rem', color: '#334155', transition: 'all 0.2s ease', fontFamily: 'inherit' },
+  infoBanner: { display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#FFF8E1', color: '#8D6E63', padding: '0.5rem 0.75rem', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 500 },
+  statusAlert: { display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 0.85rem', borderRadius: '8px', fontSize: '0.83rem', fontWeight: 600, marginBottom: '0.75rem' },
   statusSuccess: { background: '#E8F5E9', color: '#2E7D32', border: '1px solid #A5D6A7' },
   statusError: { background: '#FFEBEE', color: '#C62828', border: '1px solid #EF9A9A' },
 };

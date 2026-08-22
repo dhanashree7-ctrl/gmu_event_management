@@ -236,30 +236,29 @@ export default function EventArchive({ user }) {
 
       {/* ── Year Filter ── */}
       {academicYears.length > 1 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.75rem' }}>
           <span style={{ fontWeight: 600, color: '#555', fontSize: '0.9rem' }}>Academic Year:</span>
-          {academicYears.map(year => {
-            const isActive = selectedYear === year;
-            return (
-              <button
-                key={year}
-                className="year-filter-btn"
-                onClick={() => setSelectedYear(year)}
-                style={{
-                  padding: '0.35rem 1rem',
-                  borderRadius: '999px',
-                  border: isActive ? 'none' : '1.5px solid #DDD',
-                  background: isActive ? theme.colors.maroon : '#fff',
-                  color: isActive ? '#fff' : '#555',
-                  fontSize: '0.82rem',
-                  fontWeight: isActive ? 700 : 500,
-                  cursor: 'pointer',
-                }}
-              >
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            style={{
+              padding: '0.4rem 1rem',
+              borderRadius: '8px',
+              border: '1px solid #CCC',
+              background: '#fff',
+              color: '#333',
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              outline: 'none',
+              fontFamily: 'inherit'
+            }}
+          >
+            {academicYears.map(year => (
+              <option key={year} value={year}>
                 {year === 'All' ? 'All Years' : year}
-              </button>
-            );
-          })}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 

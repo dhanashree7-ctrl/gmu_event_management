@@ -3,6 +3,22 @@ import theme from '../theme';
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+// Inject once — makes calendar stretch to fill remaining viewport height
+if (typeof document !== 'undefined' && !document.getElementById('gmu-calendar-styles')) {
+  const el = document.createElement('style');
+  el.id = 'gmu-calendar-styles';
+  el.textContent = `
+    .gmu-calendar-fill {
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+    }
+  `;
+  document.head.appendChild(el);
+}
+
 export default function EventCalendar({ events }) {
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -66,13 +82,13 @@ export default function EventCalendar({ events }) {
   };
 
   return (
-    <div style={styles.calendarWrapper}>
+    <div className="gmu-calendar-fill" style={styles.calendarWrapper}>
       <div style={styles.header}>
-        <button onClick={handlePrevMonth} style={styles.navBtn}>◀</button>
+        <button onClick={handlePrevMonth} style={styles.navBtn}>&#8592;</button>
         <h2 style={styles.monthLabel}>
           {currentDate.toLocaleString('default', { month: 'long' })} {year}
         </h2>
-        <button onClick={handleNextMonth} style={styles.navBtn}></button>
+        <button onClick={handleNextMonth} style={styles.navBtn}>&#8594;</button>
       </div>
       
       <div style={styles.grid}>
@@ -96,9 +112,10 @@ const styles = {
     border: '1px solid #eee',
     display: 'flex',
     flexDirection: 'column',
-    height: '100%', // Clamped to parent
     flex: 1,
-    boxSizing: 'border-box'
+    minHeight: 0,
+    boxSizing: 'border-box',
+    overflow: 'hidden',
   },
   header: {
     display: 'flex',
