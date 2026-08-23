@@ -48,7 +48,7 @@ export default function EventDrillDownPage() {
     return (
       <div style={{ textAlign: 'center', padding: '3rem', color: '#666', fontFamily: 'inherit' }}>
         <h2>Event not found</h2>
-        <button onClick={() => navigate('/events-admin-dashboard', { state: { activeNav: 'Reports & Analytics' } })} style={styles.backBtn}>Back to Reports</button>
+        <button onClick={() => navigate(-1)} style={styles.backBtn}>← Back to Reports</button>
       </div>
     );
   }
@@ -76,7 +76,7 @@ export default function EventDrillDownPage() {
   return (
     <div style={styles.pageContainer}>
       <div style={styles.header}>
-        <button onClick={() => navigate('/events-admin-dashboard', { state: { activeNav: 'Reports & Analytics' } })} style={styles.backBtn}>← Back to Reports</button>
+        <button onClick={() => navigate(-1)} style={styles.backBtn}>← Back to Reports</button>
         <h1 style={styles.title}>{master_event.event_title}</h1>
         <p style={styles.subtitle}>
           <strong>Date:</strong> {master_event.event_date || 'N/A'}

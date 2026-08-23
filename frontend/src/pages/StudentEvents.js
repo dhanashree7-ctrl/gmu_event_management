@@ -4,6 +4,7 @@ import { API_BASE } from "../config/api";
 import theme from "../theme";
 import { useAuth } from "../context/AuthContext";
 import CertificateGenerator from "../components/CertificateGenerator";
+import { MapPin, Calendar, Clock, Ticket, Info, CheckCircle, Globe, Wallet, FileText, BarChart } from "lucide-react";
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 const s = (...styles) => Object.assign({}, ...styles);
@@ -53,36 +54,6 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
         </span>
         <h3 style={styles.cardTitle}>{evt.event_title}</h3>
         {evt.description && <p style={styles.cardDesc}>{evt.description}</p>}
-        <div style={styles.metaRow}>
-          {(evt.event_mode === 'online' || evt.venue) && (
-            <span style={styles.metaItem}> {evt.event_mode === 'online' ? 'Online' : evt.venue}</span>
-          )}
-          <span style={styles.metaItem}> {formatDate(evt.event_date)}</span>
-          {evt.event_time && (
-            <span style={styles.metaItem}> {formatTime(evt.event_time)}</span>
-          )}
-          {evt.event_scale && (
-            <span style={styles.metaItem}> Scale: {evt.event_scale}</span>
-          )}
-          {evt.budget && (
-            <span style={styles.metaItem}> Budget: ₹{Number(evt.budget).toLocaleString('en-IN')}</span>
-          )}
-          {evt.registration_deadline && (
-            <span style={s(styles.metaItem, { color: theme.colors.maroon, fontWeight: 600 })}>
-               Register By: {formatDate(evt.registration_deadline)} {formatTime(new Date(evt.registration_deadline).toTimeString().substring(0,5))}
-            </span>
-          )}
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-            background: evt.event_mode === 'online' ? '#E3F2FD' : '#F3E5F5',
-            color: evt.event_mode === 'online' ? '#1565C0' : '#6A1B9A',
-            borderRadius: '12px', padding: '0.15rem 0.6rem',
-            fontSize: '0.75rem', fontWeight: 600
-          }}>
-            {evt.event_mode === 'online' ? ' Online' : ' Offline'}
-          </span>
-        </div>
-
       </div>
       <div style={styles.cardFooter}>
         {evt.brochure_path && (
@@ -92,7 +63,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
             onMouseEnter={(e) => (e.currentTarget.style.background = "#F0EDE8")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-             View Brochure
+             <FileText size={16} /> View Brochure
           </button>
         )}
         {isRegistered && (
@@ -102,7 +73,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
             onMouseEnter={(e) => e.currentTarget.style.background = '#e0e0e0'}
             onMouseLeave={(e) => e.currentTarget.style.background = '#f0f0f0'}
           >
-            ️ View Details
+            <Info size={16} /> View Details
           </button>
         )}
         <button
@@ -132,7 +103,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
             e.currentTarget.style.boxShadow = "0 2px 4px rgba(128,0,0,0.3)";
           }}
         >
-          {isRegistered ? " View Ticket" : "️ View Details"}
+          {isRegistered ? <><Ticket size={16} /> View Ticket</> : <><Info size={16} /> View Details</>}
         </button>
       </div>
     </div>
@@ -164,7 +135,7 @@ export default function StudentEvents() {
   const [ticketData, setTicketData] = useState(null);
 
   // Tabs & Past Events State
-  const [activeTab, setActiveTab] = useState("Upcoming");
+  const [activeTab, setActiveTab] = useState("upcoming");
   const [pastEvents, setPastEvents] = useState([]);
   const [pastLoading, setPastLoading] = useState(false);
 
@@ -196,7 +167,7 @@ export default function StudentEvents() {
   }, [user.username]);
 
   useEffect(() => {
-    if (activeTab === "Past") {
+    if (activeTab === "past") {
       const fetchPastEvents = async () => {
         setPastLoading(true);
         try {
@@ -370,19 +341,26 @@ export default function StudentEvents() {
 
   return (
     <>
-      <div style={styles.tabContainer}>
-        <button
-          style={s(styles.tabBtn, activeTab === "Upcoming" && styles.tabBtnActive)}
-          onClick={() => setActiveTab("Upcoming")}
-        >
-          Upcoming Events
-        </button>
-        <button
-          style={s(styles.tabBtn, activeTab === "Past" && styles.tabBtnActive)}
-          onClick={() => setActiveTab("Past")}
-        >
-          Past Attended
-        </button>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', background: '#fff', padding: '0.5rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', width: 'fit-content' }}>
+        {['upcoming', 'registered', 'past'].map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              padding: '0.5rem 1.25rem',
+              borderRadius: '8px',
+              border: 'none',
+              background: activeTab === tab ? theme.colors.maroon : 'transparent',
+              color: activeTab === tab ? '#fff' : '#555',
+              fontWeight: activeTab === tab ? 'bold' : 'normal',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              textTransform: 'capitalize'
+            }}
+          >
+            {tab === 'past' ? 'Past & Attended' : tab + ' Events'}
+          </button>
+        ))}
       </div>
 
       {showDetails && selectedEvent ? (
@@ -498,7 +476,7 @@ export default function StudentEvents() {
              </div>
            </div>
         </div>
-      ) : activeTab === "Upcoming" ? (
+      ) : activeTab === "upcoming" ? (
         <>
           <div style={styles.toolbar}>
             <div style={styles.searchWrap}>
@@ -557,7 +535,66 @@ export default function StudentEvents() {
             </>
           )}
         </>
-      ) : activeTab === "Past" ? (
+      ) : activeTab === "registered" ? (
+        <>
+          <div style={styles.toolbar}>
+            <div style={styles.searchWrap}>
+              <span style={styles.searchIcon}></span>
+              <input
+                type="text"
+                placeholder="Search registered events…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={styles.searchInput}
+              />
+            </div>
+            <div style={styles.filterRow}>
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  style={s(styles.filterBtn, activeCategory === cat && styles.filterBtnActive)}
+                  onClick={() => setActiveCategory(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {(() => {
+            const registeredFiltered = filtered.filter(evt => registeredEvents.includes(evt.id) || evt.is_registered);
+            if (loading) return (
+              <div style={styles.centreState}>
+                <div style={styles.spinner} />
+                <p style={styles.stateText}>Loading registered events…</p>
+              </div>
+            );
+            if (registeredFiltered.length === 0) return (
+              <div style={styles.centreState}>
+                <span style={{ fontSize: "3rem" }}>🎫</span>
+                <p style={styles.stateText}>You haven't registered for any events yet.</p>
+              </div>
+            );
+            return (
+              <>
+                <p style={styles.resultCount}>Showing {registeredFiltered.length} registered event{registeredFiltered.length !== 1 ? "s" : ""}</p>
+                <div style={styles.grid}>
+                  {registeredFiltered.map((evt) => (
+                    <EventCard
+                      key={evt.id}
+                      evt={evt}
+                      onBrochure={handleBrochure}
+                      onSelect={openDetails}
+                      onViewTicket={openTicketModal}
+                      isRegistered={true}
+                    />
+                  ))}
+                </div>
+              </>
+            );
+          })()}
+        </>
+      ) : activeTab === "past" ? (
         <>
           {pastLoading ? (
             <div style={styles.centreState}>
@@ -976,7 +1013,7 @@ const styles = {
   resultCount: { fontSize: "0.82rem", color: theme.colors.midGray, marginBottom: "1rem" },
   
   // Grid
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem", alignItems: "stretch" },
   
   // Card
   card: {
@@ -984,17 +1021,18 @@ const styles = {
     boxShadow: theme.shadows.md, border: "1px solid rgba(0,0,0,0.04)",
     display: "flex", flexDirection: "column", position: "relative",
     overflow: "hidden", transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    height: "100%",
   },
   cardHovered: { transform: "translateY(-4px)", boxShadow: theme.shadows.xl },
   cardAccent: { height: "5px", background: theme.gradients.primary, width: "100%" },
-  cardBody: { padding: "1.5rem", flex: 1, display: "flex", flexDirection: "column" },
+  cardBody: { padding: "1.5rem", flex: 1, display: "flex", flexDirection: "column", gap: "0" },
   categoryChip: {
     alignSelf: "flex-start", padding: "0.25rem 0.6rem", borderRadius: theme.radii.full,
     fontSize: "0.7rem", fontWeight: "700", textTransform: "uppercase",
     letterSpacing: "0.04em", marginBottom: "1rem",
   },
-  cardTitle: { fontSize: "1.15rem", fontWeight: "700", color: theme.colors.charcoal, margin: "0 0 0.5rem" },
-  cardDesc: { fontSize: "0.85rem", color: theme.colors.darkGray, lineHeight: 1.5, margin: "0 0 1.25rem" },
+  cardTitle: { fontSize: "1.15rem", fontWeight: "700", color: theme.colors.charcoal, margin: "0 0 0.5rem", lineHeight: 1.35 },
+  cardDesc: { fontSize: "0.85rem", color: theme.colors.darkGray, lineHeight: 1.5, margin: "0 0 0", flex: 1, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" },
   metaRow: { display: "flex", flexDirection: "column", gap: "0.4rem", marginTop: "auto" },
   metaItem: { fontSize: "0.8rem", color: theme.colors.midGray },
   cardFooter: {

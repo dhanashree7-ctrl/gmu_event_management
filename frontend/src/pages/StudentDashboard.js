@@ -72,6 +72,7 @@ function formatTime(timeStr) {
 // ── Helper: greeting ─────────────────────────────────────────────────────────
 function getGreeting() {
   const h = new Date().getHours();
+  if (h < 4) return "Good Evening";
   if (h < 12) return "Good Morning";
   if (h < 17) return "Good Afternoon";
   return "Good Evening";
@@ -85,7 +86,6 @@ export default function StudentDashboard() {
   const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState("Dashboard");
-  const [eventsTab, setEventsTab] = useState("upcoming");
   const [myEvents, setMyEvents] = useState([]);
   const [loadingMyEvents, setLoadingMyEvents] = useState(false);
   const [myEventsError, setMyEventsError] = useState(null);
@@ -227,15 +227,15 @@ export default function StudentDashboard() {
               </div>
 
               {gamificationData && (
-                <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, marginTop: '1rem' }}>
-                  <h3 style={{ fontSize: '1.2rem', color: '#555', marginBottom: '1rem', fontWeight: 600, flexShrink: 0 }}>Your Engagement Overview</h3>
+                <div style={{ marginTop: '1.5rem', marginBottom: '2rem' }}>
+                  <h3 style={{ fontSize: '1.2rem', color: '#555', marginBottom: '1rem', fontWeight: 600 }}>Your Engagement Overview</h3>
                   
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.25rem', flex: 1, minHeight: 0 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
                     
                     {/* Reliability Score */}
-                    <div style={{ gridColumn: 'span 4', background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1', display: 'flex', flexDirection: 'column', minHeight: '220px' }}>
                       <h3 style={{ fontSize: '1rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '1rem' }}>Reliability Score</h3>
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: '1rem' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: '0.5rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                           <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 600 }}>Attended {gamificationData.reliability.attended} of {gamificationData.reliability.total} Registrations</span>
                           <span style={{ fontSize: '0.85rem', color: theme.colors.maroon, fontWeight: 'bold' }}>{gamificationData.reliability.score}%</span>
@@ -248,9 +248,9 @@ export default function StudentDashboard() {
                     </div>
 
                     {/* My Engagement Profile (Radar Chart) */}
-                    <div style={{ gridColumn: 'span 4', background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1', display: 'flex', flexDirection: 'column', minHeight: '220px' }}>
                       <h3 style={{ fontSize: '1rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '0.5rem' }}>My Engagement Profile</h3>
-                      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+                      <div style={{ height: '160px', position: 'relative' }}>
                         {gamificationData.engagement_profile.length > 0 ? (
                           <div style={{ position: 'absolute', inset: 0 }}>
                             <ResponsiveContainer width="100%" height="100%">
@@ -264,15 +264,15 @@ export default function StudentDashboard() {
                             </ResponsiveContainer>
                           </div>
                         ) : (
-                          <div style={{ textAlign: 'center', color: '#999', paddingTop: '3rem' }}>Not enough data yet. Register for events!</div>
+                          <div style={{ textAlign: 'center', color: '#999', paddingTop: '2.5rem', fontSize: '0.85rem' }}>Not enough data yet. Register for events!</div>
                         )}
                       </div>
                     </div>
 
                     {/* Role Breakdown (Donut Chart) */}
-                    <div style={{ gridColumn: 'span 4', background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #f0ebe1', display: 'flex', flexDirection: 'column', minHeight: '220px' }}>
                       <h3 style={{ fontSize: '1rem', color: theme.colors.maroon, fontWeight: 'bold', marginBottom: '0.5rem' }}>Role Breakdown</h3>
-                      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+                      <div style={{ height: '130px', position: 'relative' }}>
                         {gamificationData.role_breakdown.length > 0 ? (
                           <div style={{ position: 'absolute', inset: 0 }}>
                             <ResponsiveContainer width="100%" height="100%">
@@ -295,7 +295,7 @@ export default function StudentDashboard() {
                             </ResponsiveContainer>
                           </div>
                         ) : (
-                          <div style={{ textAlign: 'center', color: '#999', paddingTop: '3rem' }}>Not enough data yet.</div>
+                          <div style={{ textAlign: 'center', color: '#999', paddingTop: '2.5rem', fontSize: '0.85rem' }}>Not enough data yet.</div>
                         )}
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.5rem', flexShrink: 0 }}>
@@ -316,117 +316,7 @@ export default function StudentDashboard() {
 
           {activeTab === 'Events' && (
             <div>
-              <h2 style={{ fontSize: "1.4rem", color: theme.colors.maroon, marginBottom: "1.5rem" }}>
-                My Schedule
-              </h2>
-              {loadingMyEvents ? (
-                <div style={styles.centreState}>
-                  <div style={styles.spinner} />
-                  <p style={styles.stateText}>Loading your schedule…</p>
-                </div>
-              ) : myEventsError ? (
-                <div style={styles.centreState}>
-                  <span style={{ fontSize: "2.5rem" }}>️</span>
-                  <p style={styles.stateText}>{myEventsError}</p>
-                </div>
-              ) : myEvents.length === 0 ? (
-                <div style={styles.centreState}>
-                  <span style={{ fontSize: "3rem" }}></span>
-                  <p style={styles.stateText}>You haven't registered for any events yet!</p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                  <div style={styles.grid}>
-                  {myEvents.map((evt) => (
-                    <div key={evt.id} style={styles.card}>
-                      <div style={styles.cardAccent} />
-                      <div style={styles.cardBody}>
-                        <h3 style={styles.cardTitle}>{evt.event_title}</h3>
-                        <div style={styles.metaRow}>
-                          <span style={styles.metaItem}> {evt.venue || 'TBD'}</span>
-                          <span style={styles.metaItem}> {formatDate(evt.event_date || evt.date)}</span>
-                          <span style={styles.metaItem}> {formatTime(evt.event_time || evt.time)}</span>
-                        </div>
-                        <div style={{ ...styles.metaRow, marginTop: '0.2rem', paddingTop: '0.4rem', borderTop: '1px dashed #EEE' }}>
-                          <span style={styles.metaItem}> Scale: <strong style={{color:'#333', textTransform:'capitalize'}}>{evt.event_scale || 'N/A'}</strong></span>
-                          <span style={styles.metaItem}> Cat: <strong style={{color:'#333', textTransform:'capitalize'}}>{evt.category || 'N/A'}</strong></span>
-                          <span style={styles.metaItem}> Budget: <strong style={{color:'#333'}}>₹{evt.budget || '0'}</strong></span>
-                        </div>
-                        {/* Attendance Status Badge */}
-                        {(() => {
-                          const checkedIn = evt.check_in_status === 'checked_in';
-                          const eventDateStr = evt.event_date || evt.date;
-                          const isPast = eventDateStr && new Date(eventDateStr) < new Date(new Date().toDateString());
-                          const isToday = eventDateStr && new Date(eventDateStr).toDateString() === new Date().toDateString();
-
-                          if (checkedIn) {
-                            return (
-                              <div style={{
-                                marginTop: '0.75rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.25rem'
-                              }}>
-                                <span style={{
-                                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                                  background: '#E8F5E9', color: '#2E7D32',
-                                  borderRadius: '20px', padding: '0.3rem 0.75rem',
-                                  fontSize: '0.8rem', fontWeight: 600, width: 'fit-content'
-                                }}>
-                                   Checked In — Attended
-                                </span>
-                                {evt.check_in_time && (
-                                  <span style={{ fontSize: '0.75rem', color: '#666', paddingLeft: '0.5rem' }}>
-                                     Checked in at: {new Date(evt.check_in_time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          } else if (isPast || isToday) {
-                            return (
-                              <span style={{
-                                display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                                background: '#FFEBEE', color: '#C62828',
-                                borderRadius: '20px', padding: '0.3rem 0.75rem',
-                                fontSize: '0.8rem', fontWeight: 600, marginTop: '0.75rem', width: 'fit-content'
-                              }}>
-                                 Not Checked In — Not Attended
-                              </span>
-                            );
-                          } else {
-                            return (
-                              <span style={{
-                                display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                                background: '#E3F2FD', color: '#1565C0',
-                                borderRadius: '20px', padding: '0.3rem 0.75rem',
-                                fontSize: '0.8rem', fontWeight: 600, marginTop: '0.75rem', width: 'fit-content'
-                              }}>
-                                ️ Registered — Awaiting Event
-                              </span>
-                            );
-                          }
-                        })()}
-                      </div>
-                      {evt.brochure_path && (
-                        <div style={styles.cardFooter}>
-                          <button
-                            style={styles.brochureBtn}
-                            onClick={() => {
-                              const path = evt.brochure_path.startsWith("uploads/") 
-                                ? evt.brochure_path 
-                                : `uploads/${evt.brochure_path}`;
-                              window.open(`${API_BASE}/${path}`, "_blank");
-                            }}
-                          >
-                             View Brochure
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              )}
+              <StudentEvents />
             </div>
           )}
 
@@ -442,22 +332,12 @@ export default function StudentDashboard() {
                 </div>
               ) : myEventsError ? (
                 <div style={styles.centreState}>
-                  <span style={{ fontSize: "2.5rem" }}>️</span>
+                  <span style={{ fontSize: "2.5rem" }}>⚠️</span>
                   <p style={styles.stateText}>{myEventsError}</p>
                 </div>
               ) : (
                 <EventCalendar events={myEvents} />
               )}
-            </div>
-          )}
-
-          {(activeTab === 'Dashboard') && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-              <div style={{ borderTop: '2px solid #EEE', paddingTop: '2rem' }}>
-                <h3 style={{ fontSize: '1.5rem', color: theme.colors.maroon, marginBottom: '0.5rem', fontWeight: 'bold' }}>Discover New Events</h3>
-                <p style={{ color: '#666', marginBottom: '1.5rem' }}>Browse all available university events and secure your spot.</p>
-                <StudentEvents />
-              </div>
             </div>
           )}
 
@@ -468,18 +348,7 @@ export default function StudentDashboard() {
           {activeTab === 'Settings' && <SettingsView user={user} />}
 
           {activeTab === 'Archive' && (
-            <div>
-              <h2 style={{ fontSize: '1.4rem', color: theme.colors.maroon, marginBottom: '1.5rem' }}>
-                Archive
-              </h2>
-              <EventArchive user={user} />
-            </div>
-          )}
-
-          {activeTab === 'Reports' && (
-            <div>
-              <ReportsView user={user} />
-            </div>
+            <EventArchive user={user} />
           )}
         </div>
     </DashboardLayout>
@@ -676,6 +545,7 @@ const styles = {
     position: "relative",
   },
   welcomeTitle: {
+    fontFamily: theme.fonts.serif,
     fontSize: "1.6rem",
     fontWeight: theme.fontWeights.bold,
     color: theme.colors.white,

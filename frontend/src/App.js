@@ -88,7 +88,7 @@ function AppRoutes() {
       } />
       <Route path="/sa-dashboard" element={
         <ProtectedRoute allowedRoles={['student_affairs']}>
-          <StudentAffairsDashboard />
+          <ExecutiveDashboard />
         </ProtectedRoute>
       } />
 
@@ -100,7 +100,7 @@ function AppRoutes() {
       
       {/* Events Admin Dashboard */}
       <Route path="/events-admin-dashboard" element={<ProtectedRoute allowedRoles={['events_admin']}><EventsAdminDashboard /></ProtectedRoute>} />
-      <Route path="/admin-reports/event/:eventId" element={<ProtectedRoute allowedRoles={['events_admin']}><EventDrillDownPage /></ProtectedRoute>} />
+      <Route path="/admin-reports/event/:eventId" element={<ProtectedRoute allowedRoles={['events_admin', 'admin', 'faculty', 'hod', 'dean', 'director', 'provc', 'pro_vc', 'vc', 'student_affairs_director']}><EventDrillDownPage /></ProtectedRoute>} />
       
       {/* Protected: QR Scanner */}
       <Route path="/scanner" element={

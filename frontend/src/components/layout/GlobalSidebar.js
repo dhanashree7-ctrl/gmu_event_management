@@ -19,6 +19,8 @@ import {
   UserCheck,
   ScanLine,
   ListChecks,
+  Users,
+  PlusCircle,
 } from 'lucide-react';
 import theme from '../../theme';
 
@@ -45,6 +47,7 @@ const ROLE_ALIAS = {
 const ROLE_NAV_CONFIG = {
   faculty: [
     { label: 'Dashboard',      icon: LayoutDashboard, id: 'Dashboard' },
+    { label: 'New Request',    icon: PlusCircle,      id: 'New Request' },
     { label: 'My Events',      icon: Ticket,          id: 'Events' },
     { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
     { label: 'Archive',        icon: Archive,         id: 'Archive' },
@@ -86,24 +89,18 @@ const ROLE_NAV_CONFIG = {
     { label: 'Settings',       icon: Settings,        id: 'Settings' },
   ],
   events_admin: [
-    { label: 'Dashboard',         icon: LayoutDashboard, id: 'Dashboard' },
-    { label: 'Action Center',     icon: CheckSquare,     id: 'Action Center' },
-    { label: 'Approved by me',    icon: ClipboardCheck,  id: 'Approved by me' },
-    { label: 'My Events',         icon: Ticket,          id: 'Events' },
-    { label: 'Configure Routing', icon: Route,           id: 'Configure Routing' },
-    { label: 'Present Routing',   icon: ListChecks,      id: 'Present Routing' },
-    { label: 'Calendar',          icon: Calendar,        id: 'Calendar' },
-    { label: 'Archive',           icon: Archive,         id: 'Archive' },
-    { label: 'Reports',           icon: FileText,        id: 'Reports' },
-    { label: 'Notifications',     icon: Bell,            id: 'Notifications' },
-    { label: 'Settings',          icon: Settings,        id: 'Settings' },
+    { label: 'Dashboard',           icon: LayoutDashboard, id: 'Dashboard' },
+    { label: 'Current Routings',    icon: ListChecks,      id: 'Current Routings' },
+    { label: 'Configure Routing',   icon: Route,           id: 'Configure Routing' },
+    { label: 'Manage Users',        icon: Users,           id: 'Manage Users' },
+    { label: 'Archive',             icon: Archive,         id: 'Archive' },
+    { label: 'Reports & Analytics', icon: FileText,        id: 'Reports & Analytics' },
+    { label: 'Settings',            icon: Settings,        id: 'Settings' },
   ],
   student: [
     { label: 'Dashboard',      icon: LayoutDashboard, id: 'Dashboard' },
     { label: 'My Events',      icon: CalendarCheck,   id: 'Events' },
     { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
-    { label: 'Archive',        icon: Archive,         id: 'Archive' },
-    { label: 'Reports',        icon: FileText,        id: 'Reports' },
     { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
     { label: 'Settings',       icon: Settings,        id: 'Settings' },
   ],

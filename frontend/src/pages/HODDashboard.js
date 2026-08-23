@@ -10,7 +10,8 @@ import ReportsView from '../components/ReportsView';
 import NotificationView from '../components/NotificationView';
 import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
-import { Clock, CheckSquare, FileText, X } from 'lucide-react';
+import SettingsView from '../components/SettingsView';
+import { Clock, CheckCircle, CheckSquare, FileText, X } from 'lucide-react';
 export default function HODDashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -307,26 +308,30 @@ export default function HODDashboard() {
 
   return (
     <DashboardLayout role="hod" activeNav={activeNav} onNavChange={setActiveNav}>
-      <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+      <>
           
           {/* Dashboard View */}
           {activeNav === 'Dashboard' && (
             <>
               <div style={{
-                background: 'linear-gradient(135deg, #7A110A 0%, #2A0404 100%)',
-                borderRadius: '16px',
-                padding: '2rem',
+                background: theme.gradients.header,
+                borderRadius: theme.radii.xl,
+                padding: '2rem 1.5rem',
+                minHeight: '120px',
                 color: '#fff',
                 marginBottom: '2rem',
                 position: 'relative',
                 overflow: 'hidden',
-                boxShadow: '0 10px 30px rgba(122,17,10,0.2)'
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
               }}>
-                <div>
-                  <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>
-                    Good {getGreeting()}, {user?.name?.split(' ')[0]} 👋
+                <div style={{ zIndex: 1 }}>
+                  <h2 style={{ fontFamily: theme.fonts.serif, margin: '0 0 0.5rem', fontSize: 'clamp(1.2rem, 2vw, 1.8rem)', fontWeight: 'bold', textShadow: '0 2px 4px rgba(0,0,0,0.3)', lineHeight: '1.4' }}>
+                    Good {getGreeting()}, {user?.name?.split(' ')[0]} 
                   </h2>
-                  <p style={{ margin: '0.5rem 0 0', opacity: 0.9, fontSize: '1.1rem' }}>
+                  <p style={{ margin: 0, opacity: 0.9, fontSize: '0.9rem' }}>
                     Manage department approvals and review event metrics.
                   </p>
                 </div>
@@ -339,8 +344,8 @@ export default function HODDashboard() {
 
               <div style={styles.statsRow}>
                 <div style={styles.statCard}>
-                  <div style={{...styles.statIcon, background: '#C17F2418'}}>
-                    <span style={styles.statEmoji}>⏳</span>
+                  <div style={{...styles.statIcon, background: '#C17F2418', color: '#C17F24'}}>
+                    <Clock size={24} color="#C17F24" />
                   </div>
                   <div>
                     <p style={styles.statValue}>{pendingEvents.length}</p>
@@ -348,8 +353,8 @@ export default function HODDashboard() {
                   </div>
                 </div>
                 <div style={styles.statCard}>
-                  <div style={{...styles.statIcon, background: '#2E7D3218'}}>
-                    <span style={styles.statEmoji}>✅</span>
+                  <div style={{...styles.statIcon, background: '#2E7D3218', color: '#2E7D32'}}>
+                    <CheckCircle size={24} color="#2E7D32" />
                   </div>
                   <div>
                     <p style={styles.statValue}>{approvedEvents.length}</p>
@@ -358,22 +363,26 @@ export default function HODDashboard() {
                 </div>
               </div>
 
-              <DashboardMetrics 
-                data={[
-                  { name: 'Pending Approvals', count: pendingEvents.length },
-                  { name: 'Approved Events', count: approvedEvents.length },
-                  { name: 'My Proposals', count: myEvents.length }
-                ]} 
-                type="overview" 
-                barName="Total Items"
-              />
-
-              {systemEvents.length > 0 && (
-                <div style={{ marginTop: '2rem' }}>
-                  <h3 style={{ fontSize: '1.2rem', color: '#555', marginBottom: '1rem' }}>Department Event Distribution</h3>
-                  <DashboardMetrics data={categoryData} type="category" barName="Total Events" />
+              <div style={{ display: 'grid', gridTemplateColumns: systemEvents.length > 0 ? '1fr 1fr' : '1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
+                <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
+                  <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
+                  <DashboardMetrics 
+                    data={[
+                      { name: 'Pending Approvals', count: pendingEvents.length },
+                      { name: 'Approved Events', count: approvedEvents.length },
+                      { name: 'My Proposals', count: myEvents.length }
+                    ]} 
+                    type="overview" 
+                    barName="Total Items"
+                  />
                 </div>
-              )}
+                {systemEvents.length > 0 && (
+                  <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
+                    <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Department Event Distribution</h3>
+                    <DashboardMetrics data={categoryData} type="category" barName="Total Events" chartType="pie" />
+                  </div>
+                )}
+              </div>
             </>
           )}
 
@@ -400,7 +409,7 @@ export default function HODDashboard() {
                           <span style={s(styles.tableCell, { flex: 1 })}>Category</span>
                           <span style={s(styles.tableCell, { flex: 1 })}>Budget</span>
                           <span style={s(styles.tableCell, { flex: 1 })}>Brochure</span>
-                          <span style={s(styles.tableCell, { flex: 2, textAlign: 'right' })}>Actions</span>
+                          <span style={s(styles.tableCell, { flex: '0 0 190px', minWidth: '190px', textAlign: 'right', overflow: 'visible' })}>Actions</span>
                         </div>
                         {pendingEvents.map(ev => (
                           <div key={ev.id} style={styles.tableRow}>
@@ -433,7 +442,7 @@ export default function HODDashboard() {
                                 <a href={`${API_BASE}/${ev.brochure_file_path || ev.brochure_path}`} target="_blank" rel="noreferrer" style={{ color: theme.colors.maroon, textDecoration: 'underline' }}>View</a>
                               ) : 'N/A'}
                             </span>
-                            <span style={s(styles.tableCell, { flex: 2, textAlign: 'right' })}>
+                            <span style={s(styles.tableCell, { flex: '0 0 190px', minWidth: '190px', textAlign: 'right', overflow: 'visible', display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' })}>
                               <button
                                 style={styles.approveBtn}
                                 onClick={() => setRemarksModal({ open: true, eventId: ev.id, action: 'approve', scale: ev.event_scale, proposer_role: ev.initiator_role })}
@@ -904,47 +913,63 @@ export default function HODDashboard() {
                   <p style={styles.emptyText}>You haven't proposed any events yet.</p>
                 </div>
               ) : (
-                <div style={styles.grid}>
-                  {myEvents.map(ev => (
-                    <div key={ev.id} style={styles.eventCard}>
-                      <h3 style={styles.eventTitle}>{ev.event_title}</h3>
-                      <p style={styles.eventDetail}><strong>Scale:</strong> <span style={{textTransform:'capitalize'}}>{ev.event_scale || 'N/A'}</span></p>
-                      <p style={styles.eventDetail}><strong>Category:</strong> {ev.category}</p>
-                      <p style={styles.eventDetail}><strong>Budget:</strong> {Number(ev.budget).toLocaleString('en-IN')}</p>
-                      {ev.brochure_path && (
-                        <button
-                          style={{ padding: '6px 12px', backgroundColor: '#333', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start', marginTop: '0.2rem' }}
-                          onClick={() => window.open(`${API_BASE}/${ev.brochure_path.startsWith('uploads/') ? ev.brochure_path : `uploads/${ev.brochure_path}`}`, '_blank')}
-                        >
-                          View Brochure
-                        </button>
-                      )}
-                      <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
-                        <span style={{alignSelf: 'flex-start', ...styles.statusBadge(ev.current_status)}}>{ev.current_status}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0, overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #eaeaea' }}>
+                  {/* Table header */}
+                  <div style={{ ...styles.tableRow, ...styles.tableHeader, borderBottom: '1px solid #eaeaea' }}>
+                    <span style={{ ...styles.tableCell, flex: 3 }}>Event Title</span>
+                    <span style={{ ...styles.tableCell, flex: 1 }}>Scale</span>
+                    <span style={{ ...styles.tableCell, flex: 1 }}>Category</span>
+                    <span style={{ ...styles.tableCell, flex: 1 }}>Budget</span>
+                    <span style={{ ...styles.tableCell, flex: 1 }}>Status</span>
+                  </div>
+                  {myEvents.map((ev) => (
+                    <div key={ev.id} style={styles.tableRow}>
+                      <span style={{ ...styles.tableCell, flex: 3, fontWeight: 500, whiteSpace: 'normal', paddingRight: '1rem' }}>
+                        {ev.event_title}
+                      </span>
+                      <span style={{ ...styles.tableCell, flex: 1 }}>
+                        <span style={styles.scaleChip}>{ev.event_scale || 'N/A'}</span>
+                      </span>
+                      <span style={{ ...styles.tableCell, flex: 1 }}>
+                        <span style={styles.categoryChip}>{ev.category}</span>
+                      </span>
+                      <span style={{ ...styles.tableCell, flex: 1 }}>
+                        ₹{Number(ev.budget).toLocaleString('en-IN')}
+                      </span>
+                      <span style={{ ...styles.tableCell, flex: 1 }}>
+                        <span style={{ ...styles.statusBadge(ev.current_status), display: 'inline-block', marginBottom: '8px' }}>{ev.current_status}</span>
+                        {ev.brochure_path && (
+                          <button
+                            style={{ display: 'block', padding: '5px 10px', backgroundColor: '#333', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%', marginBottom: '6px' }}
+                            onClick={() => window.open(`${API_BASE}/${ev.brochure_path.startsWith('uploads/') ? ev.brochure_path : `uploads/${ev.brochure_path}`}`, '_blank')}
+                          >
+                            Brochure
+                          </button>
+                        )}
                         {['published', 'completed', 'pending_report'].includes(ev.current_status?.toLowerCase()) && (
                           <button
-                            style={{ padding: '6px 12px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
+                            style={{ display: 'block', padding: '5px 10px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%', marginBottom: '6px' }}
                             onClick={() => {
                               setRosterEventId(ev.id);
                               setRosterModalOpen(true);
                             }}
                           >
-                            View Roster
+                            Roster
                           </button>
                         )}
                         {ev.current_status?.toLowerCase() === 'completed' && (
                           <button
-                            style={{ padding: '6px 12px', backgroundColor: '#673AB7', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
+                            style={{ display: 'block', padding: '5px 10px', backgroundColor: '#673AB7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
                             onClick={() => {
                               setFeedbackEventId(ev.id);
                               setFeedbackModalOpen(true);
                               fetchFeedbackData(ev.id);
                             }}
                           >
-                            Insights / Feedback 
+                            Insights
                           </button>
                         )}
-                      </div>
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -967,41 +992,68 @@ export default function HODDashboard() {
               ) : (
                 <div style={styles.grid}>
                   {approvedEvents.map(ev => (
-                    <div key={ev.id} style={styles.eventCard}>
-                      <h3 style={styles.eventTitle}>{ev.event_title}</h3>
-                      <p style={styles.eventDetail}><strong>Proposed By:</strong> {ev.proposed_by}</p>
-                      <p style={styles.eventDetail}><strong>Scale:</strong> <span style={styles.scaleChip}>{ev.event_scale}</span></p>
-                      <p style={styles.eventDetail}><strong>Category:</strong> {ev.category}</p>
-                      <p style={styles.eventDetail}><strong>Budget:</strong> {Number(ev.budget).toLocaleString('en-IN')}</p>
-                      <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
-                        <span style={{alignSelf: 'flex-start', ...styles.statusBadge(ev.current_status)}}>{ev.current_status}</span>
+                    <div key={ev.id} style={{...styles.eventCard, position: 'relative', overflow: 'hidden'}}>
+                      {/* Accent top border */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, ' + theme.colors.maroon + ', #FDD06F)' }} />
+                      
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', marginTop: '0.25rem' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.15rem', color: theme.colors.maroon, fontWeight: 'bold', lineHeight: 1.3, paddingRight: '0.5rem', flex: 1 }}>{ev.event_title}</h3>
+                        <span style={{ ...styles.statusBadge(ev.current_status), margin: 0, padding: '4px 10px', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{ev.current_status}</span>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', flexGrow: 1, marginBottom: '1.25rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#777' }}>Proposed By</span>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>{ev.proposed_by}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#777' }}>Category</span>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>{ev.category}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#777' }}>Scale</span>
+                          <span style={styles.scaleChip}>{ev.event_scale}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem', paddingTop: '0.6rem', borderTop: '1px dashed #eee' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#777' }}>Budget</span>
+                          <span style={{ fontSize: '1.05rem', fontWeight: 700, color: theme.colors.maroon }}>₹{Number(ev.budget).toLocaleString('en-IN')}</span>
+                        </div>
+                      </div>
+
+                      <div style={{ paddingTop: '1rem', borderTop: '1px solid #f0f0f0', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                         <button
-                          style={{ padding: '6px 12px', backgroundColor: '#e0e0e0', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
+                          style={{ flex: '1 1 auto', padding: '8px 12px', backgroundColor: '#f0f0f0', color: '#333', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'background 0.2s' }}
+                          onMouseOver={(e) => e.target.style.backgroundColor = '#e0e0e0'}
+                          onMouseOut={(e) => e.target.style.backgroundColor = '#f0f0f0'}
                           onClick={() => navigate(`/event-details/${ev.id}`)}
                         >
-                          Track Timeline 
+                          Timeline 
                         </button>
                         {['published', 'completed', 'pending_report'].includes(ev.current_status?.toLowerCase()) && (
                           <button
-                            style={{ padding: '6px 12px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
+                            style={{ flex: '1 1 auto', padding: '8px 12px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'background 0.2s' }}
+                            onMouseOver={(e) => e.target.style.backgroundColor = '#6A0606'}
+                            onMouseOut={(e) => e.target.style.backgroundColor = theme.colors.maroon}
                             onClick={() => {
                               setRosterEventId(ev.id);
                               setRosterModalOpen(true);
                             }}
                           >
-                            View Roster
+                            Roster
                           </button>
                         )}
                         {ev.current_status?.toLowerCase() === 'completed' && (
                           <button
-                            style={{ padding: '6px 12px', backgroundColor: '#673AB7', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
+                            style={{ flex: '1 1 auto', padding: '8px 12px', backgroundColor: '#673AB7', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'background 0.2s' }}
+                            onMouseOver={(e) => e.target.style.backgroundColor = '#512DA8'}
+                            onMouseOut={(e) => e.target.style.backgroundColor = '#673AB7'}
                             onClick={() => {
                               setFeedbackEventId(ev.id);
                               setFeedbackModalOpen(true);
                               fetchFeedbackData(ev.id);
                             }}
                           >
-                            Insights / Feedback 
+                            Insights 
                           </button>
                         )}
                       </div>
@@ -1032,7 +1084,11 @@ export default function HODDashboard() {
             <NotificationView user={user} />
           )}
 
-        </div>
+          {activeNav === 'Settings' && (
+            <SettingsView user={user} />
+          )}
+
+        </>
 
       {/*  Attendee Roster Modal  */}
       {rosterModalOpen && (
@@ -1334,12 +1390,12 @@ const styles = {
   
   // Tables & Lists
   tableWrap: { overflowX: 'auto' },
-  tableRow: { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1rem', borderBottom: '1px solid #f0ede8', minWidth: '700px' },
+  tableRow: { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1rem', borderBottom: '1px solid #f0ede8', minWidth: '850px' },
   tableHeader: { background: '#FAF8F5', borderRadius: '6px 6px 0 0', fontWeight: 'bold', fontSize: '0.75rem', color: '#666', textTransform: 'uppercase' },
   tableCell: { fontSize: '0.875rem', color: '#444', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   categoryChip: { background: theme.colors.goldLight, color: '#7a4a00', borderRadius: '12px', padding: '0.2rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold' },
   scaleChip: { background: '#E0E7FF', color: '#3730A3', borderRadius: '12px', padding: '0.2rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'capitalize' },
-  approveBtn: { background: '#E6F4EA', color: '#137333', border: '1px solid #A5D6A7', padding: '0.5rem 0.9rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', marginRight: '0.5rem', fontSize: '0.8rem', transition: 'all 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' },
+  approveBtn: { background: '#E6F4EA', color: '#137333', border: '1px solid #A5D6A7', padding: '0.5rem 0.9rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', marginRight: '0.3rem', fontSize: '0.8rem', transition: 'all 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' },
   rejectBtn: { background: '#FCE8E6', color: '#C5221F', border: '1px solid #F8BBD0', padding: '0.5rem 0.9rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem', transition: 'all 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' },
   
   // Empty states
@@ -1350,10 +1406,10 @@ const styles = {
   successBox: { background: '#E8F5E9', color: '#1B5E20', padding: '1rem', borderRadius: '6px', marginBottom: '1.5rem', border: '1px solid #A5D6A7' },
   
   // Grid
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' },
-  eventCard: { padding: '1.5rem', background: '#FAFAFA', border: '1px solid #E5E7EB', borderRadius: '8px' },
-  eventTitle: { margin: '0 0 1rem', fontSize: '1.1rem', color: theme.colors.maroon },
-  eventDetail: { margin: '0 0 0.5rem', fontSize: '0.9rem', color: '#444' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', alignItems: 'stretch' },
+  eventCard: { padding: '1.75rem', background: '#ffffff', border: '1px solid #eaeaea', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease-in-out' },
+  eventTitle: { margin: '0 0 1rem', fontSize: '1.15rem', color: theme.colors.maroon, fontWeight: 'bold' },
+  eventDetail: { margin: '0 0 0.6rem', fontSize: '0.95rem', color: '#555' },
   
   statusBadge: (status) => {
     let bg = '#E5E7EB'; let color = '#374151';
@@ -1364,4 +1420,4 @@ const styles = {
   }
 };
 
-function getGreeting() { const h = new Date().getHours(); if (h < 12) return 'Morning'; if (h < 17) return 'Afternoon'; return 'Evening'; }
+function getGreeting() { const h = new Date().getHours(); if (h < 4) return 'Evening'; if (h < 12) return 'Morning'; if (h < 17) return 'Afternoon'; return 'Evening'; }

@@ -12,6 +12,7 @@ import NotificationBell from '../components/NotificationBell';
 import UserProfileDropdown from '../components/UserProfileDropdown';
 import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
+import { Clock, CheckCircle } from 'lucide-react';
 
 export default function ExecutiveDashboard() {
   const navigate = useNavigate();
@@ -324,41 +325,40 @@ export default function ExecutiveDashboard() {
         {/* Dashboard View */}
         {activeNav === 'Dashboard' && (
           <>
-            <div style={{
-              background: 'linear-gradient(135deg, #7A110A 0%, #2A0404 100%)',
-              borderRadius: '16px',
-              padding: '2rem',
-              color: '#fff',
-              marginBottom: '2rem',
-              position: 'relative',
-              overflow: 'hidden',
-              boxShadow: '0 10px 30px rgba(122,17,10,0.2)'
-            }}>
+            <div style={styles.welcomeBanner}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold' }}>
-                  Good {getGreeting()}, {user?.name?.split(' ')[0]} 👋
+                <h2 style={styles.welcomeTitle}>
+                  Good {getGreeting()}, {user?.name?.split(' ')[0]}
                 </h2>
-                <p style={{ margin: '0.5rem 0 0', opacity: 0.9, fontSize: '1.1rem' }}>
-                  Metrics & Overview
+                <p style={styles.welcomeSub}>
+                  Review event metrics and pending approvals across your executive pipeline.
                 </p>
               </div>
-              <div style={{
-                position: 'absolute', right: '-20px', top: '-20px', fontSize: '120px', opacity: 0.1, transform: 'rotate(15deg)'
-              }}>
-                🏛️
+              <div style={styles.welcomeDecor}>
+                <span style={styles.welcomeIcon}>🏛️</span>
               </div>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-                <div style={{ padding: '1.5rem', background: '#FAFAFA', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Pending Reviews</div>
-                  <div style={{ fontSize: '2rem', color: theme.colors.maroon, fontWeight: 'bold' }}>{pendingEvents.length}</div>
+            <div style={styles.statsRow}>
+              <div style={styles.statCard}>
+                <div style={{ ...styles.statIcon, background: '#C17F2418', color: '#C17F24' }}>
+                  <Clock size={24} color="#C17F24" />
                 </div>
-                <div style={{ padding: '1.5rem', background: '#FAFAFA', border: '1px solid #E5E7EB', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem', fontWeight: 'bold', textTransform: 'uppercase' }}>My Approvals</div>
-                  <div style={{ fontSize: '2rem', color: '#137333', fontWeight: 'bold' }}>{approvedEvents.length}</div>
+                <div>
+                  <p style={styles.statValue}>{pendingEvents.length}</p>
+                  <p style={styles.statLabel}>Pending Reviews</p>
                 </div>
               </div>
+              <div style={styles.statCard}>
+                <div style={{ ...styles.statIcon, background: '#2E7D3218', color: '#2E7D32' }}>
+                  <CheckCircle size={24} color="#2E7D32" />
+                </div>
+                <div>
+                  <p style={styles.statValue}>{approvedEvents.length}</p>
+                  <p style={styles.statLabel}>My Approvals</p>
+                </div>
+              </div>
+            </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: systemEvents.length > 0 ? '1fr 1fr' : '1fr', gap: '1.5rem', marginTop: '2rem' }}>
                 <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
@@ -500,47 +500,63 @@ export default function ExecutiveDashboard() {
                   <p style={styles.emptyText}>You haven't proposed any events yet.</p>
                 </div>
               ) : (
-                <div style={styles.grid}>
-                  {myEvents.map(ev => (
-                    <div key={ev.id} style={styles.eventCard}>
-                      <h3 style={styles.eventTitle}>{ev.event_title}</h3>
-                      <p style={styles.eventDetail}><strong>Scale:</strong> {ev.event_scale}</p>
-                      <p style={styles.eventDetail}><strong>Category:</strong> {ev.category}</p>
-                      <p style={styles.eventDetail}><strong>Budget:</strong> ₹{Number(ev.budget).toLocaleString('en-IN')}</p>
-                      <p style={styles.eventDetail}>
-                        <strong>Brochure:</strong>{' '}
-                        {ev.brochure_path ? (
-                          <a href={`${API_BASE}/${ev.brochure_path}`} target="_blank" rel="noopener noreferrer" style={{ color: theme.colors.maroon }}>
-                            View Brochure
-                          </a>
-                        ) : 'N/A'}
-                      </p>
-                      <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
-                        <span style={{alignSelf: 'flex-start', ...styles.statusBadge(ev.current_status)}}>{ev.current_status}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0, overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #eaeaea' }}>
+                  {/* Table header */}
+                  <div style={{ ...styles.tableRow, ...styles.tableHeader, borderBottom: '1px solid #eaeaea' }}>
+                    <span style={{ ...styles.tableCell, flex: 3 }}>Event Title</span>
+                    <span style={{ ...styles.tableCell, flex: 1 }}>Scale</span>
+                    <span style={{ ...styles.tableCell, flex: 1 }}>Category</span>
+                    <span style={{ ...styles.tableCell, flex: 1 }}>Budget</span>
+                    <span style={{ ...styles.tableCell, flex: 1 }}>Status</span>
+                  </div>
+                  {myEvents.map((ev) => (
+                    <div key={ev.id} style={styles.tableRow}>
+                      <span style={{ ...styles.tableCell, flex: 3, fontWeight: 500, whiteSpace: 'normal', paddingRight: '1rem' }}>
+                        {ev.event_title}
+                      </span>
+                      <span style={{ ...styles.tableCell, flex: 1 }}>
+                        <span style={styles.scaleChip}>{ev.event_scale || 'N/A'}</span>
+                      </span>
+                      <span style={{ ...styles.tableCell, flex: 1 }}>
+                        <span style={styles.categoryChip}>{ev.category}</span>
+                      </span>
+                      <span style={{ ...styles.tableCell, flex: 1 }}>
+                        ₹{Number(ev.budget).toLocaleString('en-IN')}
+                      </span>
+                      <span style={{ ...styles.tableCell, flex: 1 }}>
+                        <span style={{ ...styles.statusBadge(ev.current_status), display: 'inline-block', marginBottom: '8px' }}>{ev.current_status}</span>
+                        {ev.brochure_path && (
+                          <button
+                            style={{ display: 'block', padding: '5px 10px', backgroundColor: '#333', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%', marginBottom: '6px' }}
+                            onClick={() => window.open(`${API_BASE}/${ev.brochure_path.startsWith('uploads/') ? ev.brochure_path : `uploads/${ev.brochure_path}`}`, '_blank')}
+                          >
+                            Brochure
+                          </button>
+                        )}
                         {['published', 'completed', 'pending_report'].includes(ev.current_status?.toLowerCase()) && (
                           <button
-                            style={{ padding: '6px 12px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
+                            style={{ display: 'block', padding: '5px 10px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%', marginBottom: '6px' }}
                             onClick={() => {
                               setRosterEventId(ev.id);
                               setRosterModalOpen(true);
                             }}
                           >
-                            View Roster
+                            Roster
                           </button>
                         )}
                         {ev.current_status?.toLowerCase() === 'completed' && (
                           <button
-                            style={{ padding: '6px 12px', backgroundColor: '#673AB7', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
+                            style={{ display: 'block', padding: '5px 10px', backgroundColor: '#673AB7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
                             onClick={() => {
                               setFeedbackEventId(ev.id);
                               setFeedbackModalOpen(true);
                               fetchFeedbackData(ev.id);
                             }}
                           >
-                            Insights / Feedback 📊
+                            Insights
                           </button>
                         )}
-                      </div>
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -1006,42 +1022,72 @@ export default function ExecutiveDashboard() {
               ) : (
                 <div style={styles.grid}>
                   {approvedEvents.map(ev => (
-                    <div key={ev.id} style={styles.eventCard}>
-                      <h3 style={styles.eventTitle}>{ev.event_title}</h3>
-                      <p style={styles.eventDetail}><strong>Proposed By:</strong> {ev.proposed_by}</p>
-                      <p style={styles.eventDetail}><strong>Department:</strong> {ev.department}</p>
-                      <p style={styles.eventDetail}><strong>Scale:</strong> <span style={styles.scaleChip}>{ev.event_scale}</span></p>
-                      <p style={styles.eventDetail}><strong>Category:</strong> {ev.category}</p>
-                      <p style={styles.eventDetail}><strong>Budget:</strong> ₹{Number(ev.budget).toLocaleString('en-IN')}</p>
-                      <div style={{marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
-                        <span style={{alignSelf: 'flex-start', ...styles.statusBadge(ev.current_status)}}>{ev.current_status}</span>
+                    <div key={ev.id} style={{...styles.eventCard, position: 'relative', overflow: 'hidden'}}>
+                      {/* Accent top border */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, ' + theme.colors.maroon + ', #FDD06F)' }} />
+                      
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', marginTop: '0.25rem' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.15rem', color: theme.colors.maroon, fontWeight: 'bold', lineHeight: 1.3, paddingRight: '0.5rem', flex: 1 }}>{ev.event_title}</h3>
+                        <span style={{ ...styles.statusBadge(ev.current_status), margin: 0, padding: '4px 10px', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>{ev.current_status}</span>
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', flexGrow: 1, marginBottom: '1.25rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#777' }}>Proposed By</span>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>{ev.proposed_by}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#777' }}>Department</span>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>{ev.department}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#777' }}>Category</span>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#333' }}>{ev.category}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#777' }}>Scale</span>
+                          <span style={styles.scaleChip}>{ev.event_scale}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.25rem', paddingTop: '0.6rem', borderTop: '1px dashed #eee' }}>
+                          <span style={{ fontSize: '0.85rem', color: '#777' }}>Budget</span>
+                          <span style={{ fontSize: '1.05rem', fontWeight: 700, color: theme.colors.maroon }}>₹{Number(ev.budget).toLocaleString('en-IN')}</span>
+                        </div>
+                      </div>
+
+                      <div style={{ paddingTop: '1rem', borderTop: '1px solid #f0f0f0', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                         <button
-                          style={{ padding: '6px 12px', backgroundColor: '#e0e0e0', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
+                          style={{ flex: '1 1 auto', padding: '8px 12px', backgroundColor: '#f0f0f0', color: '#333', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'background 0.2s' }}
+                          onMouseOver={(e) => e.target.style.backgroundColor = '#e0e0e0'}
+                          onMouseOut={(e) => e.target.style.backgroundColor = '#f0f0f0'}
                           onClick={() => navigate(`/event-details/${ev.id}`)}
                         >
-                          Track Timeline 🔍
+                          Timeline
                         </button>
                         {['published', 'completed', 'pending_report'].includes(ev.current_status?.toLowerCase()) && (
                           <button
-                            style={{ padding: '6px 12px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
+                            style={{ flex: '1 1 auto', padding: '8px 12px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'background 0.2s' }}
+                            onMouseOver={(e) => e.target.style.backgroundColor = '#6A0606'}
+                            onMouseOut={(e) => e.target.style.backgroundColor = theme.colors.maroon}
                             onClick={() => {
                               setRosterEventId(ev.id);
                               setRosterModalOpen(true);
                             }}
                           >
-                            View Roster
+                            Roster
                           </button>
                         )}
                         {ev.current_status?.toLowerCase() === 'completed' && (
                           <button
-                            style={{ padding: '6px 12px', backgroundColor: '#673AB7', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold', alignSelf: 'flex-start' }}
+                            style={{ flex: '1 1 auto', padding: '8px 12px', backgroundColor: '#673AB7', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'background 0.2s' }}
+                            onMouseOver={(e) => e.target.style.backgroundColor = '#512DA8'}
+                            onMouseOut={(e) => e.target.style.backgroundColor = '#673AB7'}
                             onClick={() => {
                               setFeedbackEventId(ev.id);
                               setFeedbackModalOpen(true);
                               fetchFeedbackData(ev.id);
                             }}
                           >
-                            Insights / Feedback 📊
+                            Insights
                           </button>
                         )}
                       </div>
@@ -1069,9 +1115,13 @@ export default function ExecutiveDashboard() {
           )}
 
           {activeNav === 'Notifications' && (
-            <NotificationView />
+            <NotificationView user={user} />
           )}
-        </>
+
+          {activeNav === 'Settings' && (
+            <SettingsView user={user} />
+          )}
+      </>
 
       {/* ── Attendee Roster Modal ──────────────────────────────── */}
       {rosterModalOpen && (
@@ -1262,29 +1312,83 @@ export default function ExecutiveDashboard() {
 
 // ── Styles (Matching FacultyDashboard) ────────────────────────────────────────────────────────
 const styles = {
-  root: { display: 'flex', minHeight: '100vh', background: theme.colors.offWhite || '#FAF8F5', fontFamily: theme.fonts.sansSerif },
-  
-  // Sidebar
-  sidebar: { width: '240px', minHeight: '100vh', background: theme.gradients.header, display: 'flex', flexDirection: 'column', padding: '1.5rem 0', transition: 'width 0.25s ease', flexShrink: 0, position: 'sticky', top: 0, overflowX: 'hidden' },
-  sidebarCollapsed: { width: '64px' },
-  sidebarLogo: { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 1.25rem 1rem', whiteSpace: 'nowrap', overflow: 'hidden' },
-  sidebarCrest: { fontSize: '1.8rem', color: theme.colors.gold, flexShrink: 0 },
-  sidebarLogoName: { fontFamily: theme.fonts.serif, fontSize: '0.95rem', fontWeight: 'bold', color: theme.colors.gold, lineHeight: 1.1 },
-  sidebarLogoSub: { fontSize: '0.6rem', color: 'rgba(253,208,111,0.6)', letterSpacing: '0.06em', textTransform: 'uppercase' },
-  divider: { height: '1px', background: 'rgba(253,208,111,0.15)', margin: '0 1.25rem 1rem' },
-  
-  sidebarNav: { display: 'flex', flexDirection: 'column', gap: '0.2rem', padding: '0 0.75rem' },
-  navItem: { display: 'flex', alignItems: 'center', gap: '0.85rem', padding: '0.65rem 0.75rem', borderRadius: '6px', cursor: 'pointer', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.65)', transition: '0.2s', whiteSpace: 'nowrap', overflow: 'hidden', fontSize: '0.9rem' },
-  navItemActive: { background: 'rgba(253,208,111,0.15)', color: theme.colors.gold, fontWeight: 'bold' },
-  navIcon: { fontSize: '1.1rem', flexShrink: 0, width: '22px', textAlign: 'center' },
-  navLabel: { fontSize: '0.875rem' },
-  
-  sidebarUserCard: { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem 1.25rem', borderTop: '1px solid rgba(253,208,111,0.15)', overflow: 'hidden' },
-  userAvatar: { width: '36px', height: '36px', borderRadius: '50%', background: theme.colors.gold, color: theme.colors.maroon, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.9rem', flexShrink: 0 },
-  userInfo: { overflow: 'hidden' },
-  userName: { fontSize: '0.8rem', fontWeight: 'bold', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-  userRole: { fontSize: '0.68rem', color: 'rgba(253,208,111,0.7)', textTransform: 'capitalize' },
-  logoutBtn: { display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.5rem 0.75rem 0', padding: '0.65rem 0.75rem', background: 'transparent', border: 'none', borderRadius: '6px', color: 'rgba(255,255,255,0.55)', fontSize: '0.875rem', cursor: 'pointer', transition: '0.2s', overflow: 'hidden', whiteSpace: 'nowrap', fontFamily: 'inherit' },
+  // Welcome banner
+  welcomeBanner: {
+    background: theme.gradients.header,
+    borderRadius: theme.radii.xl,
+    padding: '2rem 1.5rem',
+    minHeight: '120px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+    position: 'relative',
+    marginBottom: '2rem',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+  },
+  welcomeTitle: {
+    fontFamily: theme.fonts.serif,
+    fontSize: 'clamp(1.2rem, 2vw, 1.8rem)',
+    margin: '0 0 0.5rem',
+    fontWeight: 'bold',
+    lineHeight: '1.4',
+    color: '#fff',
+    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+  },
+  welcomeSub: {
+    fontSize: '0.875rem',
+    color: 'rgba(255,255,255,0.7)',
+    maxWidth: '520px',
+    lineHeight: 1.5,
+    margin: 0,
+  },
+  welcomeDecor: {
+    fontSize: '4rem',
+    opacity: 0.15,
+    transform: 'rotate(15deg) translateY(-10px)',
+  },
+  welcomeIcon: {},
+
+  // Stat cards
+  statsRow: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gap: '1rem',
+    width: '100%',
+    boxSizing: 'border-box',
+    marginBottom: '2rem',
+  },
+  statCard: {
+    background: 'linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%)',
+    borderRadius: theme.radii.xl,
+    padding: '1rem 1.25rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+    border: '1px solid #f0ebe1',
+  },
+  statIcon: {
+    width: '48px',
+    height: '48px',
+    borderRadius: theme.radii.md,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  statValue: {
+    fontSize: '1.6rem',
+    fontWeight: theme.fontWeights.bold,
+    color: '#111827',
+    margin: '0 0 0.2rem 0',
+  },
+  statLabel: {
+    margin: 0,
+    color: '#6B7280',
+    fontSize: '0.85rem',
+    fontWeight: theme.fontWeights.medium,
+  },
   
   // Main
   main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
@@ -1342,10 +1446,10 @@ const styles = {
   successBox: { background: '#E8F5E9', color: '#1B5E20', padding: '1rem', borderRadius: '6px', marginBottom: '1.5rem', border: '1px solid #A5D6A7' },
   
   // Grid
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' },
-  eventCard: { padding: '1.5rem', background: '#FAFAFA', border: '1px solid #E5E7EB', borderRadius: '8px' },
-  eventTitle: { margin: '0 0 1rem', fontSize: '1.1rem', color: theme.colors.maroon },
-  eventDetail: { margin: '0 0 0.5rem', fontSize: '0.9rem', color: '#444' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', alignItems: 'stretch' },
+  eventCard: { padding: '1.75rem', background: '#ffffff', border: '1px solid #eaeaea', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease-in-out' },
+  eventTitle: { margin: '0 0 1rem', fontSize: '1.15rem', color: theme.colors.maroon, fontWeight: 'bold' },
+  eventDetail: { margin: '0 0 0.6rem', fontSize: '0.95rem', color: '#555' },
   
   statusBadge: (status) => {
     let bg = '#E5E7EB'; let color = '#374151';
@@ -1353,6 +1457,12 @@ const styles = {
     else if (status?.includes('pending')) { bg = '#FFF8E1'; color = '#C17F24'; }
     else if (status?.includes('rejected')) { bg = '#FCE8E6'; color = '#C5221F'; }
     return { background: bg, color: color, padding: '0.3rem 0.75rem', borderRadius: '12px', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '0.7rem' };
-  }
+  },
+  
+  tableHeader: { background: '#FAF8F5', borderRadius: '6px 6px 0 0', fontWeight: 'bold', fontSize: '0.75rem', color: '#666', textTransform: 'uppercase' },
+  tableCell: { fontSize: '0.875rem', color: '#444', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  categoryChip: { background: theme.colors.goldLight, color: '#7a4a00', borderRadius: '12px', padding: '0.2rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold' },
+  scaleChip: { background: '#E0E7FF', color: '#3730A3', borderRadius: '12px', padding: '0.2rem 0.6rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'capitalize' },
+  tableRow: { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1rem', borderBottom: '1px solid #f0ede8', minWidth: '850px' },
 };
-function getGreeting() { const h = new Date().getHours(); if (h < 12) return 'Morning'; if (h < 17) return 'Afternoon'; return 'Evening'; }
+function getGreeting() { const h = new Date().getHours(); if (h < 4) return 'Evening'; if (h < 12) return 'Morning'; if (h < 17) return 'Afternoon'; return 'Evening'; }

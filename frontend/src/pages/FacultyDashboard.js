@@ -1129,7 +1129,6 @@ export default function FacultyDashboard() {
                     <span style={s(styles.tableCell, { flex: 1 })}>Scale</span>
                     <span style={s(styles.tableCell, { flex: 1 })}>Category</span>
                     <span style={s(styles.tableCell, { flex: 1 })}>Budget</span>
-                    <span style={s(styles.tableCell, { flex: 1 })}>Brochure</span>
                     <span style={s(styles.tableCell, { flex: 1 })}>Status</span>
                   </div>
                   {recentEvents.map((evt) => (
@@ -1411,15 +1410,15 @@ export default function FacultyDashboard() {
           }}>
             {/* Modal header */}
             <div style={{
-              background: 'linear-gradient(135deg, #1565C0 0%, #0D47A1 100%)',
+              background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
               padding: '1.5rem 1.75rem',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div>
-                <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 700 }}>
+                <h2 style={{ margin: 0, color: '#FDD06F', fontSize: '1.15rem', fontWeight: 700 }}>
                    Submit Post-Event Report
                 </h2>
-                <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.78rem' }}>
+                <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.78rem' }}>
                   Mark event as completed by providing a summary or uploading a PDF.
                 </p>
               </div>
@@ -1460,7 +1459,7 @@ export default function FacultyDashboard() {
                   transition: 'all 0.2s',
                   cursor: 'pointer'
                 }}
-                onMouseOver={(e) => { e.currentTarget.style.borderColor = '#1565C0'; e.currentTarget.style.background = '#F0F7FF'; }}
+                onMouseOver={(e) => { e.currentTarget.style.borderColor = '#7B1A1A'; e.currentTarget.style.background = '#FFF5F5'; }}
                 onMouseOut={(e) => { e.currentTarget.style.borderColor = '#BDBDBD'; e.currentTarget.style.background = '#FAFAFA'; }}
                 >
                   <input
@@ -1473,7 +1472,7 @@ export default function FacultyDashboard() {
                     }}
                   />
                   <div style={{ pointerEvents: 'none' }}>
-                    <div style={{ marginBottom: '0.5rem', color: '#1565C0' }}>
+                    <div style={{ marginBottom: '0.5rem', color: '#7B1A1A' }}>
                       <FileText size={32} style={{ margin: '0 auto' }} />
                     </div>
                     <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600, color: '#333' }}>
@@ -1496,7 +1495,7 @@ export default function FacultyDashboard() {
                 </button>
                 <button
                   type="submit"
-                  style={s(styles.submitBtn, reportSubmitting && styles.submitBtnDisabled, { flex: 2, background: '#1565C0' })}
+                  style={s(styles.submitBtn, reportSubmitting && styles.submitBtnDisabled, { flex: 2, background: '#4A0404' })}
                   disabled={reportSubmitting}
                 >
                   {reportSubmitting ? 'Submitting...' : 'Mark as Completed'}
@@ -1726,6 +1725,7 @@ export default function FacultyDashboard() {
 // ── Helper: time-based greeting ────────────────────────────────────────────
 function getGreeting() {
   const h = new Date().getHours();
+  if (h < 4) return 'Evening';
   if (h < 12) return 'Morning';
   if (h < 17) return 'Afternoon';
   return 'Evening';
@@ -2025,7 +2025,8 @@ const styles = {
   welcomeBanner: {
     background: theme.gradients.header,
     borderRadius: theme.radii.xl,
-    padding: '1rem 1.5rem',
+    padding: '2rem 1.5rem',
+    minHeight: '120px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -2034,10 +2035,11 @@ const styles = {
   },
   welcomeTitle: {
     fontFamily: theme.fonts.serif,
-    fontSize: 'clamp(1.2rem, 2.5vw, 1.6rem)',
+    fontSize: 'clamp(1.2rem, 2vw, 1.8rem)',
     color: theme.colors.white,
     marginBottom: '0.35rem',
     fontWeight: theme.fontWeights.bold,
+    lineHeight: '1.4',
   },
   welcomeSub: {
     fontSize: '0.875rem',

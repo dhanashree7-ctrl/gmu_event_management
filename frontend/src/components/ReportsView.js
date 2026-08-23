@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, ScatterChart, Scatter, ZAxis
@@ -9,10 +10,12 @@ import DashboardMetrics from './DashboardMetrics';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Users, UserCheck, Star, CheckCircle } from 'lucide-react';
 
 const s = (...styles) => Object.assign({}, ...styles.filter(Boolean));
 
 export default function ReportsView({ user }) {
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -233,21 +236,27 @@ export default function ReportsView({ user }) {
           
           <div style={styles.metricsRow}>
              <div style={styles.metricCard}>
-              <div style={s(styles.metricIcon, { background: 'rgba(74,4,4,0.1)', color: theme.colors.maroon })}></div>
+              <div style={s(styles.metricIcon, { background: 'rgba(74,4,4,0.1)', color: theme.colors.maroon })}>
+                <Users size={22} color={theme.colors.maroon} />
+              </div>
               <div>
                 <div style={styles.metricValue}>{facultyReports.check_in_funnel.registered}</div>
                 <div style={styles.metricLabel}>Total Registered</div>
               </div>
             </div>
              <div style={styles.metricCard}>
-              <div style={s(styles.metricIcon, { background: 'rgba(46, 125, 50, 0.1)', color: '#2E7D32' })}></div>
+              <div style={s(styles.metricIcon, { background: 'rgba(46, 125, 50, 0.1)', color: '#2E7D32' })}>
+                <UserCheck size={22} color="#2E7D32" />
+              </div>
               <div>
                 <div style={styles.metricValue}>{facultyReports.check_in_funnel.checked_in}</div>
                 <div style={styles.metricLabel}>Total Checked-In</div>
               </div>
             </div>
              <div style={styles.metricCard}>
-              <div style={s(styles.metricIcon, { background: 'rgba(253,208,111,0.2)', color: '#C17F24' })}></div>
+              <div style={s(styles.metricIcon, { background: 'rgba(253,208,111,0.2)', color: '#C17F24' })}>
+                <Star size={22} color="#C17F24" />
+              </div>
               <div>
                 <div style={styles.metricValue}>{facultyReports.average_score} / 5</div>
                 <div style={styles.metricLabel}>Avg Feedback ({facultyReports.total_feedbacks} ratings)</div>
@@ -494,14 +503,18 @@ export default function ReportsView({ user }) {
       {/* Top Level Metrics */}
       <div style={styles.metricsRow}>
         <div style={styles.metricCard}>
-          <div style={s(styles.metricIcon, { background: 'rgba(74,4,4,0.1)', color: theme.colors.maroon })}></div>
+          <div style={s(styles.metricIcon, { background: 'rgba(74,4,4,0.1)', color: theme.colors.maroon })}>
+            <CheckCircle size={22} color={theme.colors.maroon} />
+          </div>
           <div>
             <div style={styles.metricValue}>{metrics.total}</div>
             <div style={styles.metricLabel}>Completed Events</div>
           </div>
         </div>
         <div style={styles.metricCard}>
-          <div style={s(styles.metricIcon, { background: 'rgba(253,208,111,0.2)', color: '#C17F24' })}></div>
+          <div style={s(styles.metricIcon, { background: 'rgba(253,208,111,0.2)', color: '#C17F24' })}>
+            <Star size={22} color="#C17F24" />
+          </div>
           <div>
             <div style={styles.metricValue}>{metrics.avgRating} / 5</div>
             <div style={styles.metricLabel}>Average Feedback Score</div>
@@ -546,7 +559,13 @@ export default function ReportsView({ user }) {
             </div>
             {events.map(ev => (
               <div key={ev.id} style={styles.tableRow}>
-                <div style={{ flex: 2, fontWeight: 500, color: '#333' }}>{ev.event_title}</div>
+                <div 
+                  style={{ flex: 2, fontWeight: 500, color: '#1976D2', cursor: 'pointer', textDecoration: 'underline' }}
+                  onClick={() => navigate(`/admin-reports/event/${ev.id}`)}
+                  title="Click to view detailed metrics on a new page"
+                >
+                  {ev.event_title}
+                </div>
                 <div style={{ flex: 1, fontSize: '0.9rem', color: '#666' }}>
                   {ev.event_date ? new Date(ev.event_date).toLocaleDateString() : 'N/A'}
                 </div>

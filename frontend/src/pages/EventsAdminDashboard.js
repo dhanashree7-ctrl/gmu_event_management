@@ -14,6 +14,7 @@ import EventArchive from '../components/EventArchive';
 import AdminReportsView from '../components/AdminReportsView';
 import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import SettingsView from '../components/SettingsView';
 
 // ── Utility ─────────────────────────────────────────────────────────────────
 const s = (...styles) => Object.assign({}, ...styles);
@@ -442,6 +443,7 @@ export default function EventsAdminDashboard() {
           {activeNav === 'Manage Users' && <ManageUsersView />}
           {activeNav === 'Reports & Analytics' && <AdminReportsView user={user} />}
           {activeNav === 'Archive' && <EventArchive user={user} />}
+          {activeNav === 'Settings' && <SettingsView user={user} />}
 
           {activeNav === 'Configure Routing' && (
             <ConfigureRoutingView
@@ -505,7 +507,7 @@ const styles = {
   emptyState: { textAlign: 'center', padding: '3rem', color: '#aaa', fontStyle: 'italic' },
 
   // Routings List Specific
-  listContainer: { display: 'flex', flexDirection: 'column', gap: '1rem' },
+  listContainer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1rem' },
   ruleCard: { background: '#fff', borderRadius: '12px', padding: '1.5rem', boxShadow: theme.shadows.light, display: 'flex', flexDirection: 'column', gap: '1rem' },
   ruleScaleTitle: { margin: 0, fontSize: '1.2rem', color: theme.colors.charcoal },
   chainContainer: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' },

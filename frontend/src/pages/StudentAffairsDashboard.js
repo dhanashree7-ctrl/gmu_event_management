@@ -519,31 +519,7 @@ export default function StudentAffairsDashboard() {
           </div>
         )}
 
-          {/* Toast notification */}
-          {toast && (
-            <Toast
-              type={toast.type}
-              message={toast.message}
-              onClose={() => setToast(null)}
-            />
-          )}
 
-          {/* Welcome banner */}
-          {activeNav === 'Dashboard' && (
-            <div style={styles.welcomeBanner}>
-              <div>
-                <h2 style={styles.welcomeTitle}>
-                  Good {getGreeting()}, {user?.name?.split(' ')[0]} 👋
-                </h2>
-                <p style={styles.welcomeSub}>
-                  Submit a new event request or track the status of your existing proposals.
-                </p>
-              </div>
-              <div style={styles.welcomeDecor}>
-                <span style={styles.welcomeIcon}>🎓</span>
-              </div>
-            </div>
-          )}
 
           {/* Stat cards */}
           {activeNav === 'Dashboard' && (
@@ -1361,6 +1337,7 @@ export default function StudentAffairsDashboard() {
 // ── Helper: time-based greeting ────────────────────────────────────────────
 function getGreeting() {
   const h = new Date().getHours();
+  if (h < 4) return 'Evening';
   if (h < 12) return 'Morning';
   if (h < 17) return 'Afternoon';
   return 'Evening';
@@ -1656,7 +1633,8 @@ const styles = {
   welcomeBanner: {
     background: theme.gradients.header,
     borderRadius: theme.radii.xl,
-    padding: '1.75rem 2rem',
+    padding: '2rem 1.5rem',
+    minHeight: '120px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1665,10 +1643,10 @@ const styles = {
   },
   welcomeTitle: {
     fontFamily: theme.fonts.serif,
-    fontSize: 'clamp(1.2rem, 2.5vw, 1.6rem)',
-    color: theme.colors.white,
-    marginBottom: '0.35rem',
-    fontWeight: theme.fontWeights.bold,
+    fontSize: 'clamp(1.2rem, 2vw, 1.8rem)',
+    margin: '0 0 0.5rem',
+    fontWeight: 'bold',
+    lineHeight: '1.4',
   },
   welcomeSub: {
     fontSize: '0.875rem',
