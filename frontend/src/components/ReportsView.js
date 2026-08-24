@@ -639,10 +639,12 @@ const styles = {
     gap: '2rem',
   },
   header: {
-    marginBottom: '0.5rem',
+    marginBottom: '1rem',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    flexWrap: 'wrap',
+    gap: '1rem',
   },
   title: {
     margin: 0,

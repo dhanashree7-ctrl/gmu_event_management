@@ -360,7 +360,7 @@ export default function ExecutiveDashboard() {
               </div>
             </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: systemEvents.length > 0 ? '1fr 1fr' : '1fr', gap: '1.5rem', marginTop: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginTop: '2rem' }}>
                 <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
                   <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
                   <DashboardMetrics 
@@ -401,7 +401,8 @@ export default function ExecutiveDashboard() {
                       </div>
                     ) : (
                       <div style={styles.tableWrap}>
-                        <div style={s(styles.tableRow, styles.tableHeader)}>
+                        <div style={{ minWidth: '850px' }}>
+                          <div style={s(styles.tableRow, styles.tableHeader)}>
                           <span style={s(styles.tableCell, { flex: 3 })}>Event Title</span>
                           <span style={s(styles.tableCell, { flex: 2 })}>Proposed By</span>
                           <span style={s(styles.tableCell, { flex: 1 })}>Department</span>
@@ -463,6 +464,7 @@ export default function ExecutiveDashboard() {
                             </span>
                           </div>
                         ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -500,8 +502,9 @@ export default function ExecutiveDashboard() {
                   <p style={styles.emptyText}>You haven't proposed any events yet.</p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 0, overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #eaeaea' }}>
-                  {/* Table header */}
+                <div style={{ overflowX: 'auto', background: '#fff', borderRadius: '12px', border: '1px solid #eaeaea' }}>
+                  <div style={{ minWidth: '850px' }}>
+                    {/* Table header */}
                   <div style={{ ...styles.tableRow, ...styles.tableHeader, borderBottom: '1px solid #eaeaea' }}>
                     <span style={{ ...styles.tableCell, flex: 3 }}>Event Title</span>
                     <span style={{ ...styles.tableCell, flex: 1 }}>Scale</span>
@@ -559,6 +562,7 @@ export default function ExecutiveDashboard() {
                       </span>
                     </div>
                   ))}
+                  </div>
                 </div>
               )}
                   </div>
@@ -908,7 +912,7 @@ export default function ExecutiveDashboard() {
                         <label style={s(styles.formLabel, { marginBottom: '0.8rem' })}>
                           Event Capacities <span style={styles.optional}>(optional)</span>
                         </label>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                           <div>
                             <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Participants</label>
                             <input
@@ -1446,7 +1450,7 @@ const styles = {
   successBox: { background: '#E8F5E9', color: '#1B5E20', padding: '1rem', borderRadius: '6px', marginBottom: '1.5rem', border: '1px solid #A5D6A7' },
   
   // Grid
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', alignItems: 'stretch' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'stretch' },
   eventCard: { padding: '1.75rem', background: '#ffffff', border: '1px solid #eaeaea', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease-in-out' },
   eventTitle: { margin: '0 0 1rem', fontSize: '1.15rem', color: theme.colors.maroon, fontWeight: 'bold' },
   eventDetail: { margin: '0 0 0.6rem', fontSize: '0.95rem', color: '#555' },

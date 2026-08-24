@@ -115,7 +115,8 @@ const styles = {
     flex: 1,
     minHeight: 0,
     boxSizing: 'border-box',
-    overflow: 'hidden',
+    overflowX: 'auto',
+    overflowY: 'hidden',
   },
   header: {
     display: 'flex',
@@ -142,7 +143,7 @@ const styles = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)',
+    gridTemplateColumns: 'repeat(7, minmax(60px, 1fr))',
     gridTemplateRows: 'auto repeat(6, 1fr)', // 1 row for days, 6 for weeks
     gap: '6px',
     flex: 1,

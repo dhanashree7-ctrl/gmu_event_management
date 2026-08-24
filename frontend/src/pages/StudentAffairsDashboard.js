@@ -533,7 +533,7 @@ export default function StudentAffairsDashboard() {
           
           {/* Dashboard Metrics — side-by-side grid */}
           {activeNav === 'Dashboard' && (
-            <div style={{ display: 'grid', gridTemplateColumns: recentEvents.length > 0 ? '1fr 1fr' : '1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
               <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
                 <h3 style={{ fontSize: '0.95rem', color: '#6b1519', fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
                 <DashboardMetrics 
@@ -842,7 +842,7 @@ export default function StudentAffairsDashboard() {
                 <label style={s(styles.formLabel, { marginBottom: '0.8rem' })}>
                   Event Capacities <span style={styles.optional}>(optional)</span>
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
                   <div>
                     <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Participants</label>
                     <input

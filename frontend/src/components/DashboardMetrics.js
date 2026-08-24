@@ -30,7 +30,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function DashboardMetrics({ data, type = 'status', barName = 'Count', title, pieTitle, chartType = 'both', height = 'min(250px, 25vh)' }) {
+export default function DashboardMetrics({ data, type = 'status', barName = 'Count', title, pieTitle, chartType = 'both', height = 300 }) {
   const COLORS = {
     'Pending': '#E3A008', // More vibrant orange/gold
     'Approved': '#10B981', // Vibrant emerald

@@ -363,7 +363,7 @@ export default function HODDashboard() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: systemEvents.length > 0 ? '1fr 1fr' : '1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
                 <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
                   <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
                   <DashboardMetrics 
@@ -824,7 +824,7 @@ export default function HODDashboard() {
                         <label style={s(styles.formLabel, { marginBottom: '0.8rem' })}>
                           Event Capacities <span style={styles.optional}>(optional)</span>
                         </label>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
                           <div>
                             <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Participants</label>
                             <input
@@ -1406,7 +1406,7 @@ const styles = {
   successBox: { background: '#E8F5E9', color: '#1B5E20', padding: '1rem', borderRadius: '6px', marginBottom: '1.5rem', border: '1px solid #A5D6A7' },
   
   // Grid
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', alignItems: 'stretch' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'stretch' },
   eventCard: { padding: '1.75rem', background: '#ffffff', border: '1px solid #eaeaea', borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease-in-out' },
   eventTitle: { margin: '0 0 1rem', fontSize: '1.15rem', color: theme.colors.maroon, fontWeight: 'bold' },
   eventDetail: { margin: '0 0 0.6rem', fontSize: '0.95rem', color: '#555' },

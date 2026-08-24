@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from '../NotificationBell';
 import UserProfileDropdown from '../UserProfileDropdown';
+import { Menu } from 'lucide-react';
 
 // Maps nav ID → human-readable page title
 const PAGE_TITLES = {
@@ -21,7 +22,7 @@ const PAGE_TITLES = {
   'Present Routing':   'Present Routing',
 };
 
-export default function GlobalHeader({ activeNav, onOpenSettings }) {
+export default function GlobalHeader({ activeNav, onOpenSettings, isMobile, onHamburgerClick }) {
   const { user } = useAuth();
 
   const roleLabel = formatRole(user?.role);
@@ -33,14 +34,27 @@ export default function GlobalHeader({ activeNav, onOpenSettings }) {
 
   return (
     <header style={styles.header}>
-      {/* Left: page title */}
+      {/* Left: hamburger (mobile only) + page title */}
       <div style={styles.headerLeft}>
-        <h2 style={styles.pageTitle}>{pageTitle}</h2>
-        <p style={styles.pageDate}>
-          {new Date().toLocaleDateString('en-IN', {
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-          })}
-        </p>
+        {isMobile && (
+          <button
+            onClick={onHamburgerClick}
+            style={styles.hamburgerBtn}
+            aria-label="Open navigation menu"
+          >
+            <Menu size={22} color="#701a1e" />
+          </button>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+          <h2 style={{ ...styles.pageTitle, fontSize: isMobile ? '1.1rem' : '1.35rem' }}>{pageTitle}</h2>
+          {!isMobile && (
+            <p style={styles.pageDate}>
+              {new Date().toLocaleDateString('en-IN', {
+                weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+              })}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Right: notification bell + user pill */}
@@ -62,7 +76,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '0.85rem 2rem',
+    padding: '0.85rem 1.25rem',
     backgroundColor: 'rgba(248, 250, 252, 0.95)',
     backdropFilter: 'blur(8px)',
     borderBottom: '1px solid #e2e8f0',
@@ -73,11 +87,23 @@ const styles = {
   },
   headerLeft: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: '0.1rem',
+    alignItems: 'center',
+    gap: '0.75rem',
+  },
+  hamburgerBtn: {
+    background: 'none',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    width: '38px',
+    height: '38px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    flexShrink: 0,
+    padding: 0,
   },
   pageTitle: {
-    fontSize: '1.35rem',
     fontWeight: '700',
     color: '#0f172a',
     margin: 0,
@@ -92,6 +118,6 @@ const styles = {
   headerRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1rem',
+    gap: '0.75rem',
   },
 };

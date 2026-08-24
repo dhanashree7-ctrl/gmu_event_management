@@ -37,6 +37,15 @@ if (typeof document !== 'undefined' && !document.getElementById('gmu-settings-st
       transition: all 0.2s ease;
     }
     .gmu-profile-field:hover { background: #f1f5f9; border-color: #e2e8f0; transform: translateX(2px); }
+    .gmu-settings-page-wrap {
+      display: flex; gap: 1.5rem; font-family: "Inter", sans-serif; align-items: stretch;
+      height: 100%; overflow: hidden; min-height: 0;
+    }
+    .gmu-settings-sidebar { width: 200px; flex-shrink: 0; }
+    @media (max-width: 768px) {
+      .gmu-settings-page-wrap { flex-direction: column; overflow-y: auto; height: auto; }
+      .gmu-settings-sidebar { width: 100%; flex-shrink: 0; }
+    }
   `;
   document.head.appendChild(el);
 }
@@ -104,9 +113,9 @@ export default function SettingsView({ user, onBack }) {
   ].filter(f => f.value);
 
   return (
-    <div style={st.pageWrap}>
+    <div className="gmu-settings-page-wrap">
       {/* ── Left Tab Panel ── */}
-      <aside style={st.tabPanel}>
+      <aside className="gmu-settings-sidebar" style={st.tabPanelBase}>
         <div style={st.panelHeader}>
           <div style={st.panelAvatar}><User size={28} color="#FDD06F" /></div>
           <div>
@@ -241,17 +250,8 @@ export default function SettingsView({ user, onBack }) {
 }
 
 const st = {
-  pageWrap: {
-    display: 'flex',
-    gap: '1.5rem',
-    fontFamily: '"Inter", sans-serif',
-    alignItems: 'stretch',
-    height: '100%',
-    overflow: 'hidden',
-    minHeight: 0,
-  },
-  tabPanel: {
-    width: '200px', flexShrink: 0, background: '#fff', borderRadius: '16px',
+  tabPanelBase: {
+    background: '#fff', borderRadius: '16px',
     border: '1px solid #e2e8f0', padding: '1rem', display: 'flex', flexDirection: 'column',
     gap: '0.75rem', boxShadow: '0 4px 16px rgba(0,0,0,0.04)', overflow: 'hidden',
   },

@@ -21,6 +21,7 @@ import {
   ListChecks,
   Users,
   PlusCircle,
+  X,
 } from 'lucide-react';
 import theme from '../../theme';
 
@@ -47,7 +48,6 @@ const ROLE_ALIAS = {
 const ROLE_NAV_CONFIG = {
   faculty: [
     { label: 'Dashboard',      icon: LayoutDashboard, id: 'Dashboard' },
-    { label: 'New Request',    icon: PlusCircle,      id: 'New Request' },
     { label: 'My Events',      icon: Ticket,          id: 'Events' },
     { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
     { label: 'Archive',        icon: Archive,         id: 'Archive' },
@@ -243,12 +243,21 @@ if (typeof document !== 'undefined' && !document.getElementById('gmu-sidebar-sty
       border-right-color: #1e293b;
     }
     .gmu-nav-item-collapsed:hover .gmu-tooltip { opacity: 1; }
+
+    /* Mobile sidebar drawer animation */
+    .gmu-sidebar-mobile {
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .gmu-sidebar-mobile.gmu-sidebar-mobile-open {
+      transform: translateX(0);
+    }
   `;
   document.head.appendChild(styleEl);
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
-export default function GlobalSidebar({ role, activeNav, onNavChange, collapsed, setCollapsed }) {
+export default function GlobalSidebar({ role, activeNav, onNavChange, collapsed, setCollapsed, isMobile, mobileOpen, setMobileOpen }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -265,6 +274,75 @@ export default function GlobalSidebar({ role, activeNav, onNavChange, collapsed,
     }
   };
 
+  // On mobile: render as absolute drawer. On desktop: render as fixed flex sidebar.
+  if (isMobile) {
+    return (
+      <aside
+        className={`gmu-sidebar-mobile${mobileOpen ? ' gmu-sidebar-mobile-open' : ''}`}
+        style={styles.mobileDrawer}
+      >
+        {/* Close button */}
+        <button
+          style={styles.mobileCloseBtn}
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close menu"
+        >
+          <X size={20} />
+        </button>
+
+        {/* ── Logo / Brand ── */}
+        <div className="gmu-logo-area" style={{ ...styles.sidebarLogo, justifyContent: 'flex-start', padding: '1.25rem 1.25rem' }}>
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" className="gmu-logo-crest" style={{ flexShrink: 0 }}>
+            <path d="M14 2L3 7v7c0 6.08 4.66 11.76 11 13 6.34-1.24 11-6.92 11-13V7L14 2z" fill="#FDD06F" opacity="0.18" />
+            <path d="M14 2L3 7v7c0 6.08 4.66 11.76 11 13 6.34-1.24 11-6.92 11-13V7L14 2z" stroke="#FDD06F" strokeWidth="1.5" strokeLinejoin="round" />
+            <text x="14" y="17" textAnchor="middle" fill="#FDD06F" fontSize="8" fontWeight="bold" fontFamily="serif">GM</text>
+          </svg>
+          <div>
+            <p style={styles.sidebarLogoName}>GM University</p>
+            <p style={styles.sidebarLogoSub}>Event System</p>
+          </div>
+        </div>
+
+        {/* ── Navigation ── */}
+        <nav className="gmu-sidebar-nav" style={styles.sidebarNav}>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeNav === item.id || activeNav === item.label;
+            return (
+              <div
+                key={item.id}
+                className={`gmu-nav-item${isActive ? ' gmu-active' : ''}`}
+                onClick={() => onNavChange(item.id)}
+              >
+                <div className="gmu-nav-icon">
+                  <Icon size={17} strokeWidth={isActive ? 2.5 : 1.8} />
+                </div>
+                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
+                  {item.label}
+                </span>
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* ── Footer — logout ── */}
+        <div style={styles.sidebarFooter}>
+          <div
+            className="gmu-logout-btn"
+            style={{ justifyContent: 'flex-start' }}
+            onClick={handleLogout}
+            role="button"
+            aria-label="Logout"
+          >
+            <LogOut size={17} color="#FDD06F" strokeWidth={2} />
+            <span style={styles.logoutText}>Logout</span>
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
+  // ── Desktop sidebar ──────────────────────────────────────────────────────
   return (
     <aside style={{
       ...styles.sidebar,
@@ -387,6 +465,39 @@ const styles = {
     boxShadow: '4px 0 24px rgba(0,0,0,0.18)',
     overflow: 'visible',
     zIndex: 100,
+  },
+  // Mobile: slides in as a fixed overlay drawer from the left
+  mobileDrawer: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '15.5rem',
+    height: '100vh',
+    backgroundColor: '#6b1519',
+    backgroundImage: 'linear-gradient(180deg, #701a1e 0%, #5a1115 100%)',
+    color: '#fff',
+    display: 'flex',
+    flexDirection: 'column',
+    zIndex: 200,
+    boxShadow: '4px 0 32px rgba(0,0,0,0.35)',
+    borderRight: '1px solid rgba(253,208,111,0.1)',
+    overflowY: 'auto',
+  },
+  mobileCloseBtn: {
+    position: 'absolute',
+    top: '14px',
+    right: '14px',
+    background: 'rgba(255,255,255,0.1)',
+    border: '1px solid rgba(255,255,255,0.15)',
+    borderRadius: '8px',
+    width: '34px',
+    height: '34px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    color: '#FDD06F',
+    zIndex: 10,
   },
   toggleBtn: {
     position: 'absolute',

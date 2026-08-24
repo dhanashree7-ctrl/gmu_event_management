@@ -118,6 +118,7 @@ export default function FacultyDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeNav, setActiveNav] = useState('Dashboard');
+  const [showProposeForm, setShowProposeForm] = useState(false);
 
   // Event form state
   const [form, setForm] = useState(EMPTY_FORM);
@@ -526,7 +527,7 @@ export default function FacultyDashboard() {
 
           {/* Dashboard Metrics — side-by-side grid to stay above the fold */}
           {activeNav === 'Dashboard' && (
-            <div style={{ display: 'grid', gridTemplateColumns: systemEvents.length > 0 ? '1fr 1fr' : '1fr', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
               <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
                 <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
                 <DashboardMetrics 
@@ -558,20 +559,28 @@ export default function FacultyDashboard() {
           )}
 
           {/* ── Event Request Form ─────────────────────────── */}
-          {activeNav === 'New Request' && (
+          {activeNav === 'Events' && showProposeForm && (
             <div style={styles.formCard}>
               {/* Card header accent */}
               <div style={styles.formCardAccent} />
 
-              <div style={styles.formCardHeader}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', borderBottom: '1px solid #f0ede8', paddingBottom: '1rem' }}>
                 <div>
                   <h2 style={styles.formCardTitle}> New Event Request</h2>
                   <p style={styles.formCardSub}>
                     Complete the form below. Your request will be routed for approval automatically.
                   </p>
                 </div>
-                <div style={styles.statusPill}>
-                  <span style={styles.statusDot} /> Status: Pending on Submit
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                  <div style={styles.statusPill}>
+                    <span style={styles.statusDot} /> Status: Pending on Submit
+                  </div>
+                  <button
+                    onClick={() => setShowProposeForm(false)}
+                    style={{ padding: '0.6rem 1.2rem', backgroundColor: '#e0e0e0', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                     Back to List
+                  </button>
                 </div>
               </div>
 
@@ -1031,7 +1040,7 @@ export default function FacultyDashboard() {
                   <label style={s(styles.formLabel, { marginBottom: '0.8rem' })}>
                     Event Capacities <span style={styles.optional}>(optional)</span>
                   </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
                     <div>
                       <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Participants</label>
                       <input
@@ -1106,9 +1115,17 @@ export default function FacultyDashboard() {
           )}
 
           {/* ── Recent Submissions ────────────────────────── */}
-          {activeNav === 'Events' && (
+          {activeNav === 'Events' && !showProposeForm && (
             <div style={styles.recentCard}>
-              <h3 style={styles.recentTitle}> My Recent Submissions</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                <h3 style={{...styles.recentTitle, margin: 0}}> My Recent Submissions</h3>
+                <button
+                  onClick={() => setShowProposeForm(true)}
+                  style={{ padding: '0.6rem 1.2rem', backgroundColor: theme.colors.maroon, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  + New Proposal
+                </button>
+              </div>
 
               {fetchLoading ? (
                 /* Loading spinner while API call is in-flight */
