@@ -620,7 +620,7 @@ export default function ReportsView({ user }) {
                     rel="noreferrer"
                     style={styles.downloadLink}
                   >
-                     Download Report PDF
+                     View Submitted Report
                   </a>
                 </div>
               )}

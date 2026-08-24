@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../config/api';
 import DashboardLayout from '../components/layout/DashboardLayout';
@@ -17,7 +17,8 @@ export default function HODDashboard() {
   const [user, setUser] = useState(null);
   
   // Navigation state
-  const [activeNav, setActiveNav] = useState('Dashboard'); // dashboard, action-center, propose-event, my-proposals, approved-history
+  const location = useLocation();
+  const [activeNav, setActiveNav] = useState(location.state?.activeNav || 'Dashboard'); // dashboard, action-center, propose-event, my-proposals, approved-history
   const [collapsed, setCollapsed] = useState(false);
   
   // Tab state within Action Center

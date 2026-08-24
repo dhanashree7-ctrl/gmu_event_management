@@ -117,7 +117,7 @@ export default function NotificationBell() {
       console.error('Failed to dismiss notification from bell', err);
     }
     
-    if (notif.target_link) {
+    if (notif.target_link && notif.target_link !== '/dashboard') {
       if (window.location.pathname === notif.target_link) {
         window.dispatchEvent(new CustomEvent('navigate_tab', { detail: 'notifications' }));
       } else {

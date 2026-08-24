@@ -54,7 +54,15 @@ export default function UserProfileDropdown({ user, onOpenSettings }) {
               {formattedRole} {user.department_name ? `- ${user.department_name}` : ''}
             </div>
           </div>
+          {/* Only show Settings and Logout on mobile inside this dropdown */}
+          <style>{`
+            @media (min-width: 769px) {
+              .mobile-only-menu-item { display: none !important; }
+            }
+          `}</style>
+          
           <button 
+            className="mobile-only-menu-item"
             style={styles.menuItem} 
             onClick={() => {
               setIsOpen(false);
@@ -65,8 +73,11 @@ export default function UserProfileDropdown({ user, onOpenSettings }) {
           >
             <span style={{ marginRight: '8px' }}>️</span> Settings
           </button>
-          <div style={styles.divider} />
+          
+          <div className="mobile-only-menu-item" style={styles.divider} />
+          
           <button 
+            className="mobile-only-menu-item"
             style={s(styles.menuItem, { color: '#E53935' })} 
             onClick={() => {
               setIsOpen(false);

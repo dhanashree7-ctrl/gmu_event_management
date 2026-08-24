@@ -422,7 +422,7 @@ export default function EventArchive({ user }) {
                     textDecoration: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.9rem',
                   }}
                 >
-                  <Download size={16} /> Download PDF Report
+                  <Download size={16} /> View Submitted Report
                 </a>
               )}
             </div>

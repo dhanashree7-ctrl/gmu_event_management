@@ -41,7 +41,9 @@ export default function NotificationView() {
     };
   }, [user]);
 
-  const handleMarkRead = async (notif) => {
+  const handleMarkRead = async (e, notif) => {
+    e.preventDefault();
+    e.stopPropagation();
     // Optimistically remove from list
     setNotifications(prev => prev.filter(n => n.id !== notif.id));
     
@@ -58,12 +60,6 @@ export default function NotificationView() {
       console.error("Failed to mark notification as read", err);
     }
     
-    // If there is a target link, open it (or navigate)
-    // Since we are in a tab, navigating might switch tabs or routes.
-    // For simplicity, we just mark as read, but we can also use window.location
-    if (notif.target_link && notif.target_link !== '/dashboard') {
-      window.location.href = notif.target_link;
-    }
   };
 
   const handleMarkAllRead = async () => {
@@ -91,6 +87,7 @@ export default function NotificationView() {
         </div>
         {notifications.length > 0 && (
           <button 
+            type="button"
             onClick={handleMarkAllRead}
             style={{ 
               padding: '8px 16px', background: '#F5F5F5', color: '#333', 
@@ -125,8 +122,9 @@ export default function NotificationView() {
                 </span>
               </div>
               <button 
+                type="button"
                 style={styles.actionBtn}
-                onClick={() => handleMarkRead(notif)}
+                onClick={(e) => handleMarkRead(e, notif)}
               >
                 Mark as Read
               </button>

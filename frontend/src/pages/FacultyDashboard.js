@@ -19,7 +19,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../config/api';
 import theme from '../theme';
@@ -117,7 +117,8 @@ function Toast({ type, message, onClose }) {
 export default function FacultyDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [activeNav, setActiveNav] = useState('Dashboard');
+  const location = useLocation();
+  const [activeNav, setActiveNav] = useState(location.state?.activeNav || 'Dashboard');
   const [showProposeForm, setShowProposeForm] = useState(false);
 
   // Event form state

@@ -193,12 +193,13 @@ const styles = {
   },
   eventBadge: {
     color: '#fff',
-    fontSize: '0.65rem',
-    padding: '2px 5px',
+    fontSize: '0.7rem',
+    lineHeight: '1.2',
+    padding: '3px 6px',
     borderRadius: '4px',
-    whiteSpace: 'nowrap',
+    whiteSpace: 'normal',
+    wordBreak: 'break-word',
     overflow: 'hidden',
-    textOverflow: 'ellipsis',
     cursor: 'pointer',
     fontWeight: '600'
   }

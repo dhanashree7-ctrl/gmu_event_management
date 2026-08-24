@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { API_BASE } from '../config/api';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import theme from '../theme';
@@ -19,7 +19,8 @@ export default function ExecutiveDashboard() {
   const [user, setUser] = useState(null);
   
   // Navigation state
-  const [activeNav, setActiveNav] = useState('Dashboard'); // dashboard, action-center, my-proposals, approved-history
+  const location = useLocation();
+  const [activeNav, setActiveNav] = useState(location.state?.activeNav || 'Dashboard'); // dashboard, action-center, my-proposals, approved-history
   const [collapsed, setCollapsed] = useState(false);
   
   // Tab state within My Proposals
@@ -410,7 +411,7 @@ export default function ExecutiveDashboard() {
                           <span style={s(styles.tableCell, { flex: 1 })}>Category</span>
                           <span style={s(styles.tableCell, { flex: 1 })}>Budget</span>
                           <span style={s(styles.tableCell, { flex: 1 })}>Brochure</span>
-                          <span style={s(styles.tableCell, { flex: 2, textAlign: 'right' })}>Actions</span>
+                          <span style={s(styles.tableCell, { flex: '0 0 190px', minWidth: '190px', textAlign: 'right', overflow: 'visible' })}>Actions</span>
                         </div>
                         {pendingEvents.map(ev => (
                           <div key={ev.id} style={styles.tableRow}>
@@ -444,7 +445,7 @@ export default function ExecutiveDashboard() {
                                 <a href={`${API_BASE}/${ev.brochure_path}`} target="_blank" rel="noreferrer" style={{ color: theme.colors.maroon, textDecoration: 'underline' }}>View</a>
                               ) : 'N/A'}
                             </span>
-                            <span style={s(styles.tableCell, { flex: 2, textAlign: 'right' })}>
+                            <span style={s(styles.tableCell, { flex: '0 0 190px', minWidth: '190px', textAlign: 'right', overflow: 'visible', display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' })}>
                               <button
                                 style={styles.approveBtn}
                                 onClick={() => setRemarksModal({ open: true, eventId: ev.id, action: 'approve', scale: ev.event_scale })}

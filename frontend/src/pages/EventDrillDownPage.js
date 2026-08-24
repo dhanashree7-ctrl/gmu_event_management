@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../config/api';
 import theme from '../theme';
 
@@ -8,11 +9,27 @@ const s = (...styles) => Object.assign({}, ...styles.filter(Boolean));
 export default function EventDrillDownPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCollegesModal, setShowCollegesModal] = useState(false);
   const [subEventFilter, setSubEventFilter] = useState('All');
   const [collegeFilter, setCollegeFilter] = useState('All');
+
+  const handleBack = () => {
+    const role = user?.role;
+    let dashRoute = '/login';
+    let navId = 'Reports';
+    if (role === 'events_admin') { dashRoute = '/events-admin-dashboard'; navId = 'Reports & Analytics'; }
+    else if (role === 'faculty') { dashRoute = '/faculty-dashboard'; }
+    else if (role === 'hod') { dashRoute = '/hod-dashboard'; }
+    else if (role === 'volunteer') { dashRoute = '/volunteer-dashboard'; navId = 'Dashboard'; }
+    else if (['director', 'dean', 'provc', 'pro_vc', 'vc', 'executive', 'student_affairs_director', 'student_affairs'].includes(role)) {
+       dashRoute = `/${role.replace('_', '')}-dashboard`;
+       if (role === 'student_affairs_director' || role === 'student_affairs') { dashRoute = '/sa-dashboard'; }
+    }
+    navigate(dashRoute, { state: { activeNav: navId } });
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -48,7 +65,7 @@ export default function EventDrillDownPage() {
     return (
       <div style={{ textAlign: 'center', padding: '3rem', color: '#666', fontFamily: 'inherit' }}>
         <h2>Event not found</h2>
-        <button onClick={() => navigate(-1)} style={styles.backBtn}>← Back to Reports</button>
+        <button onClick={handleBack} style={styles.backBtn}>← Back to Reports</button>
       </div>
     );
   }
@@ -76,7 +93,7 @@ export default function EventDrillDownPage() {
   return (
     <div style={styles.pageContainer}>
       <div style={styles.header}>
-        <button onClick={() => navigate(-1)} style={styles.backBtn}>← Back to Reports</button>
+        <button onClick={handleBack} style={styles.backBtn}>← Back to Reports</button>
         <h1 style={styles.title}>{master_event.event_title}</h1>
         <p style={styles.subtitle}>
           <strong>Date:</strong> {master_event.event_date || 'N/A'}
