@@ -65,7 +65,7 @@ export default function EventChatbot() {
               <span style={styles.headerAvatar}></span>
               <span style={styles.headerTitle}>GMU Assistant</span>
             </div>
-            <button style={styles.closeBtn} onClick={() => setIsOpen(false)}></button>
+            <button style={styles.closeBtn} onClick={() => setIsOpen(false)}>✕</button>
           </div>
           
           <div style={styles.messagesContainer}>

@@ -549,8 +549,9 @@ export default function ReportsView({ user }) {
             No completed events to report on.
           </div>
         ) : (
-          <div style={styles.tableWrap}>
-            <div style={s(styles.tableRow, styles.tableHeader)}>
+          <div style={{ overflowX: 'auto', paddingBottom: '0.5rem' }}>
+            <div style={{ ...styles.tableWrap, minWidth: '800px' }}>
+              <div style={s(styles.tableRow, styles.tableHeader)}>
               <div style={{ flex: 2 }}>Event Name</div>
               <div style={{ flex: 1 }}>Date</div>
               <div style={{ flex: 1 }}>Category</div>
@@ -588,6 +589,7 @@ export default function ReportsView({ user }) {
               </div>
             ))}
           </div>
+          </div>
         )}
       </div>
 
@@ -597,7 +599,7 @@ export default function ReportsView({ user }) {
           <div style={styles.modalContent}>
             <div style={styles.modalHeader}>
               <h3 style={{ margin: 0, fontSize: '1.2rem' }}>Report: {selectedReport.event_title}</h3>
-              <button style={styles.closeBtn} onClick={() => setSelectedReport(null)}></button>
+              <button style={styles.closeBtn} onClick={() => setSelectedReport(null)}>✕</button>
             </div>
             <div style={styles.modalBody}>
               {selectedReport.post_event_report && (

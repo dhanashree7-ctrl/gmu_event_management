@@ -1154,7 +1154,7 @@ export default function HODDashboard() {
               <button
                 onClick={() => setRemarksModal({ open: false, eventId: null, action: null, scale: null, proposer_role: null })}
                 style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}
-              ></button>
+              >✕</button>
             </div>
             <form onSubmit={submitActionWithRemarks} style={{ padding: '1.75rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, color: '#333', fontSize: '0.95rem' }}>

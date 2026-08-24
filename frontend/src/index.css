@@ -217,5 +217,16 @@ div[style*="box-shadow: 0 4px 15px"]:hover { box-shadow: 0 12px 28px rgba(0,0,0,
     max-width: calc(100vw - 2rem) !important;
     margin: 0 1rem;
   }
+
+  /* Fix notification dropdown cutoff on small screens */
+  .notification-dropdown {
+    position: fixed !important;
+    top: 70px !important;
+    right: 1rem !important;
+    left: 1rem !important;
+    width: auto !important;
+    max-width: none !important;
+    z-index: 10000 !important;
+  }
 }
 

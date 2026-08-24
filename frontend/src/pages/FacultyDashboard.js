@@ -564,14 +564,14 @@ export default function FacultyDashboard() {
               {/* Card header accent */}
               <div style={styles.formCardAccent} />
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', borderBottom: '1px solid #f0ede8', paddingBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid #f0ede8', paddingBottom: '1rem' }}>
                 <div>
                   <h2 style={styles.formCardTitle}> New Event Request</h2>
                   <p style={styles.formCardSub}>
                     Complete the form below. Your request will be routed for approval automatically.
                   </p>
                 </div>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <div style={styles.statusPill}>
                     <span style={styles.statusDot} /> Status: Pending on Submit
                   </div>
@@ -2121,6 +2121,7 @@ const styles = {
     border: '1px solid #ede9e3',
     overflow: 'hidden',
     position: 'relative',
+    flexShrink: 0,
   },
   formCardAccent: {
     height: '4px',
@@ -2183,7 +2184,7 @@ const styles = {
   formGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.4rem',
+    gap: '0.5rem',
     minWidth: '200px',
   },
   formLabel: {

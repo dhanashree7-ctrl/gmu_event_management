@@ -322,7 +322,7 @@ const styles = {
   mainContent: {
     maxWidth: '900px',
     margin: '2rem auto',
-    padding: '0 1rem',
+    padding: '0 1rem 5rem 1rem',
   },
   eventSummaryCard: {
     backgroundColor: '#fff',
@@ -359,14 +359,17 @@ const styles = {
     fontSize: '0.95rem',
   },
   metaColumn: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    display: 'flex',
+    flexWrap: 'wrap',
     gap: '1.5rem',
-    minWidth: '350px',
+    flex: 1,
+    minWidth: '280px',
   },
   metaItem: {
     display: 'flex',
     flexDirection: 'column',
+    flex: 1,
+    minWidth: '110px',
   },
   metaLabel: {
     fontSize: '0.75rem',

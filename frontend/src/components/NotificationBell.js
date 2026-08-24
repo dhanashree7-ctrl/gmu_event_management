@@ -295,7 +295,7 @@ const styles = {
     animation: 'slideDown 0.2s ease-out forwards',
   },
   dropdownHeader: {
-    background: `linear-gradient(135deg, ${theme.colors.primary} 0%, ${theme.colors.maroonDark} 100%)`,
+    background: `linear-gradient(135deg, ${theme.colors.maroon} 0%, ${theme.colors.maroonDark} 100%)`,
     padding: '1rem',
     display: 'flex',
     alignItems: 'center',

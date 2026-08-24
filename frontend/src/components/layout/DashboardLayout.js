@@ -74,7 +74,7 @@ export default function DashboardLayout({ children, role, activeNav, onNavChange
         />
 
         {/* Scrollable content area — ONLY this scrolls */}
-        <div style={{ ...styles.contentWrapper, padding: isMobile ? '1rem' : '1.5rem 2rem' }}>
+        <div style={{ ...styles.contentWrapper, padding: isMobile ? '1rem 1rem 5rem 1rem' : '1.5rem 2rem 5rem 2rem' }}>
           {children}
         </div>
       </div>
