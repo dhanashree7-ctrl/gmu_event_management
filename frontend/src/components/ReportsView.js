@@ -219,7 +219,7 @@ export default function ReportsView({ user }) {
           <h2 style={styles.title}> Analytics & Reports</h2>
           <p style={styles.subtitle}>Insights and event reports for completed events.</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <button onClick={handleExportExcel} style={{ padding: '0.5rem 1rem', background: '#2E7D32', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
              Export Excel
           </button>

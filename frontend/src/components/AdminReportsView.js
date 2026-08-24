@@ -499,7 +499,7 @@ const styles = {
   headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' },
   title: { margin: 0, color: theme.colors.maroon, fontSize: '1.8rem' },
   subtitle: { margin: '0.25rem 0 0', color: '#666' },
-  exportGroup: { display: 'flex', gap: '1rem' },
+  exportGroup: { display: 'flex', gap: '1rem', flexWrap: 'wrap' },
   btn: { padding: '0.6rem 1.25rem', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' },
   filterCard: { background: '#fff', borderRadius: '12px', padding: '1.5rem', display: 'flex', gap: '2rem', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', flexWrap: 'wrap' },
   filterGroup: { display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, minWidth: '200px' },

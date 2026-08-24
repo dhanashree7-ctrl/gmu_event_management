@@ -283,9 +283,12 @@ export default function GlobalSidebar({ role, activeNav, onNavChange, collapsed,
       >
         {/* Close button */}
         <button
-          style={styles.mobileCloseBtn}
-          onClick={() => setMobileOpen(false)}
+          style={{ ...styles.mobileCloseBtn, zIndex: 99999 }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMobileOpen(false); }}
+          onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setMobileOpen(false); }}
+          onPointerDown={(e) => { e.stopPropagation(); }}
           aria-label="Close menu"
+          type="button"
         >
           <X size={20} />
         </button>
@@ -485,19 +488,19 @@ const styles = {
   },
   mobileCloseBtn: {
     position: 'absolute',
-    top: '14px',
-    right: '14px',
-    background: 'rgba(255,255,255,0.1)',
-    border: '1px solid rgba(255,255,255,0.15)',
-    borderRadius: '8px',
-    width: '34px',
-    height: '34px',
+    top: '12px',
+    right: '12px',
+    background: 'rgba(255,255,255,0.2)',
+    border: '2px solid rgba(255,255,255,0.4)',
+    borderRadius: '12px',
+    width: '44px',
+    height: '44px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
     color: '#FDD06F',
-    zIndex: 10,
+    zIndex: 99999,
   },
   toggleBtn: {
     position: 'absolute',
