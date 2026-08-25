@@ -30,15 +30,14 @@ if (!$event_id) {
     exit;
 }
 
-// 1. Fetch Master Event from event_master and event_metadata
+// 1. Fetch Master Event from event_master
 $stmt = $conn->prepare("
-    SELECT em.*, emd.*, u.full_name AS proposed_by_name, u.department AS proposer_dept 
+    SELECT em.*, u.NAME AS proposed_by_name, u.DEPT AS proposer_dept 
     FROM event_master em 
-    LEFT JOIN event_metadata emd ON emd.EVENT_ID = em.SL_NO
-    LEFT JOIN users u ON em.CREATED_BY = u.id 
-    WHERE em.SL_NO = ?
+    LEFT JOIN users u ON em.PROPOSER_ID = u.USERNAME 
+    WHERE em.EVENT_ID = ?
 ");
-$stmt->bind_param("i", $event_id);
+$stmt->bind_param("s", $event_id);
 $stmt->execute();
 $master_result = $stmt->get_result();
 
@@ -48,24 +47,27 @@ if ($master_result->num_rows === 0) {
 }
 $master_event = $master_result->fetch_assoc();
 // Normalize key names for frontend compatibility
-$master_event['id']           = $master_event['SL_NO'];
-$master_event['event_title']  = $master_event['EVENT'];
+$master_event['id']           = $master_event['EVENT_ID'];
+$master_event['event_title']  = $master_event['EVENT_TITLE'];
 $master_event['description']  = $master_event['DESCRIPTION'];
 $master_event['category']     = $master_event['CATEGORY'];
-$master_event['event_scale']  = $master_event['EVENT_SCALE'];
+$master_event['event_scale']  = $master_event['SCALE'];
 $master_event['current_status'] = $master_event['CURRENT_STATUS'];
 $master_event['budget']       = $master_event['BUDGET'];
-$master_event['details_json'] = $master_event['DETAILS_JSON'];
+$attachments = !empty($master_event['ATTACHMENTS']) ? json_decode($master_event['ATTACHMENTS'], true) : [];
+$master_event['details_json'] = $master_event['ATTACHMENTS']; // using attachments for details if needed
+$master_event['brochure_file_path'] = $attachments['brochure'] ?? null;
+$master_event['report_file_path'] = $attachments['report'] ?? null;
 
 // 2. Fetch Participants from event_registrations joined with users
 $stmt2 = $conn->prepare("
-    SELECT r.ID, r.STUDENT_ID, r.ROLE, r.FEEDBACK_RATING, r.FEEDBACK_COMMENTS, r.details_json,
-           u.full_name AS STUDENT_NAME, u.usn_or_emp_id AS USN, u.department, u.school_name, u.faculty_name
+    SELECT r.ID, r.USER_ID, r.ROLE, r.FEEDBACK_JSON, r.EXTERNAL_DETAILS,
+           u.NAME AS STUDENT_NAME, u.USERNAME AS USN, u.DEPT, u.SCHOOL, u.FACULTY
     FROM event_registrations r
-    LEFT JOIN users u ON r.STUDENT_ID = u.usn_or_emp_id
+    LEFT JOIN users u ON r.USER_ID = u.USERNAME
     WHERE r.EVENT_ID = ?
 ");
-$stmt2->bind_param("i", $event_id);
+$stmt2->bind_param("s", $event_id);
 $stmt2->execute();
 $participants_result = $stmt2->get_result();
 
@@ -94,20 +96,21 @@ if ($master_event['DETAILS_JSON']) {
 
 while ($row = $participants_result->fetch_assoc()) {
     $total_participants++;
-    $dept = $row['department'];
+    $dept = $row['DEPT'];
     if (!empty($dept) && $dept !== 'Unknown Department') {
         $department_breakdown[$dept] = ($department_breakdown[$dept] ?? 0) + 1;
     }
 
-    $rating = $row['FEEDBACK_RATING'];
+    $feedback = !empty($row['FEEDBACK_JSON']) ? json_decode($row['FEEDBACK_JSON'], true) : [];
+    $rating = $feedback['rating'] ?? 0;
     if (is_numeric($rating) && $rating > 0) {
         $feedback_sum += (float)$rating;
         $feedback_count++;
     }
-    $comment = $row['FEEDBACK_COMMENTS'];
+    $comment = $feedback['comment'] ?? '';
     if (!empty($comment) && trim($comment) !== '') {
         $feedback_comments[] = [
-            'name'    => $row['STUDENT_NAME'],
+            'name'    => $row['STUDENT_NAME'] ?? $row['USN'],
             'rating'  => $rating,
             'comment' => $comment,
         ];
@@ -115,7 +118,7 @@ while ($row = $participants_result->fetch_assoc()) {
 
     $joined_sub_events = [];
     $college = 'GMU';
-    $details_json = $row['details_json'];
+    $details_json = $row['EXTERNAL_DETAILS'];
     if ($details_json) {
         $decoded = json_decode($details_json, true);
         if (json_last_error() === JSON_ERROR_NONE) {
@@ -140,12 +143,12 @@ while ($row = $participants_result->fetch_assoc()) {
     }
 
     $participants[] = [
-        'name'       => $row['STUDENT_NAME'],
+        'name'       => $row['STUDENT_NAME'] ?? $row['USN'],
         'usn'        => $row['USN'],
         'role'       => $row['ROLE'],
-        'faculty'    => $row['faculty_name'],
-        'school'     => $row['school_name'],
-        'department' => $row['department'],
+        'faculty'    => $row['FACULTY'],
+        'school'     => $row['SCHOOL'],
+        'department' => $row['DEPT'],
         'college'    => $college,
         'sub_events' => $joined_sub_events,
     ];

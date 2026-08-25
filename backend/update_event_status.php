@@ -26,8 +26,8 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($body)) {
     exit;
 }
 
-$event_id = filter_var($body['event_id'] ?? 0, FILTER_VALIDATE_INT);
-if ($event_id === false || $event_id <= 0) {
+$event_id = $body['event_id'] ?? '';
+if ($event_id === '') {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'A valid event_id is required.']);
     exit;
@@ -58,16 +58,13 @@ catch (RuntimeException $e) {
 }
 
 // Step 1: Verify event exists in event_master
-$check_sql  = 'SELECT em.SL_NO AS id, em.EVENT AS event_title, em.CURRENT_STATUS AS current_status,
-                      em.EVENT_SCALE AS event_scale, emd.APPROVAL_ROUTE AS approval_route,
-                      emd.APPROVAL_STEP AS approval_step, emd.BUDGET AS budget,
-                      u.usn_or_emp_id AS proposer_username
+$check_sql  = 'SELECT em.EVENT_ID AS event_id, em.EVENT_TITLE AS event_title, em.CURRENT_STATUS AS current_status,
+                      em.SCALE AS event_scale, em.APPROVAL_WORKFLOW AS approval_workflow,
+                      em.BUDGET AS budget, em.PROPOSER_ID AS proposer_username
                FROM event_master em
-               LEFT JOIN event_metadata emd ON em.SL_NO = emd.EVENT_ID
-               LEFT JOIN users u ON em.CREATED_BY = u.id
-               WHERE em.SL_NO = ? LIMIT 1';
+               WHERE em.EVENT_ID = ? LIMIT 1';
 $check_stmt = $conn->prepare($check_sql);
-$check_stmt->bind_param('i', $event_id);
+$check_stmt->bind_param('s', $event_id);
 $check_stmt->execute();
 $event = $check_stmt->get_result()->fetch_assoc();
 $check_stmt->close();
@@ -80,7 +77,12 @@ if (!$event) {
 }
 
 $new_status = '';
-$next_step  = (int)($event['approval_step'] ?? 0);
+$workflow_json_raw = $event['approval_workflow'] ?? '{}';
+$workflow = json_decode($workflow_json_raw, true);
+if (!is_array($workflow)) $workflow = ['route' => [], 'current_step' => 0, 'history' => []];
+
+$next_step = (int)($workflow['current_step'] ?? 0);
+$route = $workflow['route'] ?? [];
 
 $actionable = ['pending_hod', 'pending_director', 'pending_dean', 'pending_provc', 'pending_vc'];
 if (!in_array($event['current_status'], $actionable, true)) {
@@ -93,9 +95,7 @@ if (!in_array($event['current_status'], $actionable, true)) {
 if ($action === 'reject') {
     $new_status = 'rejected';
 } else {
-    $route_raw = $event['approval_route'] ?? '[]';
-    $route     = json_decode($route_raw, true);
-    if (!is_array($route) || empty($route)) $route = ['hod'];
+    if (empty($route)) $route = ['hod'];
 
     $expected_role      = $route[$next_step] ?? '';
     $normalized_role    = strtolower(str_replace('_', '', $role));
@@ -118,10 +118,27 @@ if ($action === 'reject') {
 }
 
 
-// Step 2: Update event_master and event_metadata
-$update_sql  = 'UPDATE event_master SET CURRENT_STATUS = ? WHERE SL_NO = ?';
+// Step 2 & 3: Update event_master and append to history array
+$approver_id = $auth_payload['username'] ?? '';
+$notes       = trim($body['notes'] ?? $body['remarks'] ?? '');
+
+$workflow['current_step'] = $next_step;
+if (!isset($workflow['history']) || !is_array($workflow['history'])) {
+    $workflow['history'] = [];
+}
+if ($approver_id !== '') {
+    $workflow['history'][] = [
+        'user_id' => $approver_id,
+        'action_taken' => $new_status,
+        'notes' => $notes,
+        'created_at' => date('c')
+    ];
+}
+$new_workflow_json = json_encode($workflow);
+
+$update_sql  = 'UPDATE event_master SET CURRENT_STATUS = ?, APPROVAL_WORKFLOW = ? WHERE EVENT_ID = ?';
 $update_stmt = $conn->prepare($update_sql);
-$update_stmt->bind_param('si', $new_status, $event_id);
+$update_stmt->bind_param('sss', $new_status, $new_workflow_json, $event_id);
 if (!$update_stmt->execute()) {
     $update_stmt->close(); $conn->close();
     http_response_code(500);
@@ -129,25 +146,6 @@ if (!$update_stmt->execute()) {
     exit;
 }
 $update_stmt->close();
-
-$update_meta_sql  = 'UPDATE event_metadata SET APPROVAL_STEP = ?, REMARKS = ? WHERE EVENT_ID = ?';
-$update_meta_stmt = $conn->prepare($update_meta_sql);
-$update_meta_stmt->bind_param('isi', $next_step, $remarks, $event_id);
-$update_meta_stmt->execute();
-$update_meta_stmt->close();
-
-// Step 3: Append audit trail to APPROVAL_HISTORY_JSON
-$approver_id = filter_var($body['user_id'] ?? 0, FILTER_VALIDATE_INT);
-$notes       = trim($body['notes'] ?? $body['remarks'] ?? '');
-if ($approver_id > 0) {
-    $history_sql  = "UPDATE event_metadata SET APPROVAL_HISTORY_JSON = JSON_ARRAY_APPEND(COALESCE(APPROVAL_HISTORY_JSON, JSON_ARRAY()), '\$', JSON_OBJECT('user_id', ?, 'action_taken', ?, 'notes', ?, 'created_at', NOW())) WHERE EVENT_ID = ?";
-    $history_stmt = $conn->prepare($history_sql);
-    if ($history_stmt) {
-        $history_stmt->bind_param("issi", $approver_id, $new_status, $notes, $event_id);
-        $history_stmt->execute();
-        $history_stmt->close();
-    }
-}
 
 // Step 4: Notifications
 $proposer    = $event['proposer_username'] ?? null;
@@ -160,7 +158,7 @@ if ($proposer) {
     elseif ($new_status === 'rejected') $msg = "❌ Your proposal for '$event_title' was rejected by $role.$remark_text";
     else $msg = "✅ Your proposal '$event_title' was approved by $role and moved to the next level.$remark_text";
 
-    $notif_stmt = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/faculty-dashboard')");
+    $notif_stmt = $conn->prepare("INSERT INTO notifications (USER_ID, MESSAGE, TARGET_LINK) VALUES (?, ?, '/faculty-dashboard')");
     if ($notif_stmt) { $notif_stmt->bind_param('ss', $proposer, $msg); $notif_stmt->execute(); $notif_stmt->close(); }
 }
 
@@ -173,17 +171,17 @@ elseif ($new_status === 'pending_provc') $next_role_notif = 'pro_vc';
 elseif ($new_status === 'pending_vc')  $next_role_notif = 'vc';
 
 if ($next_role_notif) {
-    $next_stmt = $conn->prepare("SELECT usn_or_emp_id AS username FROM users WHERE system_role = ?");
+    $next_stmt = $conn->prepare("SELECT USERNAME FROM users WHERE ROLE = ?");
     if ($next_stmt) {
         $next_stmt->bind_param('s', $next_role_notif);
         $next_stmt->execute();
         $next_res    = $next_stmt->get_result();
         $budget_flag = ($budget > 500000 && in_array($next_role_notif, ['pro_vc', 'vc'])) ? " 💰 High-Budget Alert!" : "";
         $msg         = "New event '$event_title' has escalated to your queue.$budget_flag";
-        $notif_stmt  = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, ?)");
+        $notif_stmt  = $conn->prepare("INSERT INTO notifications (USER_ID, MESSAGE, TARGET_LINK) VALUES (?, ?, ?)");
         if ($notif_stmt) {
             while ($row = $next_res->fetch_assoc()) {
-                $u = $row['username'];
+                $u = $row['USERNAME'];
                 $notif_stmt->bind_param('sss', $u, $msg, $next_link);
                 $notif_stmt->execute();
             }

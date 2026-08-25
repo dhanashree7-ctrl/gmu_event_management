@@ -31,24 +31,23 @@ catch (RuntimeException $e) {
     exit;
 }
 
-// Map student_id to usn_or_emp_id
-$usn_stmt = $conn->prepare("SELECT usn_or_emp_id FROM users WHERE usn_or_emp_id = ? OR id = ? LIMIT 1");
+// Map student_id to USERNAME
+$usn_stmt = $conn->prepare("SELECT USERNAME FROM users WHERE USERNAME = ? OR ID = ? LIMIT 1");
 $usn_stmt->bind_param('ss', $studentId, $studentId);
 $usn_stmt->execute();
 $usn_row = $usn_stmt->get_result()->fetch_assoc();
 $usn_stmt->close();
-$student_usn = $usn_row['usn_or_emp_id'] ?? $studentId;
+$student_usn = $usn_row['USERNAME'] ?? $studentId;
 
 $stmt = $conn->prepare("
-    SELECT em.SL_NO AS id, em.EVENT AS event_title,
+    SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title,
            em.START_DATE AS event_date, em.START_TIME AS event_time,
-           em.VENUE AS venue, em.CATEGORY AS category, emd.BROUCHER AS brochure_path,
+           em.VENUE AS venue, em.CATEGORY AS category, em.ATTACHMENTS AS attachments_json,
            r.CHECK_IN_STATUS AS check_in_status, r.CHECK_IN_TIME AS check_in_time,
-           r.ROLE AS registration_role, r.details_json AS reg_details
+           r.ROLE AS registration_role, r.EXTERNAL_DETAILS AS reg_details
     FROM event_registrations r
-    JOIN event_master em ON r.EVENT_ID = em.SL_NO
-    LEFT JOIN event_metadata emd ON emd.EVENT_ID = em.SL_NO
-    WHERE r.STUDENT_ID = ?
+    JOIN event_master em ON r.EVENT_ID = em.EVENT_ID
+    WHERE r.USER_ID = ?
     ORDER BY em.START_DATE ASC
 ");
 
@@ -66,6 +65,9 @@ if (!$stmt->execute()) {
 $result = $stmt->get_result();
 $events = [];
 while ($row = $result->fetch_assoc()) {
+    $attachments = !empty($row['attachments_json']) ? json_decode($row['attachments_json'], true) : [];
+    $brochure_path = $attachments['brochure'] ?? null;
+
     $events[] = [
         'id'                => (int)($row['id'] ?? 0),
         'event_title'       => $row['event_title']        ?? 'Unknown',
@@ -75,7 +77,7 @@ while ($row = $result->fetch_assoc()) {
         'time'              => $row['event_time']          ?: null,
         'venue'             => $row['venue']               ?: 'TBD',
         'category'          => $row['category']            ?: 'Uncategorized',
-        'brochure_path'     => $row['brochure_path']       ?? '',
+        'brochure_path'     => $brochure_path,
         'check_in_status'   => $row['check_in_status']     ?? 'registered',
         'check_in_time'     => $row['check_in_time']       ?? null,
         'registration_role' => $row['registration_role']   ?? 'participant',

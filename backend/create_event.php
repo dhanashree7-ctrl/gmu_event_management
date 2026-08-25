@@ -39,9 +39,8 @@ $budget_raw       = $_POST['budget'] ?? null;
 $budget           = is_numeric($budget_raw) ? (float)$budget_raw : -1;
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$proposed_by_id = (int)$auth_payload['id'];
-$role           = strtolower($auth_payload['role']);
-$immediate_approval = isset($_POST['immediate_approval']) && filter_var($_POST['immediate_approval'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+$proposed_by_id = $auth_payload['username'] ?? '';
+$role           = strtolower($auth_payload['role'] ?? '');
 
 $max_participants = isset($_POST['max_participants']) && $_POST['max_participants'] !== '' ? (int)$_POST['max_participants'] : null;
 $max_volunteers   = isset($_POST['max_volunteers'])   && $_POST['max_volunteers']   !== '' ? (int)$_POST['max_volunteers']   : null;
@@ -86,7 +85,7 @@ if ($event_date === null)                           $errors[] = 'Event date is r
 if (!in_array($category, $allowed_categories, true)) $errors[] = 'Category must be Academic, Cultural, or Sports.';
 if (!in_array($event_scale, $allowed_scales, true))  $errors[] = 'Event scale must be "department" or "university".';
 if ($budget < 0)                                    $errors[] = 'Budget must be a non-negative number.';
-if ($proposed_by_id === false || $proposed_by_id <= 0) $errors[] = 'A valid proposed_by_id is required.';
+if ($proposed_by_id === '')                         $errors[] = 'A valid proposed_by_id is required.';
 
 if (!empty($errors)) {
     http_response_code(400);
@@ -103,13 +102,15 @@ catch (RuntimeException $e) {
     exit;
 }
 
-// ---------- Fetch Proposer Department ------------------------------------
-$dept_stmt = $conn->prepare("SELECT department FROM users WHERE id = ? LIMIT 1");
-$dept_stmt->bind_param('i', $proposed_by_id);
+// ---------- Fetch Proposer Context ---------------------------------------
+$dept_stmt = $conn->prepare("SELECT DEPT, FACULTY, SCHOOL FROM users WHERE USERNAME = ? LIMIT 1");
+$dept_stmt->bind_param('s', $proposed_by_id);
 $dept_stmt->execute();
 $dept_row  = $dept_stmt->get_result()->fetch_assoc();
 $dept_stmt->close();
-$proposer_dept = $dept_row['department'] ?? '';
+$proposer_dept    = $dept_row['DEPT'] ?? null;
+$proposer_faculty = $dept_row['FACULTY'] ?? null;
+$proposer_school  = $dept_row['SCHOOL'] ?? null;
 
 // ---------- Fetch Approval Route -----------------------------------------
 $route_stmt = $conn->prepare("SELECT required_chain FROM approval_rules WHERE scale_name = ?");
@@ -118,8 +119,8 @@ $route_stmt->execute();
 $route_res = $route_stmt->get_result();
 
 if ($route_row = $route_res->fetch_assoc()) {
-    $approval_route_arr = json_decode($route_row['required_chain'], true);
-    $approval_route_raw = $route_row['required_chain'];
+    $approval_route_arr = json_decode($route_row['REQUIRED_CHAIN'], true);
+    $approval_route_raw = $route_row['REQUIRED_CHAIN'];
 } else {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => "Approval routing rules are missing for the scale: '{$event_scale}'."]);
@@ -132,7 +133,22 @@ function get_status_from_role(string $r): string {
     if ($r === 'pro_vc' || $r === 'provc') return 'pending_provc';
     return 'pending_' . $r;
 }
-$initial_status = get_status_from_role($approval_route_arr[0]);
+$initial_status = get_status_from_role($approval_route_arr[0] ?? 'approved');
+
+// Build APPROVAL_WORKFLOW JSON
+$workflow_arr = [
+    'route' => $approval_route_arr,
+    'current_step' => 0,
+    'history' => []
+];
+$workflow_json = json_encode($workflow_arr);
+
+// Build ATTACHMENTS JSON
+$attachments_arr = [];
+if ($brochure_path !== '') {
+    $attachments_arr['brochure'] = $brochure_path;
+}
+$attachments_json = !empty($attachments_arr) ? json_encode($attachments_arr) : null;
 
 // ---------- Sub-events / Details JSON ------------------------------------
 $is_festival = isset($_POST['is_festival']) && $_POST['is_festival'] === 'true';
@@ -152,11 +168,15 @@ $details_json = !empty($details_arr) ? json_encode($details_arr) : null;
 $event_id_val = 'EVT-' . strtoupper(uniqid());
 
 $sql = 'INSERT INTO event_master
-            (EVENT_ID, EVENT, DESCRIPTION, START_DATE, END_DATE, START_TIME, END_TIME, VENUE, CATEGORY, TYPE, MODE,
-             CREATED_BY, DEPARTMENT, CURRENT_STATUS, EVENT_SCALE, IMMEDIATE_APPROVAL)
+            (PROPOSER_ID, DEPT, FACULTY, SCHOOL,
+             EVENT_TITLE, DESCRIPTION, CATEGORY, SCALE, MODE, VENUE,
+             START_DATE, END_DATE, START_TIME, END_TIME, MAX_PARTICIPANTS, BUDGET, COORDINATOR_NAME,
+             ATTACHMENTS, CURRENT_STATUS, APPROVAL_WORKFLOW)
         VALUES
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?, ?)';
+            (?, ?, ?, ?,
+             ?, ?, ?, ?, ?, ?,
+             ?, ?, ?, ?, ?, ?, ?,
+             ?, ?, ?)';
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -167,11 +187,12 @@ if (!$stmt) {
     exit;
 }
 
-$type_fallback = 'Event';
 try {
-    $stmt->bind_param('sssssssssssssssi',
-        $event_id_val, $event_title, $description, $event_date, $event_date, $start_time, $end_time, $venue, $category, $type_fallback, $event_mode,
-        $proposed_by_id, $proposer_dept, $initial_status, $event_scale, $immediate_approval
+    $stmt->bind_param('ssssssssssssssidssss',
+        $proposed_by_id, $proposer_dept, $proposer_faculty, $proposer_school,
+        $event_title, $description, $category, $event_scale, $event_mode, $venue,
+        $event_date, $event_date, $start_time, $end_time, $max_participants, $budget, $coordinator_name,
+        $attachments_json, $initial_status, $workflow_json
     );
 
     if (!$stmt->execute()) {
@@ -188,31 +209,16 @@ try {
 $new_event_id = $stmt->insert_id;
 $stmt->close();
 
-$meta_sql = 'INSERT INTO event_metadata
-                (EVENT_ID, BROUCHER, BUDGET, APPROVAL_ROUTE, APPROVAL_STEP, MAX_PARTICIPANTS, MAX_VOLUNTEERS, MAX_COORDINATORS, PARTICIPATION_TYPE, MAX_TEAM_SIZE, APPROVAL_HISTORY_JSON, DETAILS_JSON)
-             VALUES
-                (?, ?, ?, ?, 0, ?, ?, ?, ?, ?, JSON_ARRAY(), ?)';
-$meta_stmt = $conn->prepare($meta_sql);
-if ($meta_stmt) {
-    $meta_stmt->bind_param('isdsiiisis',
-        $new_event_id, $brochure_path, $budget, $approval_route_raw,
-        $max_participants, $max_volunteers, $max_coordinators,
-        $participation_type, $max_team_size, $details_json
-    );
-    $meta_stmt->execute();
-    $meta_stmt->close();
-}
-
 // --- Notification to HOD ---
 if ($initial_status === 'pending_hod') {
-    $hod_sql  = "SELECT u2.usn_or_emp_id FROM users u1 JOIN users u2 ON u1.department = u2.department WHERE u1.id = ? AND u2.system_role = 'hod' LIMIT 1";
+    $hod_sql  = "SELECT u2.USERNAME FROM users u1 JOIN users u2 ON u1.DEPT = u2.DEPT WHERE u1.USERNAME = ? AND u2.ROLE = 'hod' LIMIT 1";
     $hod_stmt = $conn->prepare($hod_sql);
     if ($hod_stmt) {
-        $hod_stmt->bind_param('i', $proposed_by_id);
+        $hod_stmt->bind_param('s', $proposed_by_id);
         $hod_stmt->execute();
         if ($hod_row = $hod_stmt->get_result()->fetch_assoc()) {
-            $hod_username = $hod_row['usn_or_emp_id'];
-            $msg  = ($immediate_approval ? "🚨 URGENT: " : "") . "New event proposal '$event_title' requires your approval.";
+            $hod_username = $hod_row['USERNAME'];
+            $msg  = "New event proposal '$event_title' requires your approval.";
             $link = "/hod-dashboard";
             $notif_stmt = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, ?)");
             if ($notif_stmt) { $notif_stmt->bind_param('sss', $hod_username, $msg, $link); $notif_stmt->execute(); $notif_stmt->close(); }

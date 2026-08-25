@@ -35,15 +35,14 @@ if (!$qr_token) {
     exit;
 }
 
-// Fetch registration from event_registrations JOIN event_master for event details
 $stmt = $conn->prepare("
-    SELECT er.ID, er.CHECK_IN_STATUS, er.EVENT_ID, er.STUDENT_ID,
-           u.full_name AS STUDENT_NAME,
-           em.EVENT AS event_title, em.START_DATE AS event_date, em.START_TIME AS event_time
+    SELECT er.ID, er.CHECK_IN_STATUS, er.EVENT_ID, er.USER_ID,
+           u.NAME AS STUDENT_NAME,
+           em.EVENT_TITLE AS event_title, em.START_DATE AS event_date, em.START_TIME AS event_time
     FROM event_registrations er
-    JOIN event_master em ON er.EVENT_ID = em.SL_NO
-    LEFT JOIN users u ON er.STUDENT_ID = u.usn_or_emp_id
-    WHERE er.QR_TOKEN = ?
+    JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
+    LEFT JOIN users u ON er.USER_ID = u.USERNAME
+    WHERE er.QR_CODE = ?
 ");
 $stmt->bind_param("s", $qr_token);
 $stmt->execute();
@@ -95,7 +94,7 @@ if ($event_date && $event_time) {
 }
 
 // Mark checked_in in event_registrations
-$updateStmt = $conn->prepare("UPDATE event_registrations SET CHECK_IN_STATUS = 'checked_in', CHECK_IN_TIME = NOW(), STATUS = 'completed' WHERE QR_TOKEN = ?");
+$updateStmt = $conn->prepare("UPDATE event_registrations SET CHECK_IN_STATUS = 'checked_in', CHECK_IN_TIME = NOW(), STATUS = 'completed' WHERE QR_CODE = ?");
 $updateStmt->bind_param("s", $qr_token);
 if (!$updateStmt->execute()) {
     echo json_encode(['success' => false, 'message' => 'Failed to process check-in.']);

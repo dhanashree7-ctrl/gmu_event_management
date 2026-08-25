@@ -65,29 +65,25 @@ if ($role === 'hod') {
         echo json_encode(['success' => false, 'message' => 'Department name is required for HODs.']);
         exit;
     }
-    $sql = "SELECT em.SL_NO AS id, em.EVENT AS event_title, em.DESCRIPTION AS description,
-                   em.CATEGORY AS category, em.EVENT_SCALE AS event_scale, emd.BUDGET AS budget,
-                   emd.BROUCHER AS brochure_file_path, em.IMMEDIATE_APPROVAL AS immediate_approval,
-                   emd.DETAILS_JSON AS details_json,
-                   u.full_name AS proposed_by, u.department AS proposer_department, u.system_role AS proposer_role
+    $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
+                   em.CATEGORY AS category, em.SCALE AS event_scale, em.BUDGET AS budget,
+                   em.ATTACHMENTS AS attachments_json,
+                   u.NAME AS proposed_by, u.DEPT AS proposer_department, u.ROLE AS proposer_role
             FROM event_master AS em
-            LEFT JOIN event_metadata AS emd ON emd.EVENT_ID = em.SL_NO
-            JOIN users AS u ON u.id = em.CREATED_BY
-            WHERE em.CURRENT_STATUS = ? AND em.DEPARTMENT = ?
-            ORDER BY em.IMMEDIATE_APPROVAL DESC, em.SL_NO ASC";
+            JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
+            WHERE em.CURRENT_STATUS = ? AND em.DEPT = ?
+            ORDER BY em.EVENT_ID ASC";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('ss', $target_status, $department);
 } else {
-    $sql = "SELECT em.SL_NO AS id, em.EVENT AS event_title, em.DESCRIPTION AS description,
-                   em.CATEGORY AS category, em.EVENT_SCALE AS event_scale, emd.BUDGET AS budget,
-                   emd.BROUCHER AS brochure_file_path, em.IMMEDIATE_APPROVAL AS immediate_approval,
-                   emd.DETAILS_JSON AS details_json,
-                   u.full_name AS proposed_by, u.department AS department, u.system_role AS proposer_role
+    $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
+                   em.CATEGORY AS category, em.SCALE AS event_scale, em.BUDGET AS budget,
+                   em.ATTACHMENTS AS attachments_json,
+                   u.NAME AS proposed_by, u.DEPT AS department, u.ROLE AS proposer_role
             FROM event_master AS em
-            LEFT JOIN event_metadata AS emd ON emd.EVENT_ID = em.SL_NO
-            JOIN users AS u ON u.id = em.CREATED_BY
+            JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
             WHERE em.CURRENT_STATUS = ?
-            ORDER BY em.IMMEDIATE_APPROVAL DESC, em.SL_NO ASC";
+            ORDER BY em.EVENT_ID ASC";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('s', $target_status);
 }
@@ -104,6 +100,9 @@ $result = $stmt->get_result();
 $events = [];
 
 while ($row = $result->fetch_assoc()) {
+    $attachments = !empty($row['attachments_json']) ? json_decode($row['attachments_json'], true) : [];
+    $brochure_path = $attachments['brochure'] ?? null;
+
     $events[] = [
         'id'                 => (int)$row['id'],
         'event_title'        => $row['event_title'],
@@ -111,9 +110,9 @@ while ($row = $result->fetch_assoc()) {
         'category'           => $row['category'],
         'event_scale'        => $row['event_scale'],
         'budget'             => $row['budget'],
-        'brochure_file_path' => $row['brochure_file_path'],
-        'immediate_approval' => (bool)$row['immediate_approval'],
-        'details'            => !empty($row['details_json']) ? json_decode($row['details_json'], true) : null,
+        'brochure_file_path' => $brochure_path,
+        'immediate_approval' => false,
+        'details'            => null,
         'proposed_by'        => $row['proposed_by'],
         'department'         => $row['proposer_department'] ?? $row['department'] ?? '',
         'proposer_role'      => $row['proposer_role'],

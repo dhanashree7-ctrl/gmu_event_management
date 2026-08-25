@@ -63,9 +63,9 @@ try {
 /*
  * Fetching the exact columns from our new Enterprise Schema
  */
-$sql = 'SELECT id, usn_or_emp_id, username, full_name, email, password, system_role, department, school_name
+$sql = 'SELECT ID, USERNAME, EMAIL, PASSWORD, NAME, ROLE, DEPT, FACULTY, SCHOOL
          FROM   users
-         WHERE  username = ? OR usn_or_emp_id = ? OR email = ?
+         WHERE  USERNAME = ? OR EMAIL = ?
          LIMIT  1';
 
 $stmt = $conn->prepare($sql);
@@ -78,7 +78,7 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param('sss', $username, $username, $username);
+$stmt->bind_param('ss', $username, $username);
 
 if (!$stmt->execute()) {
     error_log('login.php – execute failed: ' . $stmt->error);
@@ -105,8 +105,9 @@ if ($user === null) {
     exit;
 }
 
-// Check password (supports both hashed and plaintext for legacy)
-if (!password_verify($password, $user['password']) && $password !== $user['password']) {
+// Check password (supports both hashed and plaintext for sandbox/testing)
+$dbPass = $user['PASSWORD'] ?? $user['password'] ?? '';
+if (!password_verify($password, $dbPass) && $password !== $dbPass) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => $genericError]);
     exit;
@@ -114,12 +115,13 @@ if (!password_verify($password, $user['password']) && $password !== $user['passw
 
 // ---------- Success — return safe user data ------------------------------
 $userData = [
-    'id' => (int) $user['id'],
-    'username' => $user['usn_or_emp_id'],
-    'name' => $user['full_name'],
-    'role' => $user['system_role'],
-    'department_name' => $user['department'],
-    'school_name' => $user['school_name'] ?? 'N/A',
+    'id' => (int) ($user['ID'] ?? $user['id']),
+    'username' => $user['USERNAME'] ?? $user['username'],
+    'name' => $user['NAME'] ?? $user['full_name'] ?? $user['name'],
+    'role' => $user['ROLE'] ?? $user['role'] ?? $user['system_role'],
+    'department_name' => $user['DEPT'] ?? $user['department'] ?? '',
+    'faculty_name' => $user['FACULTY'] ?? $user['faculty_name'] ?? 'N/A',
+    'school_name' => $user['SCHOOL'] ?? $user['school_name'] ?? 'N/A',
 ];
 
 $token = generate_jwt($userData);

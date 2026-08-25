@@ -27,7 +27,7 @@ if (!is_array($body)) {
     exit;
 }
 
-$event_id = filter_var($body['event_id'] ?? null, FILTER_VALIDATE_INT);
+$event_id = $body['event_id'] ?? null;
 if (!$event_id) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Valid event_id is required.']);
@@ -42,41 +42,39 @@ catch (RuntimeException $e) {
     exit;
 }
 
-// Fetch capacities from event_metadata and START_DATE from event_master
+// Fetch capacities and START_DATE from event_master
 $cap_stmt = $conn->prepare("
-    SELECT emd.MAX_PARTICIPANTS, emd.MAX_VOLUNTEERS, emd.MAX_COORDINATORS, em.START_DATE 
-    FROM event_master em 
-    LEFT JOIN event_metadata emd ON em.SL_NO = emd.EVENT_ID 
-    WHERE em.SL_NO = ?
+    SELECT MAX_PARTICIPANTS, START_DATE 
+    FROM event_master 
+    WHERE EVENT_ID = ?
 ");
-$cap_stmt->bind_param('i', $event_id);
+$cap_stmt->bind_param('s', $event_id);
 $cap_stmt->execute();
 $cap_row = $cap_stmt->get_result()->fetch_assoc();
 $cap_stmt->close();
 
 $capacities = [
     'max_participants' => $cap_row ? ($cap_row['MAX_PARTICIPANTS'] !== null ? (int)$cap_row['MAX_PARTICIPANTS'] : null) : null,
-    'max_volunteers'   => $cap_row ? ($cap_row['MAX_VOLUNTEERS']   !== null ? (int)$cap_row['MAX_VOLUNTEERS']   : null) : null,
-    'max_coordinators' => $cap_row ? ($cap_row['MAX_COORDINATORS'] !== null ? (int)$cap_row['MAX_COORDINATORS'] : null) : null,
+    'max_volunteers'   => null,
+    'max_coordinators' => null,
 ];
 $event_date = $cap_row['START_DATE'] ?? null;
 
 // Fetch attendees from event_registrations JOIN users
 $sql = "SELECT
             er.ID                     AS registration_id,
-            er.STUDENT_ID             AS student_uid,
+            er.USER_ID                AS student_uid,
             er.ROLE                   AS registration_role,
-            er.SPECIAL_REQUIREMENTS   AS special_requirements,
+            er.EXTERNAL_DETAILS       AS external_details_json,
             er.CHECK_IN_STATUS        AS check_in_status,
             er.CHECK_IN_TIME          AS check_in_time,
             er.REGISTRATION_DATE      AS registered_at,
-            u.full_name               AS student_name,
-            u.email                   AS student_email,
-            u.usn_or_emp_id           AS usn,
-            u.department              AS department,
-            u.semester                AS semester
+            u.NAME                    AS student_name,
+            u.EMAIL                   AS student_email,
+            u.USERNAME                AS usn,
+            u.DEPT                    AS department
         FROM event_registrations er
-        LEFT JOIN users u ON er.STUDENT_ID = u.usn_or_emp_id
+        LEFT JOIN users u ON er.USER_ID = u.USERNAME
         WHERE er.EVENT_ID = ?
         ORDER BY er.ROLE ASC, er.REGISTRATION_DATE DESC";
 
@@ -87,7 +85,7 @@ if (!$stmt) {
     echo json_encode(['success' => false, 'message' => 'Internal server error.']);
     exit;
 }
-$stmt->bind_param('i', $event_id);
+$stmt->bind_param('s', $event_id);
 if (!$stmt->execute()) {
     $stmt->close(); $conn->close();
     http_response_code(500);
@@ -98,6 +96,8 @@ if (!$stmt->execute()) {
 $result    = $stmt->get_result();
 $attendees = [];
 while ($row = $result->fetch_assoc()) {
+    $external_details = !empty($row['external_details_json']) ? json_decode($row['external_details_json'], true) : [];
+    
     $attendees[] = [
         'registration_id'      => (int)$row['registration_id'],
         'username'             => $row['student_uid'],
@@ -106,14 +106,14 @@ while ($row = $result->fetch_assoc()) {
         'student_email'        => $row['student_email'] ?? 'N/A',
         'registration_role'    => $row['registration_role']    ?? 'participant',
 
-        'special_requirements' => $row['special_requirements'] ?? 'None',
+        'special_requirements' => $external_details['special_requirements'] ?? 'None',
         'topics_of_interest'   => 'None',
         'check_in_status'      => $row['check_in_status'] ?? 'pending',
         'check_in_time'        => $row['check_in_time'],
         'registered_at'        => $row['registered_at'],
         'event_date'           => $event_date,
         'department'           => $row['department'],
-        'semester'             => $row['semester'],
+        'semester'             => null,
     ];
 }
 
