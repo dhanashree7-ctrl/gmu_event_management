@@ -20,14 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$event_id       = isset($_POST['event_id'])       ? (int)$_POST['event_id']       : 0;
-$faculty_id     = isset($_POST['faculty_id'])      ? (int)$_POST['faculty_id']      : 0;
+$event_id       = isset($_POST['event_id'])       ? (string)$_POST['event_id']       : '';
+$faculty_id     = isset($_POST['faculty_id'])      ? (string)$_POST['faculty_id']      : '';
 $report_summary = trim($_POST['report_summary']   ?? '');
 $has_file       = isset($_FILES['report_file']) && $_FILES['report_file']['error'] !== UPLOAD_ERR_NO_FILE;
 
 $has_gallery    = isset($_FILES['gallery_images']) && count($_FILES['gallery_images']['name']) > 0 && $_FILES['gallery_images']['error'][0] !== UPLOAD_ERR_NO_FILE;
 
-if ($event_id <= 0 || $faculty_id <= 0) {
+if ($event_id === '' || $faculty_id === '') {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Missing required IDs.']);
     exit;
@@ -61,12 +61,12 @@ catch (RuntimeException $e) {
 }
 
 // Verify the faculty proposed this event
-$check_stmt = $conn->prepare('SELECT CURRENT_STATUS FROM event_master WHERE SL_NO = ? AND CREATED_BY = ?');
+$check_stmt = $conn->prepare('SELECT CURRENT_STATUS, ATTACHMENTS FROM event_master WHERE EVENT_ID = ? AND PROPOSER_ID = ?');
 if (!$check_stmt) {
     echo json_encode(['success' => false, 'message' => 'Internal Server Error.']);
     exit;
 }
-$check_stmt->bind_param('ii', $event_id, $faculty_id);
+$check_stmt->bind_param('ss', $event_id, $faculty_id);
 $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 
@@ -139,27 +139,25 @@ if (empty($gallery_paths)) {
 
 $gallery_json = json_encode($gallery_paths);
 
+// Read existing attachments
+$attachments = !empty($event['ATTACHMENTS']) ? json_decode($event['ATTACHMENTS'], true) : [];
+$attachments['report'] = $file_path;
+$attachments['report_summary'] = $report_summary;
+$attachments['gallery_images'] = $gallery_paths;
+$attachments_json = json_encode($attachments);
+
 // Update event_master
-$update_stmt = $conn->prepare("UPDATE event_master SET CURRENT_STATUS = 'completed' WHERE SL_NO = ?");
+$update_stmt = $conn->prepare("UPDATE event_master SET CURRENT_STATUS = 'completed', ATTACHMENTS = ? WHERE EVENT_ID = ?");
 if (!$update_stmt) {
     echo json_encode(['success' => false, 'message' => 'Internal Server Error (prepare update master).']);
     $conn->close(); exit;
 }
-$update_stmt->bind_param('i', $event_id);
-$update_stmt->execute();
-$update_stmt->close();
+$update_stmt->bind_param('ss', $attachments_json, $event_id);
 
-// Update event_metadata
-$meta_stmt = $conn->prepare("UPDATE event_metadata SET POST_EVENT_REPORT = ?, REPORT_PDF_PATH = ?, GALLERY_IMAGES = ? WHERE EVENT_ID = ?");
-if (!$meta_stmt) {
-    echo json_encode(['success' => false, 'message' => 'Internal Server Error (prepare update meta).']);
-    $conn->close(); exit;
-}
-$meta_stmt->bind_param('sssi', $report_summary, $file_path, $gallery_json, $event_id);
-if ($meta_stmt->execute()) {
+if ($update_stmt->execute()) {
     echo json_encode(['success' => true, 'message' => 'Report submitted. Event marked as completed!']);
 } else {
     echo json_encode(['success' => false, 'message' => 'Failed to save report.']);
 }
-$meta_stmt->close(); $conn->close();
+$update_stmt->close(); $conn->close();
 ?>

@@ -37,16 +37,15 @@ if (!$event_id) {
     exit;
 }
 
-// Fetch existing DETAILS_JSON from event_metadata
-$dq = $conn->prepare("SELECT DETAILS_JSON FROM event_metadata WHERE EVENT_ID = ?");
-$dq->bind_param("i", $event_id);
+$dq = $conn->prepare("SELECT ATTACHMENTS FROM event_master WHERE EVENT_ID = ?");
+$dq->bind_param("s", $event_id);
 $dq->execute();
 $details_row = $dq->get_result()->fetch_assoc();
 $dq->close();
 
 $details = [];
-if (!empty($details_row['DETAILS_JSON'])) {
-    $details = json_decode($details_row['DETAILS_JSON'], true);
+if (!empty($details_row['ATTACHMENTS'])) {
+    $details = json_decode($details_row['ATTACHMENTS'], true);
 }
 if ($sub_events_logistics) {
     $details['sub_events_logistics'] = json_decode($sub_events_logistics, true);
@@ -60,30 +59,21 @@ $stmt = $conn->prepare("
         END_DATE              = ?,
         START_TIME            = ?,
         VENUE                 = ?,
+        REGISTRATION_DEADLINE = ?,
+        ATTACHMENTS           = ?,
         CURRENT_STATUS        = 'published'
-    WHERE SL_NO = ?
+    WHERE EVENT_ID = ?
 ");
 $end_date = $event_date; // single-day event: end = start
-$stmt->bind_param("ssssi",
-    $event_date, $end_date, $event_time, $venue,
+$stmt->bind_param("sssssss",
+    $event_date, $end_date, $event_time, $venue, $registration_deadline, $details_json,
     $event_id
 );
 
-$meta_stmt = $conn->prepare("
-    UPDATE event_metadata
-    SET REGISTRATION_DEADLINE = ?,
-        DETAILS_JSON          = ?
-    WHERE EVENT_ID = ?
-");
-$meta_stmt->bind_param("ssi",
-    $registration_deadline, $details_json, $event_id
-);
-
-if ($stmt->execute() && $meta_stmt->execute()) {
-    $meta_stmt->close();
+if ($stmt->execute()) {
     // Fetch event details for student notifications
-    $eq = $conn->prepare("SELECT em.EVENT AS event_title, em.EVENT_SCALE AS event_scale, u.department AS proposer_dept, u.usn_or_emp_id AS proposer_uid FROM event_master em LEFT JOIN users u ON em.CREATED_BY = u.id WHERE em.SL_NO = ?");
-    $eq->bind_param("i", $event_id);
+    $eq = $conn->prepare("SELECT em.EVENT_TITLE AS event_title, em.SCALE AS event_scale, u.DEPT AS proposer_dept, u.USERNAME AS proposer_uid FROM event_master em LEFT JOIN users u ON em.PROPOSER_ID = u.USERNAME WHERE em.EVENT_ID = ?");
+    $eq->bind_param("s", $event_id);
     $eq->execute();
     $event = $eq->get_result()->fetch_assoc();
     $eq->close();
@@ -92,10 +82,10 @@ if ($stmt->execute() && $meta_stmt->execute()) {
         $deadline_text = $registration_deadline ? " Register by " . date('d M h:i A', strtotime($registration_deadline)) . "." : "";
         $student_msg   = "🎉 New event published: {$event['event_title']}. Check it out!$deadline_text";
 
-        $student_sql = "SELECT usn_or_emp_id FROM users WHERE system_role = 'student'";
+        $student_sql = "SELECT USERNAME FROM users WHERE ROLE = 'student'";
         if ($event['event_scale'] === 'department' && !empty($event['proposer_dept'])) {
             $dept_esc = $conn->real_escape_string($event['proposer_dept']);
-            $student_sql .= " AND department = '$dept_esc'";
+            $student_sql .= " AND DEPT = '$dept_esc'";
         }
         $get_students = $conn->prepare($student_sql);
         $get_students->execute();
@@ -106,8 +96,8 @@ if ($stmt->execute() && $meta_stmt->execute()) {
             $insert_notif = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/student-dashboard')");
             if ($insert_notif) {
                 while ($student = $student_res->fetch_assoc()) {
-                    if ($student['usn_or_emp_id'] !== $event['proposer_uid']) {
-                        $uid = $student['usn_or_emp_id'];
+                    if ($student['USERNAME'] !== $event['proposer_uid']) {
+                        $uid = $student['USERNAME'];
                         $insert_notif->bind_param('ss', $uid, $student_msg);
                         $insert_notif->execute();
                     }

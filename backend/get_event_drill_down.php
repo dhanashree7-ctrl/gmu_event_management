@@ -84,8 +84,8 @@ $internal_count          = 0;
 $external_count          = 0;
 $external_college_breakdown = [];
 
-if ($master_event['DETAILS_JSON']) {
-    $master_json = json_decode($master_event['DETAILS_JSON'], true);
+if (isset($attachments['details'])) {
+    $master_json = $attachments['details'];
     if (isset($master_json['is_festival']) && $master_json['is_festival'] === true) {
         $is_festival = true;
         if (isset($master_json['sub_events']) && is_array($master_json['sub_events'])) {

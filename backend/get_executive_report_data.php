@@ -5,6 +5,8 @@ ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
@@ -18,12 +20,12 @@ catch (RuntimeException $e) {
 
 // 1. Faculty/School Comparison (Stacked Bar Data)
 $fac_sql = "
-    SELECT COALESCE(u.school_name, 'Other') AS school_name, 
-           COALESCE(u.faculty_name, 'Other') AS faculty_name, 
-           COUNT(em.SL_NO) as event_count 
+    SELECT COALESCE(u.SCHOOL, 'Other') AS school_name, 
+           COALESCE(u.FACULTY, 'Other') AS faculty_name, 
+           COUNT(em.EVENT_ID) as event_count 
     FROM event_master em 
-    JOIN users u ON em.CREATED_BY = u.id 
-    GROUP BY school_name, faculty_name
+    JOIN users u ON em.PROPOSER_ID = u.USERNAME 
+    GROUP BY u.SCHOOL, u.FACULTY
 ";
 $fac_res = $conn->query($fac_sql);
 
@@ -48,13 +50,12 @@ $faculty_comparison_data = array_values($faculty_comparison);
 
 // 2. Budget vs Scale (Scatter Plot Data)
 $scatter_sql = "
-    SELECT em.EVENT as event_name, emd.BUDGET as budget, 
+    SELECT em.EVENT_TITLE as event_name, em.BUDGET as budget, 
            SUM(CASE WHEN er.CHECK_IN_STATUS = 'checked_in' THEN 1 ELSE 0 END) as checked_in_count
     FROM event_master em
-    JOIN event_metadata emd ON em.SL_NO = emd.EVENT_ID
-    LEFT JOIN event_registrations er ON em.SL_NO = er.EVENT_ID
-    WHERE emd.BUDGET > 0
-    GROUP BY em.SL_NO
+    LEFT JOIN event_registrations er ON em.EVENT_ID = er.EVENT_ID
+    WHERE em.BUDGET > 0
+    GROUP BY em.EVENT_ID
 ";
 $scatter_res = $conn->query($scatter_sql);
 
@@ -71,7 +72,7 @@ while ($row = $scatter_res->fetch_assoc()) {
 }
 
 // 3. Internal vs External Reach (Pie Chart Data)
-$reach_sql = "SELECT details_json FROM event_registrations";
+$reach_sql = "SELECT EXTERNAL_DETAILS AS details_json FROM event_registrations";
 $reach_res = $conn->query($reach_sql);
 
 $internal = 0;

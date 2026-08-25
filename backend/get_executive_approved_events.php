@@ -58,15 +58,14 @@ if (!isset($status_map[$role])) {
 
 $in_clause = implode(',', $status_map[$role]);
 
-$sql = "SELECT em.SL_NO AS id, em.EVENT AS event_title, em.DESCRIPTION AS description,
-               em.CATEGORY AS category, emd.BUDGET AS budget,
-               em.CURRENT_STATUS AS current_status, em.EVENT_SCALE AS event_scale,
-               u.full_name AS proposed_by, u.department AS department
+$sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
+               em.CATEGORY AS category, em.BUDGET AS budget,
+               em.CURRENT_STATUS AS current_status, em.SCALE AS event_scale,
+               u.NAME AS proposed_by, u.DEPT AS department
         FROM event_master AS em
-        LEFT JOIN event_metadata AS emd ON em.SL_NO = emd.EVENT_ID
-        JOIN users AS u ON u.id = em.CREATED_BY
-        WHERE em.CURRENT_STATUS IN ($in_clause) AND em.EVENT_SCALE = 'university'
-        ORDER BY em.SL_NO DESC";
+        JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
+        WHERE em.CURRENT_STATUS IN ($in_clause) AND em.SCALE = 'university'
+        ORDER BY em.START_DATE DESC";
 
 $stmt = $conn->prepare($sql);
 if (!$stmt->execute()) {
@@ -80,7 +79,7 @@ $result = $stmt->get_result();
 $events = [];
 while ($row = $result->fetch_assoc()) {
     $events[] = [
-        'id'             => (int)$row['id'],
+        'id'             => $row['id'],
         'event_title'    => $row['event_title'],
         'description'    => $row['description'],
         'category'       => $row['category'],

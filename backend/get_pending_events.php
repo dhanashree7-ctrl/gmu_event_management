@@ -71,7 +71,7 @@ if ($role === 'hod') {
                    u.NAME AS proposed_by, u.DEPT AS proposer_department, u.ROLE AS proposer_role
             FROM event_master AS em
             JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
-            WHERE em.CURRENT_STATUS = ? AND em.DEPT = ?
+            WHERE em.CURRENT_STATUS = ? AND u.DEPT = ?
             ORDER BY em.EVENT_ID ASC";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('ss', $target_status, $department);

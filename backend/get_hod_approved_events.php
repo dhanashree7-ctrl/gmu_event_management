@@ -41,16 +41,15 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$sql = "SELECT em.SL_NO AS id, em.EVENT AS event_title, em.DESCRIPTION AS description,
-               em.CATEGORY AS category, em.EVENT_SCALE AS event_scale,
-               emd.BUDGET AS budget, em.CURRENT_STATUS AS current_status,
-               u.full_name AS proposed_by, u.department AS proposer_department
+$sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
+               em.CATEGORY AS category, em.SCALE AS event_scale,
+               em.BUDGET AS budget, em.CURRENT_STATUS AS current_status,
+               u.NAME AS proposed_by, u.DEPT AS proposer_department
         FROM event_master AS em
-        LEFT JOIN event_metadata AS emd ON em.SL_NO = emd.EVENT_ID
-        JOIN users AS u ON u.id = em.CREATED_BY
-        WHERE em.DEPARTMENT = ?
+        JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
+        WHERE u.DEPT = ?
           AND em.CURRENT_STATUS NOT IN ('pending_hod','rejected','draft')
-        ORDER BY em.SL_NO DESC";
+        ORDER BY em.START_DATE DESC";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('s', $department);
@@ -65,7 +64,7 @@ $result = $stmt->get_result();
 $events = [];
 while ($row = $result->fetch_assoc()) {
     $events[] = [
-        'id'             => (int)$row['id'],
+        'id'             => $row['id'],
         'event_title'    => $row['event_title'],
         'description'    => $row['description'],
         'category'       => $row['category'],

@@ -406,6 +406,9 @@ export default function FacultyDashboard() {
     if (form.participation_type === 'group' && (!form.max_team_size || form.max_team_size < 2)) {
       errs.max_team_size = 'Max team size must be at least 2 for group events.';
     }
+    if (form.event_mode === 'offline' && !form.venue.trim()) {
+      errs.venue = 'Venue is required for offline events.';
+    }
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
   };

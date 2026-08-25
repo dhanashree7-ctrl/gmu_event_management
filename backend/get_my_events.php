@@ -34,21 +34,19 @@ catch (RuntimeException $e) {
 }
 
 $sql = 'SELECT
-            em.SL_NO AS id,
-            em.EVENT AS event_title,
+            em.EVENT_ID AS id,
+            em.EVENT_TITLE AS event_title,
             em.CATEGORY AS category,
-            em.EVENT_SCALE AS event_scale,
+            em.SCALE AS event_scale,
             em.CURRENT_STATUS AS current_status,
-            emd.BUDGET AS budget,
-            emd.REMARKS AS remarks,
-            emd.DETAILS_JSON AS details_json,
+            em.BUDGET AS budget,
+            em.ATTACHMENTS AS attachments_json,
             em.MODE AS event_mode,
             em.START_DATE AS event_date,
-            em.LAST_UPDATED AS submitted_at
+            em.START_DATE AS submitted_at
         FROM event_master em
-        LEFT JOIN event_metadata emd ON emd.EVENT_ID = em.SL_NO
-        WHERE em.CREATED_BY = ?
-        ORDER BY em.SL_NO DESC';
+        WHERE em.PROPOSER_ID = ?
+        ORDER BY em.START_DATE DESC';
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -59,7 +57,7 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param('i', $user_id);
+$stmt->bind_param('s', $user_id);
 if (!$stmt->execute()) {
     error_log('get_my_events.php – execute failed: ' . $stmt->error);
     $stmt->close(); $conn->close();
@@ -72,21 +70,21 @@ $result = $stmt->get_result();
 $events = [];
 while ($row = $result->fetch_assoc()) {
     $events[] = [
-        'id'                   => (int)$row['id'],
+        'id'                   => $row['id'],
         'event_title'          => $row['event_title'],
         'category'             => $row['category'],
         'event_scale'          => $row['event_scale'],
         'status'               => $row['current_status'],
         'current_status'       => $row['current_status'],
         'budget'               => $row['budget'],
-        'remarks'              => $row['remarks'],
+        'remarks'              => null, // removed
         'event_mode'           => $row['event_mode'],
         'event_date'           => $row['event_date'],
         'start_date'           => $row['event_date'],
         'end_date'             => $row['event_date'],
         'submitted_at'         => $row['submitted_at'],
         'involved_departments' => [],
-        'details'              => !empty($row['details_json']) ? json_decode($row['details_json'], true) : null,
+        'details'              => !empty($row['attachments_json']) ? json_decode($row['attachments_json'], true) : null,
     ];
 }
 $stmt->close(); $conn->close();

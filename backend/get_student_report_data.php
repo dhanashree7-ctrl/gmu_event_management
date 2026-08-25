@@ -5,6 +5,8 @@ ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
@@ -23,12 +25,12 @@ if (!$student_id) {
 }
 
 // Ensure the student ID corresponds to a valid user/usn.
-$stmt = $conn->prepare("SELECT usn_or_emp_id FROM users WHERE usn_or_emp_id = ? OR id = ? LIMIT 1");
+$stmt = $conn->prepare("SELECT USERNAME FROM users WHERE USERNAME = ? OR ID = ? LIMIT 1");
 $stmt->bind_param("ss", $student_id, $student_id);
 $stmt->execute();
 $usn = '';
 if ($row = $stmt->get_result()->fetch_assoc()) {
-    $usn = $row['usn_or_emp_id'];
+    $usn = $row['USERNAME'];
 }
 $stmt->close();
 $usn = $usn ?: $student_id;
@@ -37,8 +39,8 @@ $usn = $usn ?: $student_id;
 $eng_sql = "
     SELECT COALESCE(em.CATEGORY, 'Uncategorized') as category, COUNT(r.ID) as count
     FROM event_registrations r
-    JOIN event_master em ON r.EVENT_ID = em.SL_NO
-    WHERE r.STUDENT_ID = ?
+    JOIN event_master em ON r.EVENT_ID = em.EVENT_ID
+    WHERE r.USER_ID = ?
     GROUP BY category
 ";
 $stmt = $conn->prepare($eng_sql);
@@ -58,7 +60,7 @@ $stmt->close();
 $role_sql = "
     SELECT COALESCE(ROLE, 'participant') as role_name, COUNT(ID) as count
     FROM event_registrations
-    WHERE STUDENT_ID = ?
+    WHERE USER_ID = ?
     GROUP BY role_name
 ";
 $stmt = $conn->prepare($role_sql);
@@ -80,7 +82,7 @@ $score_sql = "
         COUNT(ID) as total_registrations,
         SUM(CASE WHEN CHECK_IN_STATUS = 'checked_in' THEN 1 ELSE 0 END) as checked_in_count
     FROM event_registrations
-    WHERE STUDENT_ID = ?
+    WHERE USER_ID = ?
 ";
 $stmt = $conn->prepare($score_sql);
 $stmt->bind_param("s", $usn);

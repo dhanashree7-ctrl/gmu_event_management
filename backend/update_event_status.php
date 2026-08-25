@@ -158,7 +158,7 @@ if ($proposer) {
     elseif ($new_status === 'rejected') $msg = "❌ Your proposal for '$event_title' was rejected by $role.$remark_text";
     else $msg = "✅ Your proposal '$event_title' was approved by $role and moved to the next level.$remark_text";
 
-    $notif_stmt = $conn->prepare("INSERT INTO notifications (USER_ID, MESSAGE, TARGET_LINK) VALUES (?, ?, '/faculty-dashboard')");
+    $notif_stmt = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/faculty-dashboard')");
     if ($notif_stmt) { $notif_stmt->bind_param('ss', $proposer, $msg); $notif_stmt->execute(); $notif_stmt->close(); }
 }
 
@@ -178,7 +178,7 @@ if ($next_role_notif) {
         $next_res    = $next_stmt->get_result();
         $budget_flag = ($budget > 500000 && in_array($next_role_notif, ['pro_vc', 'vc'])) ? " 💰 High-Budget Alert!" : "";
         $msg         = "New event '$event_title' has escalated to your queue.$budget_flag";
-        $notif_stmt  = $conn->prepare("INSERT INTO notifications (USER_ID, MESSAGE, TARGET_LINK) VALUES (?, ?, ?)");
+        $notif_stmt  = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, ?)");
         if ($notif_stmt) {
             while ($row = $next_res->fetch_assoc()) {
                 $u = $row['USERNAME'];

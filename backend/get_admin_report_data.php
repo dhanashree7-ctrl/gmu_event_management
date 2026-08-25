@@ -9,6 +9,8 @@ ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
@@ -28,11 +30,11 @@ $school        = isset($_GET['school'])     && $_GET['school']     !== '' ? $_GE
 
 // Fetch master events from event_master
 $master_events_query = "
-    SELECT em.SL_NO AS id, em.EVENT AS event_title, emd.REPORT_PDF_PATH AS report_pdf_path,
-           em.START_DATE AS event_date, em.CATEGORY AS category, em.EVENT_SCALE AS event_scale,
-           emd.BUDGET AS budget, em.DEPARTMENT AS department
+    SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.ATTACHMENTS AS attachments_json,
+           em.START_DATE AS event_date, em.CATEGORY AS category, em.SCALE AS event_scale,
+           em.BUDGET AS budget, u.DEPT AS department
     FROM event_master em
-    LEFT JOIN event_metadata emd ON emd.EVENT_ID = em.SL_NO
+    LEFT JOIN users u ON u.USERNAME = em.PROPOSER_ID
 ";
 $master_events_result = $conn->query($master_events_query);
 
@@ -51,10 +53,13 @@ while ($row = $master_events_result->fetch_assoc()) {
     if ($event_id !== 'all' && (string)$row['id'] !== (string)$event_id) continue;
 
     $valid_event_ids[] = $row['id'];
+    
+    $attachments = !empty($row['attachments_json']) ? json_decode($row['attachments_json'], true) : [];
+    
     $events_info[]     = [
         'id'             => $row['id'],
         'event_title'    => $row['event_title'],
-        'report_pdf_path'=> $row['report_pdf_path'],
+        'report_pdf_path'=> $attachments['report'] ?? null,
         'category'       => $row['category']    ?? 'N/A',
         'event_scale'    => $row['event_scale']  ?? 'N/A',
         'department'     => $row['department']   ?? 'N/A',
@@ -75,36 +80,36 @@ if (empty($valid_event_ids)) {
     exit;
 }
 
-$in_clause = implode(',', array_map('intval', $valid_event_ids));
+$in_clause = implode(',', array_map(fn($id) => "'" . $conn->real_escape_string((string)$id) . "'", $valid_event_ids));
 
 $participants_query = "
     SELECT
-        COALESCE(u.full_name, 'Unknown Participant') AS participant_name,
-        COALESCE(u.usn_or_emp_id, er.STUDENT_ID) AS usn,
-        COALESCE(u.email, 'N/A')        AS email,
+        COALESCE(u.NAME, 'Unknown Participant') AS participant_name,
+        COALESCE(u.USERNAME, er.USER_ID) AS usn,
+        COALESCE(u.EMAIL, 'N/A')        AS email,
         er.ROLE        AS role,
-        COALESCE(u.department, 'N/A')   AS department,
-        COALESCE(u.faculty_name, 'N/A') AS faculty_name,
-        COALESCE(u.school_name, 'N/A')  AS school_name,
+        COALESCE(u.DEPT, 'N/A')   AS department,
+        COALESCE(u.FACULTY, 'N/A') AS faculty_name,
+        COALESCE(u.SCHOOL, 'N/A')  AS school_name,
         er.EVENT_ID    AS event_id,
-        em.EVENT       AS event_title
+        em.EVENT_TITLE AS event_title
     FROM event_registrations er
-    JOIN event_master em ON er.EVENT_ID = em.SL_NO
-    LEFT JOIN users u ON er.STUDENT_ID = u.usn_or_emp_id
+    JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
+    LEFT JOIN users u ON er.USER_ID = u.USERNAME
     WHERE er.EVENT_ID IN ($in_clause)
 ";
 
 if ($department !== 'all') {
     $dept_array = array_map(fn($i) => "'" . $conn->real_escape_string(trim($i)) . "'", explode(',', $department));
-    $participants_query .= " AND u.department IN (" . implode(',', $dept_array) . ")";
+    $participants_query .= " AND u.DEPT IN (" . implode(',', $dept_array) . ")";
 }
 if ($faculty !== 'all') {
     $fac_array = array_map(fn($i) => "'" . $conn->real_escape_string(trim($i)) . "'", explode(',', $faculty));
-    $participants_query .= " AND u.faculty_name IN (" . implode(',', $fac_array) . ")";
+    $participants_query .= " AND u.FACULTY IN (" . implode(',', $fac_array) . ")";
 }
 if ($school !== 'all') {
     $sch_array = array_map(fn($i) => "'" . $conn->real_escape_string(trim($i)) . "'", explode(',', $school));
-    $participants_query .= " AND u.school_name IN (" . implode(',', $sch_array) . ")";
+    $participants_query .= " AND u.SCHOOL IN (" . implode(',', $sch_array) . ")";
 }
 
 $participants_result = $conn->query($participants_query);

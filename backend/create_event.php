@@ -83,9 +83,10 @@ if ($event_title === '')                             $errors[] = 'Event title is
 elseif (strlen($event_title) > 200)                 $errors[] = 'Event title must be 200 characters or fewer.';
 if ($event_date === null)                           $errors[] = 'Event date is required.';
 if (!in_array($category, $allowed_categories, true)) $errors[] = 'Category must be Academic, Cultural, or Sports.';
-if (!in_array($event_scale, $allowed_scales, true))  $errors[] = 'Event scale must be "department" or "university".';
+if ($event_scale === 'department' && !in_array($event_scale, $allowed_scales, true))  $errors[] = 'Event scale must be "department" or "university".';
 if ($budget < 0)                                    $errors[] = 'Budget must be a non-negative number.';
 if ($proposed_by_id === '')                         $errors[] = 'A valid proposed_by_id is required.';
+if ($event_mode === 'offline' && empty($venue))     $errors[] = 'Venue is required for offline events.';
 
 if (!empty($errors)) {
     http_response_code(400);
@@ -119,8 +120,8 @@ $route_stmt->execute();
 $route_res = $route_stmt->get_result();
 
 if ($route_row = $route_res->fetch_assoc()) {
-    $approval_route_arr = json_decode($route_row['REQUIRED_CHAIN'], true);
-    $approval_route_raw = $route_row['REQUIRED_CHAIN'];
+    $approval_route_arr = json_decode($route_row['required_chain'] ?? $route_row['REQUIRED_CHAIN'], true);
+    $approval_route_raw = $route_row['required_chain'] ?? $route_row['REQUIRED_CHAIN'];
 } else {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => "Approval routing rules are missing for the scale: '{$event_scale}'."]);
@@ -148,7 +149,7 @@ $attachments_arr = [];
 if ($brochure_path !== '') {
     $attachments_arr['brochure'] = $brochure_path;
 }
-$attachments_json = !empty($attachments_arr) ? json_encode($attachments_arr) : null;
+
 
 // ---------- Sub-events / Details JSON ------------------------------------
 $is_festival = isset($_POST['is_festival']) && $_POST['is_festival'] === 'true';
@@ -163,18 +164,20 @@ $details_arr = [];
 if ($is_festival && !empty($sub_events)) { $details_arr['is_festival'] = true; $details_arr['sub_events'] = $sub_events; }
 if ($rewards !== '')                      $details_arr['rewards'] = $rewards;
 if ($coordinator_name !== '')             $details_arr['coordinator_name'] = $coordinator_name;
-$details_json = !empty($details_arr) ? json_encode($details_arr) : null;
+
+if (!empty($details_arr)) {
+    $attachments_arr['details'] = $details_arr;
+}
+$attachments_json = !empty($attachments_arr) ? json_encode($attachments_arr) : null;
 
 $event_id_val = 'EVT-' . strtoupper(uniqid());
 
 $sql = 'INSERT INTO event_master
-            (PROPOSER_ID, DEPT, FACULTY, SCHOOL,
-             EVENT_TITLE, DESCRIPTION, CATEGORY, SCALE, MODE, VENUE,
+            (PROPOSER_ID, EVENT_TITLE, DESCRIPTION, CATEGORY, SCALE, MODE, VENUE,
              START_DATE, END_DATE, START_TIME, END_TIME, MAX_PARTICIPANTS, BUDGET, COORDINATOR_NAME,
              ATTACHMENTS, CURRENT_STATUS, APPROVAL_WORKFLOW)
         VALUES
-            (?, ?, ?, ?,
-             ?, ?, ?, ?, ?, ?,
+            (?, ?, ?, ?, ?, ?, ?,
              ?, ?, ?, ?, ?, ?, ?,
              ?, ?, ?)';
 
@@ -188,8 +191,8 @@ if (!$stmt) {
 }
 
 try {
-    $stmt->bind_param('ssssssssssssssidssss',
-        $proposed_by_id, $proposer_dept, $proposer_faculty, $proposer_school,
+    $stmt->bind_param('sssssssssssidssss',
+        $proposed_by_id,
         $event_title, $description, $category, $event_scale, $event_mode, $venue,
         $event_date, $event_date, $start_time, $end_time, $max_participants, $budget, $coordinator_name,
         $attachments_json, $initial_status, $workflow_json

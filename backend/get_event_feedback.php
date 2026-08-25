@@ -12,6 +12,8 @@ ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -24,9 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-$event_id = isset($_GET['event_id']) ? (int)$_GET['event_id'] : 0;
+$event_id = isset($_GET['event_id']) ? (string)$_GET['event_id'] : '';
 
-if ($event_id <= 0) {
+if ($event_id === '') {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Invalid event_id.']);
     exit;
@@ -44,12 +46,12 @@ try {
 
 // ── Stats: count and average from event_registrations ────────────────────────
 $stats_sql = "
-    SELECT COUNT(*) AS total_feedback, AVG(FEEDBACK_RATING) AS average_rating
+    SELECT COUNT(*) AS total_feedback, AVG(JSON_EXTRACT(FEEDBACK_JSON, '$.rating')) AS average_rating
     FROM event_registrations
-    WHERE EVENT_ID = ? AND FEEDBACK_RATING IS NOT NULL
+    WHERE EVENT_ID = ? AND FEEDBACK_JSON IS NOT NULL
 ";
 $stmt = $conn->prepare($stats_sql);
-$stmt->bind_param('i', $event_id);
+$stmt->bind_param('s', $event_id);
 $stmt->execute();
 $stats = $stmt->get_result()->fetch_assoc();
 $stmt->close();
@@ -60,17 +62,17 @@ $average = $stats['average_rating'] !== null ? round((float)$stats['average_rati
 // ── Comments: join with users for name ────────────────────────────────────────
 $comments_sql = "
     SELECT
-        er.FEEDBACK_RATING AS rating,
-        er.FEEDBACK_COMMENTS AS comments,
+        JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') AS rating,
+        JSON_UNQUOTE(JSON_EXTRACT(er.FEEDBACK_JSON, '$.comment')) AS comments,
         er.REGISTRATION_DATE AS created_at,
-        u.full_name AS student_name
+        u.NAME AS student_name
     FROM event_registrations er
-    LEFT JOIN users u ON er.STUDENT_ID = u.usn_or_emp_id
-    WHERE er.EVENT_ID = ? AND er.FEEDBACK_RATING IS NOT NULL
+    LEFT JOIN users u ON er.USER_ID = u.USERNAME
+    WHERE er.EVENT_ID = ? AND er.FEEDBACK_JSON IS NOT NULL
     ORDER BY er.REGISTRATION_DATE DESC
 ";
 $stmt = $conn->prepare($comments_sql);
-$stmt->bind_param('i', $event_id);
+$stmt->bind_param('s', $event_id);
 $stmt->execute();
 $comments_res = $stmt->get_result();
 

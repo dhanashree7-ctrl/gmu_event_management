@@ -5,6 +5,8 @@ ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
@@ -25,9 +27,9 @@ if (!$department) {
 
 // 1. Departmental Event Output (Monthly Bar Chart)
 $output_sql = "
-    SELECT DATE_FORMAT(START_DATE, '%Y-%m') AS month, COUNT(SL_NO) AS count
+    SELECT DATE_FORMAT(START_DATE, '%Y-%m') AS month, COUNT(EVENT_ID) AS count
     FROM event_master
-    WHERE DEPARTMENT = ? AND START_DATE IS NOT NULL
+    WHERE DEPT = ? AND START_DATE IS NOT NULL
     GROUP BY month
     ORDER BY month ASC
 ";
@@ -49,9 +51,9 @@ $output_stmt->close();
 $engagement_sql = "
     SELECT DATE_FORMAT(em.START_DATE, '%Y-%m') AS month, COUNT(er.ID) AS count
     FROM event_registrations er
-    JOIN event_master em ON er.EVENT_ID = em.SL_NO
-    JOIN users u ON er.STUDENT_ID = u.usn_or_emp_id
-    WHERE u.department = ? AND em.START_DATE IS NOT NULL
+    JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
+    JOIN users u ON er.USER_ID = u.USERNAME
+    WHERE u.DEPT = ? AND em.START_DATE IS NOT NULL
     GROUP BY month
     ORDER BY month ASC
 ";
@@ -71,13 +73,13 @@ $engagement_stmt->close();
 
 // 3. Faculty Leaderboard (Data Table)
 $leaderboard_sql = "
-    SELECT u.full_name AS faculty_name, COUNT(DISTINCT em.SL_NO) AS total_events, 
-           AVG(er.FEEDBACK_RATING) AS average_rating
+    SELECT u.NAME AS faculty_name, COUNT(DISTINCT em.EVENT_ID) AS total_events, 
+           AVG(JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating')) AS average_rating
     FROM users u
-    LEFT JOIN event_master em ON em.CREATED_BY = u.id
-    LEFT JOIN event_registrations er ON er.EVENT_ID = em.SL_NO AND er.FEEDBACK_RATING > 0
-    WHERE u.department = ? AND (u.system_role = 'faculty' OR u.system_role = 'hod')
-    GROUP BY u.id
+    LEFT JOIN event_master em ON em.PROPOSER_ID = u.USERNAME
+    LEFT JOIN event_registrations er ON er.EVENT_ID = em.EVENT_ID AND er.FEEDBACK_JSON IS NOT NULL
+    WHERE u.DEPT = ? AND (u.ROLE = 'faculty' OR u.ROLE = 'hod')
+    GROUP BY u.USERNAME
     HAVING total_events > 0
     ORDER BY total_events DESC, average_rating DESC
 ";

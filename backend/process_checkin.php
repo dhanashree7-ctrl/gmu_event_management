@@ -55,7 +55,7 @@ if ($result->num_rows === 0) {
 $registration = $result->fetch_assoc();
 $stmt->close();
 
-if ($selected_event_id && (int)$registration['EVENT_ID'] !== (int)$selected_event_id) {
+if ($selected_event_id && (string)$registration['EVENT_ID'] !== (string)$selected_event_id) {
     echo json_encode(['success' => false, 'message' => "Wrong event! This ticket is for '{$registration['event_title']}'. "]);
     $conn->close(); exit;
 }

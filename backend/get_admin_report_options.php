@@ -5,6 +5,8 @@ ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -21,7 +23,7 @@ try {
     exit;
 }
 
-$sql    = "SELECT SL_NO AS id, EVENT AS event_title, START_DATE AS event_date FROM event_master ORDER BY START_DATE DESC";
+$sql    = "SELECT EVENT_ID AS id, EVENT_TITLE AS event_title, START_DATE AS event_date FROM event_master ORDER BY START_DATE DESC";
 $result = $conn->query($sql);
 
 if (!$result) {
@@ -63,7 +65,7 @@ while ($row = $result->fetch_assoc()) {
 rsort($academic_years);
 
 // Fetch hierarchy (Faculty -> School -> Department)
-$hierarchy_query = "SELECT DISTINCT faculty_name, school_name, department FROM users WHERE department IS NOT NULL AND department != ''";
+$hierarchy_query = "SELECT DISTINCT FACULTY, SCHOOL, DEPT FROM users WHERE DEPT IS NOT NULL AND DEPT != ''";
 $hierarchy_result = $conn->query($hierarchy_query);
 
 $hierarchy = [];
@@ -71,9 +73,9 @@ $departments = []; // Keep flat list of all departments for backwards compatibil
 
 if ($hierarchy_result) {
     while ($r = $hierarchy_result->fetch_assoc()) {
-        $fac = $r['faculty_name'];
-        $sch = $r['school_name'];
-        $dep = $r['department'];
+        $fac = $r['FACULTY'];
+        $sch = $r['SCHOOL'];
+        $dep = $r['DEPT'];
         
         if (empty($fac) || empty($sch)) {
             continue; // Remove the Unknown Faculty / School tags entirely

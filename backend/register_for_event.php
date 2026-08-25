@@ -180,7 +180,7 @@ $reg_stmt->close();
 
 // ── Notification to student ───────────────────────────────────────────────────
 $role_label = ucfirst($reg_role);
-$notif_stmt = $conn->prepare("INSERT INTO notifications (USER_ID, MESSAGE, TARGET_LINK) VALUES (?, ?, '/student-dashboard')");
+$notif_stmt = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/student-dashboard')");
 if ($notif_stmt) {
     $msg = "Registration confirmed as $role_label for '{$event_data['event_title']}'! Check your tickets. 🎟️";
     $notif_stmt->bind_param('ss', $student_id, $msg);
@@ -191,15 +191,15 @@ if ($notif_stmt) {
 // ── Milestone notification for proposer ──────────────────────────────────────
 $count_stmt = $conn->prepare("SELECT COUNT(*) AS total_reg FROM event_registrations WHERE EVENT_ID = ?");
 if ($count_stmt) {
-    $count_stmt->bind_param('i', $event_id);
+    $count_stmt->bind_param('s', $event_id);
     $count_stmt->execute();
     $count_row = $count_stmt->get_result()->fetch_assoc();
     $count_stmt->close();
     $total_reg = (int)$count_row['total_reg'];
     if (in_array($total_reg, [1, 25, 50, 100, 200])) {
-        $evt_stmt = $conn->prepare("SELECT em.EVENT AS event_title, u.usn_or_emp_id AS proposer_id FROM event_master em JOIN users u ON em.CREATED_BY = u.id WHERE em.SL_NO = ?");
+        $evt_stmt = $conn->prepare("SELECT em.EVENT_TITLE AS event_title, u.USERNAME AS proposer_id FROM event_master em JOIN users u ON em.PROPOSER_ID = u.USERNAME WHERE em.EVENT_ID = ?");
         if ($evt_stmt) {
-            $evt_stmt->bind_param('i', $event_id);
+            $evt_stmt->bind_param('s', $event_id);
             $evt_stmt->execute();
             if ($evt_row = $evt_stmt->get_result()->fetch_assoc()) {
                 $msg     = "🎉 Milestone! $total_reg students registered for '{$evt_row['event_title']}'.";

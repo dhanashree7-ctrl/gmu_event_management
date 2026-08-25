@@ -5,6 +5,8 @@ ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
@@ -16,7 +18,7 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$user_id = filter_input(INPUT_GET, 'user_id', FILTER_VALIDATE_INT);
+$user_id = filter_input(INPUT_GET, 'user_id', FILTER_SANITIZE_STRING);
 if (!$user_id) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Invalid user ID.']);
@@ -29,11 +31,11 @@ $funnel_sql = "
         COUNT(er.ID) AS total_registered,
         SUM(CASE WHEN er.CHECK_IN_STATUS = 'checked_in' THEN 1 ELSE 0 END) AS total_checked_in
     FROM event_registrations er
-    JOIN event_master em ON er.EVENT_ID = em.SL_NO
-    WHERE em.CREATED_BY = ?
+    JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
+    WHERE em.PROPOSER_ID = ?
 ";
 $funnel_stmt = $conn->prepare($funnel_sql);
-$funnel_stmt->bind_param("i", $user_id);
+$funnel_stmt->bind_param("s", $user_id);
 $funnel_stmt->execute();
 $funnel_row = $funnel_stmt->get_result()->fetch_assoc();
 $funnel_stmt->close();
@@ -45,16 +47,16 @@ $check_in_funnel = [
 
 // 2. Fetch Demographics
 $demo_sql = "
-    SELECT COALESCE(u.department, 'External/Unknown') AS department, COUNT(er.ID) as count
+    SELECT COALESCE(u.DEPT, 'External/Unknown') AS department, COUNT(er.ID) as count
     FROM event_registrations er
-    JOIN event_master em ON er.EVENT_ID = em.SL_NO
-    LEFT JOIN users u ON er.STUDENT_ID = u.usn_or_emp_id
-    WHERE em.CREATED_BY = ?
-    GROUP BY u.department
+    JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
+    LEFT JOIN users u ON er.USER_ID = u.USERNAME
+    WHERE em.PROPOSER_ID = ?
+    GROUP BY u.DEPT
     ORDER BY count DESC
 ";
 $demo_stmt = $conn->prepare($demo_sql);
-$demo_stmt->bind_param("i", $user_id);
+$demo_stmt->bind_param("s", $user_id);
 $demo_stmt->execute();
 $demo_res = $demo_stmt->get_result();
 
@@ -69,15 +71,15 @@ $demo_stmt->close();
 
 // 3. Fetch Feedback Distribution
 $feedback_sql = "
-    SELECT er.FEEDBACK_RATING AS rating, COUNT(er.ID) as count
+    SELECT JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') AS rating, COUNT(er.ID) as count
     FROM event_registrations er
-    JOIN event_master em ON er.EVENT_ID = em.SL_NO
-    WHERE em.CREATED_BY = ? AND er.FEEDBACK_RATING IS NOT NULL AND er.FEEDBACK_RATING > 0
-    GROUP BY er.FEEDBACK_RATING
-    ORDER BY er.FEEDBACK_RATING ASC
+    JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
+    WHERE em.PROPOSER_ID = ? AND JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') IS NOT NULL AND JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') > 0
+    GROUP BY JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating')
+    ORDER BY JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') ASC
 ";
 $feedback_stmt = $conn->prepare($feedback_sql);
-$feedback_stmt->bind_param("i", $user_id);
+$feedback_stmt->bind_param("s", $user_id);
 $feedback_stmt->execute();
 $feedback_res = $feedback_stmt->get_result();
 
