@@ -37,8 +37,10 @@ $venue            = isset($_POST['venue'])      && trim($_POST['venue'])      !=
 
 $budget_raw       = $_POST['budget'] ?? null;
 $budget           = is_numeric($budget_raw) ? (float)$budget_raw : -1;
-$proposed_by_id   = filter_var($_POST['proposed_by_id'] ?? 0, FILTER_VALIDATE_INT);
-$role             = strtolower(trim((string)($_POST['role'] ?? '')));
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+$proposed_by_id = (int)$auth_payload['id'];
+$role           = strtolower($auth_payload['role']);
 $immediate_approval = isset($_POST['immediate_approval']) && filter_var($_POST['immediate_approval'], FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
 
 $max_participants = isset($_POST['max_participants']) && $_POST['max_participants'] !== '' ? (int)$_POST['max_participants'] : null;
@@ -119,8 +121,9 @@ if ($route_row = $route_res->fetch_assoc()) {
     $approval_route_arr = json_decode($route_row['required_chain'], true);
     $approval_route_raw = $route_row['required_chain'];
 } else {
-    $approval_route_arr = ['hod'];
-    $approval_route_raw = json_encode($approval_route_arr);
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => "Approval routing rules are missing for the scale: '{$event_scale}'."]);
+    exit;
 }
 $route_stmt->close();
 

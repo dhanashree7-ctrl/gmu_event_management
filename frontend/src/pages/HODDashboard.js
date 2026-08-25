@@ -1367,8 +1367,8 @@ const styles = {
   topBarUserRole: { fontSize: '0.72rem', color: '#666' },
   
   // Content
-  content: { padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' },
-  contentCard: { background: '#ffffff', borderRadius: '12px', padding: '1.75rem 2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', border: '1px solid #ede9e3' },
+  content: { padding: 'clamp(1rem, 4vw, 2rem)', display: 'flex', flexDirection: 'column', gap: '1.75rem' },
+  contentCard: { background: '#ffffff', borderRadius: '12px', padding: 'clamp(1rem, 3vw, 2rem)', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', border: '1px solid #ede9e3' },
   sectionTitle: { fontFamily: theme.fonts.serif, fontSize: '1.25rem', fontWeight: 'bold', color: '#333', marginBottom: '0.3rem' },
   sectionSub: { fontSize: '0.85rem', color: '#666', marginBottom: '1.5rem' },
   
@@ -1379,8 +1379,8 @@ const styles = {
   
   // Forms
   form: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  formRow: { display: 'flex', gap: '1.25rem', flexWrap: 'wrap' },
-  formGroup: { display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: '200px' },
+  formRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', alignItems: 'end' },
+  formGroup: { display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: '0' },
   formLabel: { fontSize: '0.8rem', fontWeight: 'bold', color: '#444' },
   required: { color: '#C62828' },
   optional: { color: '#888', fontWeight: 'normal' },

@@ -1471,3 +1471,5 @@ const styles = {
   tableRow: { display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1rem', borderBottom: '1px solid #f0ede8', minWidth: '850px' },
 };
 function getGreeting() { const h = new Date().getHours(); if (h < 4) return 'Evening'; if (h < 12) return 'Morning'; if (h < 17) return 'Afternoon'; return 'Evening'; }
+
+

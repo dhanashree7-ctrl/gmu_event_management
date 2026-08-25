@@ -50,6 +50,7 @@ if ($username === '' || $password === '') {
 
 // ---------- Database lookup ----------------------------------------------
 require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/auth_middleware.php';
 
 try {
     $conn = get_db_connection();
@@ -112,17 +113,22 @@ if (!password_verify($password, $user['password']) && $password !== $user['passw
 }
 
 // ---------- Success — return safe user data ------------------------------
+$userData = [
+    'id' => (int) $user['id'],
+    'username' => $user['usn_or_emp_id'],
+    'name' => $user['full_name'],
+    'role' => $user['system_role'],
+    'department_name' => $user['department'],
+    'school_name' => $user['school_name'] ?? 'N/A',
+];
+
+$token = generate_jwt($userData);
+
 http_response_code(200);
 echo json_encode([
     'success' => true,
     'message' => 'Login successful.',
-    'data' => [
-        'id' => (int) $user['id'],
-        'username' => $user['usn_or_emp_id'],
-        'name' => $user['full_name'],
-        'role' => $user['system_role'],
-        'department_name' => $user['department'],
-        'school_name' => $user['school_name'] ?? 'N/A',
-    ],
+    'token' => $token,
+    'data' => $userData,
 ]);
 ?>

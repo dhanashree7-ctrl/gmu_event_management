@@ -66,6 +66,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     try {
       sessionStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem('jwt_token');
     } catch {
       // silently ignore
     }

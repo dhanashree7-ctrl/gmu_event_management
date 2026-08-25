@@ -11,6 +11,7 @@ const s = (...styles) => Object.assign({}, ...styles);
 export default function ProVCDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [activeNav, setActiveNav] = useState('Dashboard');
 
   const [pendingEvents, setPendingEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +68,7 @@ export default function ProVCDashboard() {
   };
 
   return (
-    <DashboardLayout role="pro_vc" activeNav={activeTab} onNavChange={setActiveTab}>
+    <DashboardLayout role="pro_vc" activeNav={activeNav} onNavChange={setActiveNav}>
       <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
           {toast && (
             <div style={s(styles.toast, toast.type === 'success' ? styles.toastSuccess : styles.toastError)}>

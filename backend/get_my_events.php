@@ -42,7 +42,9 @@ $sql = 'SELECT
             emd.BUDGET AS budget,
             emd.REMARKS AS remarks,
             emd.DETAILS_JSON AS details_json,
-            em.MODE AS event_mode
+            em.MODE AS event_mode,
+            em.START_DATE AS event_date,
+            em.LAST_UPDATED AS submitted_at
         FROM event_master em
         LEFT JOIN event_metadata emd ON emd.EVENT_ID = em.SL_NO
         WHERE em.CREATED_BY = ?
@@ -79,6 +81,10 @@ while ($row = $result->fetch_assoc()) {
         'budget'               => $row['budget'],
         'remarks'              => $row['remarks'],
         'event_mode'           => $row['event_mode'],
+        'event_date'           => $row['event_date'],
+        'start_date'           => $row['event_date'],
+        'end_date'             => $row['event_date'],
+        'submitted_at'         => $row['submitted_at'],
         'involved_departments' => [],
         'details'              => !empty($row['details_json']) ? json_decode($row['details_json'], true) : null,
     ];

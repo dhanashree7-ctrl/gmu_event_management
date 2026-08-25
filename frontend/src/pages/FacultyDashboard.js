@@ -2001,7 +2001,7 @@ const styles = {
 
   // Scrollable content
   content: {
-    padding: '2rem',
+    padding: 'clamp(1rem, 4vw, 2rem)',
     display: 'flex',
     flexDirection: 'column',
     gap: '1.75rem',
@@ -2178,15 +2178,16 @@ const styles = {
     gap: '1.5rem',
   },
   formRow: {
-    display: 'flex',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
     gap: '1.25rem',
-    flexWrap: 'wrap',
+    alignItems: 'end',
   },
   formGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.5rem',
-    minWidth: '200px',
+    gap: '0.4rem',
+    minWidth: '0',
   },
   formLabel: {
     fontSize: '0.8rem',

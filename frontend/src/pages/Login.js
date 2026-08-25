@@ -42,6 +42,9 @@ export default function Login() {
             json.data.role = 'student_affairs';
         }
 
+        if (json.token) {
+          localStorage.setItem('jwt_token', json.token);
+        }
         login(json.data);
 
         const role = json.data.role?.toLowerCase();
