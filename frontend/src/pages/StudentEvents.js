@@ -68,7 +68,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
         )}
         {isRegistered && (
           <button
-            style={s(styles.registerBtn, { background: '#f0f0f0', color: '#333', marginBottom: '0.5rem', boxShadow: 'none', border: '1px solid #ccc' })}
+            style={s(styles.registerBtn, { flex: 1, background: '#f0f0f0', color: '#333', boxShadow: 'none', border: '1px solid #ccc' })}
             onClick={() => onSelect(evt)}
             onMouseEnter={(e) => e.currentTarget.style.background = '#e0e0e0'}
             onMouseLeave={(e) => e.currentTarget.style.background = '#f0f0f0'}
@@ -80,6 +80,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
           style={s(
             styles.registerBtn,
             isRegistered && {
+              flex: 1.5,
               background: theme.colors.gold,
               color: theme.colors.maroon,
               boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
@@ -448,6 +449,22 @@ export default function StudentEvents() {
                      <p style={{ color: '#555', fontSize: '0.9rem', margin: 0 }}>
                        Event Time: {formatTime(selectedEvent.event_time)}
                      </p>
+                   )}
+                   {selectedEvent.max_participants && (
+                     <p style={{ color: '#555', fontSize: '0.9rem', margin: 0 }}>
+                       <strong>Max Participants:</strong> {selectedEvent.max_participants}
+                     </p>
+                   )}
+                   {(selectedEvent.coordinator_name || selectedEvent.coordinator_number) && (
+                     <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: '#F5F5F5', borderRadius: '8px', border: '1px solid #E0E0E0' }}>
+                       <p style={{ color: '#333', fontSize: '0.85rem', fontWeight: 600, margin: '0 0 0.25rem 0' }}>Event Coordinator:</p>
+                       {selectedEvent.coordinator_name && (
+                         <p style={{ color: '#555', fontSize: '0.85rem', margin: 0 }}>{selectedEvent.coordinator_name}</p>
+                       )}
+                       {selectedEvent.coordinator_number && (
+                         <p style={{ color: '#555', fontSize: '0.85rem', margin: 0 }}>{selectedEvent.coordinator_number}</p>
+                       )}
+                     </div>
                    )}
                  </div>
                  { (registeredEvents.includes(selectedEvent.id) || selectedEvent.is_registered) ? (

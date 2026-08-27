@@ -21,10 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-$student_id = trim($_GET['student_id'] ?? '');
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+$student_id = trim($auth_payload['username'] ?? '');
+
 if ($student_id === '') {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Missing student_id parameter.']);
+    echo json_encode(['success' => false, 'message' => 'Missing username in token.']);
     exit;
 }
 

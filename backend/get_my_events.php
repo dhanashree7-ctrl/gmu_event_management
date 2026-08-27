@@ -18,12 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-$user_id = filter_input(INPUT_GET, 'user_id', FILTER_VALIDATE_INT);
-if ($user_id === false || $user_id === null || $user_id <= 0) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'A valid user_id is required.']);
-    exit;
-}
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+$username = $auth_payload['username'];
 
 require_once __DIR__ . '/config/db.php';
 try { $conn = get_db_connection(); }
@@ -43,7 +40,11 @@ $sql = 'SELECT
             em.ATTACHMENTS AS attachments_json,
             em.MODE AS event_mode,
             em.START_DATE AS event_date,
-            em.START_DATE AS submitted_at
+            em.START_DATE AS submitted_at,
+            em.MAX_PARTICIPANTS AS max_participants,
+            em.REGISTRATION_DEADLINE AS registration_deadline,
+            em.COORDINATOR_NAME AS coordinator_name,
+            em.CORDINATOR_CONTACT AS coordinator_number
         FROM event_master em
         WHERE em.PROPOSER_ID = ?
         ORDER BY em.START_DATE DESC';
@@ -57,7 +58,7 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param('s', $user_id);
+$stmt->bind_param('s', $username);
 if (!$stmt->execute()) {
     error_log('get_my_events.php – execute failed: ' . $stmt->error);
     $stmt->close(); $conn->close();
@@ -83,6 +84,10 @@ while ($row = $result->fetch_assoc()) {
         'start_date'           => $row['event_date'],
         'end_date'             => $row['event_date'],
         'submitted_at'         => $row['submitted_at'],
+        'max_participants'     => $row['max_participants'],
+        'registration_deadline'=> $row['registration_deadline'],
+        'coordinator_name'     => $row['coordinator_name'],
+        'coordinator_number'   => $row['coordinator_number'],
         'involved_departments' => [],
         'details'              => !empty($row['attachments_json']) ? json_decode($row['attachments_json'], true) : null,
     ];

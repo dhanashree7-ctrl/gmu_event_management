@@ -21,9 +21,12 @@ register_shutdown_function(function () {
     }
 });
 
-$studentId = $_GET['student_id'] ?? null;
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+$studentId = $auth_payload['username'] ?? null;
+
 if (!$studentId) {
-    echo json_encode(['success' => false, 'message' => 'Missing student_id parameter.']);
+    echo json_encode(['success' => false, 'message' => 'Missing username in token.']);
     exit;
 }
 

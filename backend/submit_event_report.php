@@ -20,8 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+
 $event_id       = isset($_POST['event_id'])       ? (string)$_POST['event_id']       : '';
-$faculty_id     = isset($_POST['faculty_id'])      ? (string)$_POST['faculty_id']      : '';
+$faculty_id     = trim($auth_payload['username'] ?? '');
 $report_summary = trim($_POST['report_summary']   ?? '');
 $has_file       = isset($_FILES['report_file']) && $_FILES['report_file']['error'] !== UPLOAD_ERR_NO_FILE;
 

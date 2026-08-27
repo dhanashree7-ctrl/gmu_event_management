@@ -18,18 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$input = file_get_contents('php://input');
-$body  = json_decode($input, true);
-if (!is_array($body)) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Invalid JSON payload.']);
-    exit;
-}
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+$role = trim($auth_payload['role'] ?? '');
 
-$role = trim($body['role'] ?? '');
 if ($role === '') {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Role is required.']);
+    echo json_encode(['success' => false, 'message' => 'Role is required in token.']);
     exit;
 }
 
@@ -61,6 +56,8 @@ $in_clause = implode(',', $status_map[$role]);
 $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
                em.CATEGORY AS category, em.BUDGET AS budget,
                em.CURRENT_STATUS AS current_status, em.SCALE AS event_scale,
+               em.MAX_PARTICIPANTS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
+               em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
                u.NAME AS proposed_by, u.DEPT AS department
         FROM event_master AS em
         JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
@@ -88,6 +85,10 @@ while ($row = $result->fetch_assoc()) {
         'department'     => $row['department'],
         'current_status' => $row['current_status'],
         'event_scale'    => $row['event_scale'],
+        'max_participants'      => $row['max_participants'],
+        'registration_deadline' => $row['registration_deadline'],
+        'coordinator_name'      => $row['coordinator_name'],
+        'coordinator_number'    => $row['coordinator_number'],
     ];
 }
 

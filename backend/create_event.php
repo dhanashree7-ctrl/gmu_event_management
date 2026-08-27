@@ -23,6 +23,8 @@ $event_title      = isset($_POST['event_title'])   ? trim(strip_tags((string)$_P
 $description      = isset($_POST['description'])   ? trim(strip_tags((string)$_POST['description']))   : '';
 $event_date_raw   = isset($_POST['event_date'])    ? trim(strip_tags((string)$_POST['event_date']))    : '';
 $event_date       = $event_date_raw === '' ? null : $event_date_raw;
+$registration_date_raw = isset($_POST['registration_date']) ? trim(strip_tags((string)$_POST['registration_date'])) : '';
+$registration_date     = $registration_date_raw === '' ? null : $registration_date_raw;
 $category         = trim((string)($_POST['category']     ?? ''));
 $allowed_categories = ['Academic', 'Cultural', 'Sports'];
 $event_scale      = strtolower(trim((string)($_POST['event_scale']  ?? 'department')));
@@ -45,6 +47,7 @@ $role           = strtolower($auth_payload['role'] ?? '');
 $max_participants = isset($_POST['max_participants']) && $_POST['max_participants'] !== '' ? (int)$_POST['max_participants'] : null;
 $max_volunteers   = isset($_POST['max_volunteers'])   && $_POST['max_volunteers']   !== '' ? (int)$_POST['max_volunteers']   : null;
 $max_coordinators = isset($_POST['max_coordinators']) && $_POST['max_coordinators'] !== '' ? (int)$_POST['max_coordinators'] : null;
+$coordinator_number = isset($_POST['coordinator_number']) ? trim(strip_tags($_POST['coordinator_number'])) : null;
 
 $participation_type = strtolower(trim((string)($_POST['participation_type'] ?? 'solo')));
 if (!in_array($participation_type, ['solo', 'group'], true)) $participation_type = 'solo';
@@ -82,6 +85,7 @@ $errors = [];
 if ($event_title === '')                             $errors[] = 'Event title is required.';
 elseif (strlen($event_title) > 200)                 $errors[] = 'Event title must be 200 characters or fewer.';
 if ($event_date === null)                           $errors[] = 'Event date is required.';
+if ($registration_date === null)                    $errors[] = 'Registration date is required.';
 if (!in_array($category, $allowed_categories, true)) $errors[] = 'Category must be Academic, Cultural, or Sports.';
 if ($event_scale === 'department' && !in_array($event_scale, $allowed_scales, true))  $errors[] = 'Event scale must be "department" or "university".';
 if ($budget < 0)                                    $errors[] = 'Budget must be a non-negative number.';
@@ -174,11 +178,11 @@ $event_id_val = 'EVT-' . strtoupper(uniqid());
 
 $sql = 'INSERT INTO event_master
             (PROPOSER_ID, EVENT_TITLE, DESCRIPTION, CATEGORY, SCALE, MODE, VENUE,
-             START_DATE, END_DATE, START_TIME, END_TIME, MAX_PARTICIPANTS, BUDGET, COORDINATOR_NAME,
+             START_DATE, END_DATE, START_TIME, END_TIME, REGISTRATION_DEADLINE, MAX_PARTICIPANTS, BUDGET, COORDINATOR_NAME, CORDINATOR_CONTACT,
              ATTACHMENTS, CURRENT_STATUS, APPROVAL_WORKFLOW)
         VALUES
             (?, ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?, ?, ?, ?,
+             ?, ?, ?, ?, ?, ?, ?, ?, ?,
              ?, ?, ?)';
 
 $stmt = $conn->prepare($sql);
@@ -191,10 +195,10 @@ if (!$stmt) {
 }
 
 try {
-    $stmt->bind_param('sssssssssssidssss',
+    $stmt->bind_param('ssssssssssssidsssss',
         $proposed_by_id,
         $event_title, $description, $category, $event_scale, $event_mode, $venue,
-        $event_date, $event_date, $start_time, $end_time, $max_participants, $budget, $coordinator_name,
+        $event_date, $event_date, $start_time, $end_time, $registration_date, $max_participants, $budget, $coordinator_name, $coordinator_number,
         $attachments_json, $initial_status, $workflow_json
     );
 

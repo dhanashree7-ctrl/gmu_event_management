@@ -27,8 +27,11 @@ if (!is_array($body)) {
     exit;
 }
 
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+
 $event_id   = $body['event_id'] ?? null;
-$student_id = trim((string)($body['student_id'] ?? ''));
+$student_id = trim((string)($auth_payload['username'] ?? ''));
 
 $allowed_roles = ['participant', 'volunteer', 'coordinator'];
 $reg_role = strtolower(trim((string)($body['role'] ?? 'participant')));
@@ -60,7 +63,7 @@ $event_stmt = $conn->prepare("
     SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
            em.START_DATE AS event_date, em.REGISTRATION_DEADLINE AS registration_deadline,
            em.MAX_PARTICIPANTS AS max_participants, em.CURRENT_STATUS AS current_status,
-           em.MAX_MEMBERS AS max_team_size
+           1 AS max_team_size
     FROM event_master em 
     WHERE em.EVENT_ID = ? AND em.CURRENT_STATUS IN ('published', 'approved')
 ");

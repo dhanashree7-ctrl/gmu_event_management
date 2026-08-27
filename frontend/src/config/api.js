@@ -17,7 +17,7 @@ export const API_BASE = 'http://localhost:8080/backend';
 const originalFetch = window.fetch;
 window.fetch = async (...args) => {
   let [resource, config] = args;
-  const token = localStorage.getItem('jwt_token');
+  const token = sessionStorage.getItem('jwt_token'); // Strict isolation, no fallback to localStorage
   if (token && resource.toString().startsWith(API_BASE)) {
     if (!config) config = {};
     if (!config.headers) config.headers = {};

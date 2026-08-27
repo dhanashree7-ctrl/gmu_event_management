@@ -66,14 +66,16 @@ const NAV_ITEMS = [
 const EMPTY_FORM = {
   event_title: '',
   description: '',
-  event_date: '', coordinator_name: '',
+  event_date: '', 
+  registration_date: '',
+  coordinator_name: '',
+  coordinator_number: '',
   start_time: '',
   end_time: '',
   venue: '',
   category: '',
   event_scale: '',
   event_mode: 'offline',
-  date: '', coordinator_name: '',
   involved_departments: [],
   budget: '',
   rewards: '',
@@ -439,8 +441,10 @@ export default function StudentAffairsDashboard() {
       const formData = new FormData();
       formData.append('event_title', form.event_title);
       formData.append('description', form.description);
-      formData.append('event_date', form.date);
+      formData.append('event_date', form.event_date || form.date);
+      formData.append('registration_date', form.registration_date);
       formData.append('coordinator_name', form.coordinator_name);
+      formData.append('coordinator_number', form.coordinator_number);
       formData.append('start_time', form.start_time);
       formData.append('end_time', form.end_time);
       formData.append('venue', form.venue);
@@ -483,6 +487,7 @@ export default function StudentAffairsDashboard() {
           pending: prev.pending + 1,
         }));
         setForm(EMPTY_FORM);
+        setActiveNav('My Events');
         setToast({ type: 'success', message: 'Event request submitted successfully! 🎉' });
       } else {
         setToast({ type: 'error', message: json.message || 'Submission failed. Please try again.' });
@@ -573,17 +578,17 @@ export default function StudentAffairsDashboard() {
             {/* Card header accent */}
             <div style={styles.formCardAccent} />
 
-            <div style={styles.formCardHeader}>
-              <div>
-                <h2 style={styles.formCardTitle}>📝 New Event Request</h2>
-                <p style={styles.formCardSub}>
-                  Complete the form below. Your request will be routed for approval automatically.
-                </p>
+              <div style={styles.formCardHeader}>
+                <div>
+                  <h2 style={styles.formCardTitle}>📝 New Event Request</h2>
+                  <p style={styles.formCardSub}>
+                    Complete the form below. Your request will be routed for approval automatically.
+                  </p>
+                </div>
+                <div style={styles.statusPill}>
+                  <span style={styles.statusDot} /> Status: Pending on Submit
+                </div>
               </div>
-              <div style={styles.statusPill}>
-                <span style={styles.statusDot} /> Status: Pending on Submit
-              </div>
-            </div>
 
             <form onSubmit={handleSubmit} noValidate style={styles.form}>
 
@@ -801,7 +806,7 @@ export default function StudentAffairsDashboard() {
               {/* Event Date (Optional at this stage) */}
               <div style={styles.formGroup}>
                 <label htmlFor="event_date" style={styles.formLabel}>
-                  Proposed Event Date <span style={{ color: 'red' }}>*</span>
+                  Event Date <span style={{ color: 'red' }}>*</span>
                 </label>
                 <input
                   id="event_date"
@@ -811,6 +816,58 @@ export default function StudentAffairsDashboard() {
                   style={styles.formInput}
                   disabled={loading}
                 />
+              </div>
+
+              {/* Registration Date */}
+              <div style={styles.formGroup}>
+                <label htmlFor="registration_date" style={styles.formLabel}>
+                  Registration Date (Deadline) <span style={{ color: 'red' }}>*</span>
+                </label>
+                <input
+                  id="registration_date"
+                  type="date"
+                  value={form.registration_date || ''}
+                  onChange={(e) => handleFieldChange('registration_date', e.target.value)}
+                  style={styles.formInput}
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              <div style={styles.formRow}>
+                {/* Coordinator Name */}
+                <div style={s(styles.formGroup, { flex: 1 })}>
+                  <label htmlFor="coordinator_name" style={styles.formLabel}>
+                    Coordinator Name <span style={{ color: 'red' }}>*</span>
+                  </label>
+                  <input
+                    id="coordinator_name"
+                    type="text"
+                    value={form.coordinator_name || ''}
+                    onChange={(e) => handleFieldChange('coordinator_name', e.target.value)}
+                    style={styles.formInput}
+                    placeholder="e.g. Dr. John Doe"
+                    disabled={loading}
+                    required
+                  />
+                </div>
+
+                {/* Coordinator Number */}
+                <div style={s(styles.formGroup, { flex: 1 })}>
+                  <label htmlFor="coordinator_number" style={styles.formLabel}>
+                    Coordinator Number <span style={{ color: 'red' }}>*</span>
+                  </label>
+                  <input
+                    id="coordinator_number"
+                    type="text"
+                    value={form.coordinator_number || ''}
+                    onChange={(e) => handleFieldChange('coordinator_number', e.target.value)}
+                    style={styles.formInput}
+                    placeholder="e.g. +91 9876543210"
+                    disabled={loading}
+                    required
+                  />
+                </div>
               </div>
 
               {/* Budget */}
@@ -1347,7 +1404,12 @@ function getGreeting() {
 function StatusBadge({ status }) {
   // Map both lowercase and capitalized variations just to be safe!
   const map = {
-    'pending_approval': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending Approval' },
+    'pending_approval': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending' },
+    'pending_hod': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending HOD' },
+    'pending_director': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending Director' },
+    'pending_dean': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending Dean' },
+    'pending_provc': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending Pro VC' },
+    'pending_vc': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending VC' },
     'Pending': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending' },
     'approved': { bg: '#E6F4EA', color: '#137333', label: 'Approved' },
     'Approved': { bg: '#E6F4EA', color: '#137333', label: 'Approved' },

@@ -28,7 +28,10 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$student_id         = $_GET['student_id'] ?? '';
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+
+$student_id         = $auth_payload['username'] ?? '';
 $student_department = '';
 $student_usn        = '';
 
@@ -51,6 +54,7 @@ $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION 
                em.START_DATE AS event_date, em.START_TIME AS event_time,
                em.VENUE AS venue, em.REGISTRATION_DEADLINE AS registration_deadline,
                em.MAX_PARTICIPANTS AS max_participants,
+               em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
                u.NAME AS proposed_by, u.DEPT AS proposer_dept,
                IF(r.ID IS NOT NULL, 1, 0) AS is_registered,
                r.QR_CODE AS qr_token, r.CHECK_IN_STATUS AS check_in_status, r.ROLE AS my_role

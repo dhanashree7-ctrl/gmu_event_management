@@ -34,7 +34,7 @@ export default function ExecutiveDashboard() {
   // Action Center: Propose Event
   const [formData, setFormData] = useState({
     event_title: '',
-    date: '', coordinator_name: '',
+    event_date: '', registration_date: '', coordinator_name: '', coordinator_number: '',
     start_time: '',
     end_time: '',
     venue: '',
@@ -51,9 +51,9 @@ export default function ExecutiveDashboard() {
     max_volunteers: '',
     max_coordinators: '',
     is_festival: false,
-    sub_events: [{ name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }],
     participation_type: 'solo',
     max_team_size: '',
+    sub_events: [{ name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }],
   });
   const [proposeLoading, setProposeLoading] = useState(false);
   const [proposeMessage, setProposeMessage] = useState(null);
@@ -263,9 +263,10 @@ export default function ExecutiveDashboard() {
       const fd = new FormData();
       fd.append('event_title', formData.event_title);
       fd.append('description', formData.description);
-      fd.append('event_date', formData.date);
+      fd.append('event_date', formData.event_date);
+      if (formData.registration_date) fd.append('registration_date', formData.registration_date);
       fd.append('coordinator_name', formData.coordinator_name);
-      if (formData.coordinator_name) formData.append('coordinator_name', formData.coordinator_name);
+      if (formData.coordinator_number) fd.append('coordinator_number', formData.coordinator_number);
       fd.append('start_time', formData.start_time);
       fd.append('end_time', formData.end_time);
       fd.append('venue', formData.venue);
@@ -585,8 +586,12 @@ export default function ExecutiveDashboard() {
                       </div>
                       <div style={styles.formRow}>
                         <div style={{...styles.formGroup, flex: 1}}>
-                          <label style={styles.formLabel}>Date <span style={styles.required}>*</span></label>
-                          <input style={styles.formInput} type="date" name="date" value={formData.date} onChange={handleProposeChange} required />
+                          <label style={styles.formLabel}>Event Date <span style={styles.required}>*</span></label>
+                          <input style={styles.formInput} type="date" name="event_date" value={formData.event_date || ''} onChange={handleProposeChange} required />
+                        </div>
+                        <div style={{...styles.formGroup, flex: 1}}>
+                          <label style={styles.formLabel}>Registration Deadline <span style={styles.required}>*</span></label>
+                          <input style={styles.formInput} type="date" name="registration_date" value={formData.registration_date || ''} onChange={handleProposeChange} required />
                         </div>
                         <div style={{...styles.formGroup, flex: 1}}>
                           <label style={styles.formLabel}>Start Time <span style={styles.required}>*</span></label>
@@ -599,8 +604,16 @@ export default function ExecutiveDashboard() {
                       </div>
                        
                         <div style={styles.formGroup}>
-                          <label style={styles.formLabel}>Main Coordinator Name</label>
-                          <input style={styles.formInput} type="text" name="coordinator_name" placeholder="e.g. Dr. Smith" value={formData.coordinator_name || ''} onChange={handleProposeChange} />
+                          <label style={styles.formLabel}>Main Coordinator Name <span style={{ color: 'red' }}>*</span></label>
+                          <input style={styles.formInput} type="text" name="coordinator_name" placeholder="e.g. Dr. Smith" value={formData.coordinator_name || ''} onChange={handleProposeChange} required />
+                        </div>
+                        <div style={styles.formGroup}>
+                          <label style={styles.formLabel}>Coordinator Number <span style={{ color: 'red' }}>*</span></label>
+                          <input style={styles.formInput} type="text" name="coordinator_number" placeholder="e.g. +91 9876543210" value={formData.coordinator_number || ''} onChange={handleProposeChange} required />
+                        </div>
+                        <div style={styles.formGroup}>
+                          <label style={styles.formLabel}>Max Participants <span style={{ color: 'red' }}>*</span></label>
+                          <input style={styles.formInput} type="number" min="1" name="max_participants" placeholder="e.g. 100" value={formData.max_participants || ''} onChange={handleProposeChange} required />
                         </div>
 <div style={styles.formGroup}>
                         <label style={styles.formLabel}>Venue <span style={styles.required}>*</span></label>

@@ -20,6 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
+require_once __DIR__ . '/auth_middleware.php';
+require_auth();
 require_once __DIR__ . '/config/db.php';
 try { $conn = get_db_connection(); }
 catch (RuntimeException $e) {

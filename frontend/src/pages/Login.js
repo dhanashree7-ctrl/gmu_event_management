@@ -43,7 +43,7 @@ export default function Login() {
         }
 
         if (json.token) {
-          localStorage.setItem('jwt_token', json.token);
+          sessionStorage.setItem('jwt_token', json.token);
         }
         login(json.data);
 

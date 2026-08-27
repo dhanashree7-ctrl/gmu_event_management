@@ -18,9 +18,12 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$student_id = $_GET['student_id'] ?? '';
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+$student_id = $auth_payload['username'] ?? '';
+
 if (!$student_id) {
-    echo json_encode(['success' => false, 'message' => 'Missing student_id.']);
+    echo json_encode(['success' => false, 'message' => 'Missing username in token.']);
     exit;
 }
 

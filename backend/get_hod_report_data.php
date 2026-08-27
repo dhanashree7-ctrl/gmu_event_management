@@ -18,10 +18,13 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$department = filter_input(INPUT_GET, 'department');
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+$department = $auth_payload['department_name'] ?? '';
+
 if (!$department) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Invalid department.']);
+    echo json_encode(['success' => false, 'message' => 'Invalid department in token.']);
     exit;
 }
 

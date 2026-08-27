@@ -12,7 +12,7 @@ ini_set('display_errors', '0');
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
@@ -26,13 +26,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 require_once __DIR__ . '/config/db.php';
-
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
-$user_id = $input['user_id'] ?? $_POST['user_id'] ?? null;
+
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+$user_id = $auth_payload['username'] ?? null;
 
 if (empty($user_id)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'user_id is required.']);
+    echo json_encode(['success' => false, 'message' => 'Valid token with username is required.']);
     exit;
 }
 

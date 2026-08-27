@@ -29,8 +29,11 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($body)) {
     exit;
 }
 
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+
 $event_id   = isset($body['event_id'])   ? (string)$body['event_id']  : '';
-$student_id = trim($body['student_id']   ?? '');
+$student_id = trim($auth_payload['username'] ?? '');
 $rating     = isset($body['rating'])     ? (int)$body['rating']    : 0;
 $comments   = trim($body['comments']     ?? '');
 

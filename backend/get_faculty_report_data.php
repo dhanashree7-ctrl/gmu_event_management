@@ -18,10 +18,13 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$user_id = filter_input(INPUT_GET, 'user_id', FILTER_SANITIZE_STRING);
+require_once __DIR__ . '/auth_middleware.php';
+$auth_payload = require_auth();
+$user_id = $auth_payload['username'] ?? '';
+
 if (!$user_id) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Invalid user ID.']);
+    echo json_encode(['success' => false, 'message' => 'Invalid user ID in token.']);
     exit;
 }
 

@@ -63,7 +63,10 @@ const NAV_ITEMS = [
 const EMPTY_FORM = {
   event_title: '',
   description: '',
-  event_date: '', coordinator_name: '',
+  event_date: '', 
+  registration_date: '',
+  coordinator_name: '',
+  coordinator_number: '',
   start_time: '',
   end_time: '',
   venue: '',
@@ -426,7 +429,9 @@ export default function FacultyDashboard() {
       formData.append('event_title', form.event_title);
       formData.append('description', form.description);
       formData.append('event_date', form.event_date);
+      formData.append('registration_date', form.registration_date);
       formData.append('coordinator_name', form.coordinator_name);
+      formData.append('coordinator_number', form.coordinator_number);
       formData.append('start_time', form.start_time);
       formData.append('end_time', form.end_time);
       formData.append('venue', form.venue);
@@ -451,6 +456,9 @@ export default function FacultyDashboard() {
 
       const res = await fetch(`${API_BASE}/create_event.php`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('jwt_token')}`
+        },
         body: formData,
       });
 
@@ -464,7 +472,7 @@ export default function FacultyDashboard() {
           category: form.category,
           event_scale: form.event_scale,
           budget: form.budget,
-          status: 'Pending',
+          status: json.status_assigned || 'Pending',
           submitted_at: new Date().toLocaleDateString('en-IN', {
             day: '2-digit', month: 'short', year: 'numeric',
           }),
@@ -476,6 +484,7 @@ export default function FacultyDashboard() {
           pending: prev.pending + 1,
         }));
         setForm(EMPTY_FORM);
+        setShowProposeForm(false);
         setToast({ type: 'success', message: 'Event request submitted successfully! ' });
       } else {
         setToast({ type: 'error', message: json.message || 'Submission failed. Please try again.' });
@@ -987,7 +996,7 @@ export default function FacultyDashboard() {
                 {/* Event Date (Optional at this stage) */}
                 <div style={styles.formGroup}>
                   <label htmlFor="event_date" style={styles.formLabel}>
-                    Proposed Event Date <span style={{ color: 'red' }}>*</span>
+                    Event Date <span style={{ color: 'red' }}>*</span>
                   </label>
                   <input
                     id="event_date"
@@ -997,6 +1006,75 @@ export default function FacultyDashboard() {
                     style={styles.formInput}
                     disabled={loading}
                   />
+                </div>
+
+                {/* Registration Date */}
+                <div style={styles.formGroup}>
+                  <label htmlFor="registration_date" style={styles.formLabel}>
+                    Registration Date (Deadline) <span style={{ color: 'red' }}>*</span>
+                  </label>
+                  <input
+                    id="registration_date"
+                    type="date"
+                    value={form.registration_date || ''}
+                    onChange={(e) => handleFieldChange('registration_date', e.target.value)}
+                    style={styles.formInput}
+                    disabled={loading}
+                    required
+                  />
+                </div>
+                
+                {/* Max Participants */}
+                <div style={styles.formGroup}>
+                  <label htmlFor="max_participants" style={styles.formLabel}>
+                    Max Participants <span style={{ color: 'red' }}>*</span>
+                  </label>
+                  <input
+                    id="max_participants"
+                    type="number"
+                    min="1"
+                    value={form.max_participants || ''}
+                    onChange={(e) => handleFieldChange('max_participants', e.target.value)}
+                    style={styles.formInput}
+                    disabled={loading}
+                    required
+                  />
+                </div>
+
+                <div style={styles.formRow}>
+                  {/* Coordinator Name */}
+                  <div style={s(styles.formGroup, { flex: 1 })}>
+                    <label htmlFor="coordinator_name" style={styles.formLabel}>
+                      Coordinator Name <span style={{ color: 'red' }}>*</span>
+                    </label>
+                    <input
+                      id="coordinator_name"
+                      type="text"
+                      value={form.coordinator_name || ''}
+                      onChange={(e) => handleFieldChange('coordinator_name', e.target.value)}
+                      style={styles.formInput}
+                      placeholder="e.g. Dr. John Doe"
+                      disabled={loading}
+                      required
+                    />
+                  </div>
+
+                  {/* Coordinator Number */}
+                  <div style={s(styles.formGroup, { flex: 1 })}>
+                    <label htmlFor="coordinator_number" style={styles.formLabel}>
+                      Coordinator Number <span style={{ color: 'red' }}>*</span>
+                    </label>
+                    <input
+                      id="coordinator_number"
+                      type="text"
+                      value={form.coordinator_number || ''}
+                      onChange={(e) => handleFieldChange('coordinator_number', e.target.value)}
+                      style={styles.formInput}
+                      placeholder="e.g. +91 9876543210"
+                      disabled={loading}
+                      required
+                    />
+                  </div>
                 </div>
 
                 {/* Brochure File */}
@@ -1755,11 +1833,11 @@ function getGreeting() {
 // ── Status Badge ───────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
   const map = {
-    'pending_hod': { bg: '#FFF8E1', color: '#C17F24', label: 'Waiting on HOD' },
-    'pending_director': { bg: '#FFF8E1', color: '#C17F24', label: 'Waiting on Director' },
-    'pending_dean': { bg: '#FFF8E1', color: '#C17F24', label: 'Waiting on Dean' },
-    'pending_provc': { bg: '#FFF8E1', color: '#C17F24', label: 'Waiting on Pro VC' },
-    'pending_vc': { bg: '#FFF8E1', color: '#C17F24', label: 'Waiting on VC' },
+    'pending_hod': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending HOD' },
+    'pending_director': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending Director' },
+    'pending_dean': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending Dean' },
+    'pending_provc': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending Pro VC' },
+    'pending_vc': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending VC' },
     'pending_approval': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending Approval' },
     'Pending': { bg: '#FFF8E1', color: '#C17F24', label: 'Pending' },
     'approved': { bg: '#E6F4EA', color: '#137333', label: 'Approved' },
@@ -2141,28 +2219,32 @@ const styles = {
   },
   formCardTitle: {
     fontFamily: theme.fonts.serif,
-    fontSize: '1.25rem',
+    fontSize: '1.6rem',
     fontWeight: theme.fontWeights.bold,
-    color: theme.colors.charcoal,
-    marginBottom: '0.3rem',
+    color: theme.colors.maroon,
+    marginBottom: '0.4rem',
+    letterSpacing: '-0.02em',
   },
   formCardSub: {
-    fontSize: '0.85rem',
-    color: theme.colors.midGray,
-    maxWidth: '480px',
+    fontSize: '0.9rem',
+    color: theme.colors.charcoal,
+    maxWidth: '520px',
     lineHeight: 1.5,
+    opacity: 0.85,
   },
   statusPill: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '0.4rem',
-    background: '#FFF8E1',
-    color: '#C17F24',
-    borderRadius: theme.radii.full,
-    padding: '0.4rem 1rem',
-    fontSize: '0.78rem',
-    fontWeight: theme.fontWeights.semiBold,
+    background: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+    color: '#e65100',
+    borderRadius: '24px',
+    padding: '0.5rem 1.1rem',
+    fontSize: '0.82rem',
+    fontWeight: theme.fontWeights.bold,
     whiteSpace: 'nowrap',
+    boxShadow: '0 4px 12px rgba(230, 81, 0, 0.15)',
+    border: '1px solid rgba(230, 81, 0, 0.3)',
   },
   statusDot: {
     width: '7px',
