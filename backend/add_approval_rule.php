@@ -14,10 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$conn = new mysqli("localhost", "root", "dhanashreessql2025", "gmu_events");
-
-if ($conn->connect_error) {
-    echo json_encode(["success" => false, "message" => "Connection failed: " . $conn->connect_error]);
+require_once __DIR__ . '/config/db.php';
+try {
+    $conn = get_db_connection();
+} catch (RuntimeException $e) {
+    echo json_encode(["success" => false, "message" => "Connection failed."]);
     exit();
 }
 

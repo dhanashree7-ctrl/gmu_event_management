@@ -71,6 +71,7 @@ $sql = "SELECT
             er.CHECK_IN_STATUS        AS check_in_status,
             er.CHECK_IN_TIME          AS check_in_time,
             er.REGISTRATION_DATE      AS registered_at,
+            u.SEMESTER                AS semester,
             u.NAME                    AS student_name,
             u.EMAIL                   AS student_email,
             u.USERNAME                AS usn,
@@ -108,14 +109,13 @@ while ($row = $result->fetch_assoc()) {
         'student_email'        => $row['student_email'] ?? 'N/A',
         'registration_role'    => $row['registration_role']    ?? 'participant',
 
-        'special_requirements' => $external_details['special_requirements'] ?? 'None',
         'topics_of_interest'   => 'None',
         'check_in_status'      => $row['check_in_status'] ?? 'pending',
         'check_in_time'        => $row['check_in_time'],
         'registered_at'        => $row['registered_at'],
         'event_date'           => $event_date,
         'department'           => $row['department'],
-        'semester'             => null,
+        'semester'             => $row['semester'],
     ];
 }
 

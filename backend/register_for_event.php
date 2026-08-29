@@ -37,7 +37,6 @@ $allowed_roles = ['participant', 'volunteer', 'coordinator'];
 $reg_role = strtolower(trim((string)($body['role'] ?? 'participant')));
 if (!in_array($reg_role, $allowed_roles, true)) $reg_role = 'participant';
 
-$special_requirements = trim((string)($body['special_requirements'] ?? ''));
 $selected_sub_events  = $body['selected_sub_events'] ?? [];
 
 $is_team_lead = isset($body['is_team_lead']) ? (bool)$body['is_team_lead'] : false;
@@ -139,17 +138,16 @@ if ($reg_role === 'participant') {
 
 $details_data = [];
 if (!empty($selected_sub_events)) $details_data['registered_sub_events'] = $selected_sub_events;
-if (!empty($special_requirements)) $details_data['special_requirements'] = $special_requirements;
 $details_json = !empty($details_data) ? json_encode($details_data) : null;
 
 // ── Insert lean transaction into event_registrations ──────────────────────────
 $reg_stmt = $conn->prepare("
     INSERT INTO event_registrations (
-        USER_ID, EVENT_ID, ROLE, STATUS, REGISTRATION_DATE,
+        USER_ID, EVENT_ID, ROLE, REGISTRATION_DATE,
         QR_CODE, CHECK_IN_STATUS, EXTERNAL_DETAILS,
         TEAM_LEAD, TEAM_MEMBERS
     ) VALUES (
-        ?, ?, ?, 'active', NOW(),
+        ?, ?, ?, NOW(),
         ?, 'pending', ?,
         ?, ?
     )

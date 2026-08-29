@@ -66,7 +66,7 @@ function CurrentRoutingsView({ rules }) {
                     <React.Fragment key={`${rule.id}-${idx}`}>
                       <div style={styles.pill}>{roleDef ? roleDef.label : roleValue}</div>
                       {idx < rule.required_chain.length - 1 && (
-                        <span style={styles.arrow}></span>
+                        <span style={styles.arrow}>→</span>
                       )}
                     </React.Fragment>
                   );

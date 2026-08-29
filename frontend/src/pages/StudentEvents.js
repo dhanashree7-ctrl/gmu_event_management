@@ -129,7 +129,7 @@ export default function StudentEvents() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [form, setForm] = useState({ semester: "", special_requirements: "", reg_role: "participant", selectedSubEvents: [], is_team_lead: true, team_lead_name: "", team_members: [] });
+  const [form, setForm] = useState({ reg_role: "participant", selectedSubEvents: [], is_team_lead: true, team_lead_name: "", team_members: [] });
   const [registering, setRegistering] = useState(false);
   
   // Ticket State
@@ -196,11 +196,12 @@ export default function StudentEvents() {
   const openDetails = (evt) => {
     setSelectedEvent(evt);
     setShowDetails(true);
+    setShowModal(true);
   };
 
   const openRegistration = (evt = selectedEvent) => {
     setSelectedEvent(evt);
-    setForm({ semester: "", special_requirements: "", reg_role: "participant", selectedSubEvents: [], is_team_lead: true, team_lead_name: "", team_members: [] });
+    setForm({ reg_role: "participant", selectedSubEvents: [], is_team_lead: true, team_lead_name: "", team_members: [] });
     setTicketData(null);
     setShowDetails(false);
     setShowModal(true);
@@ -251,8 +252,6 @@ export default function StudentEvents() {
           event_id: selectedEvent.id,
           student_id: user.username,
           role: form.reg_role,
-          semester: form.semester,
-          special_requirements: form.special_requirements,
           selected_sub_events: form.selectedSubEvents,
           is_team_lead: form.is_team_lead,
           team_lead: form.team_lead_name,
@@ -766,6 +765,56 @@ export default function StudentEvents() {
                   <p style={styles.ticketFooter}>Present this code at the entrance.</p>
                 </div>
               </div>
+            ) : showDetails ? (
+              <div style={styles.formContainer}>
+                <h2 style={styles.modalTitle}>{selectedEvent.event_title}</h2>
+                <p style={styles.modalSub}>{selectedEvent.category} • {selectedEvent.event_scale}</p>
+                
+                <div style={{ background: '#f5f7fa', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '0.5rem' }}>
+                  {selectedEvent.description && (
+                    <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', lineHeight: '1.5', color: '#333' }}>
+                      {selectedEvent.description}
+                    </p>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div>
+                      <strong style={{ fontSize: '0.75rem', color: '#666', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>Event Date & Time</strong>
+                      <span style={{ fontSize: '0.9rem', color: '#222', fontWeight: 600 }}>{formatDate(selectedEvent.event_date)} • {selectedEvent.event_time ? formatTime(selectedEvent.event_time) : 'TBA'}</span>
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '0.75rem', color: '#666', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>Venue</strong>
+                      <span style={{ fontSize: '0.9rem', color: '#222', fontWeight: 600 }}>{selectedEvent.venue || 'TBA'}</span>
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '0.75rem', color: '#666', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>Registration Deadline</strong>
+                      <span style={{ fontSize: '0.9rem', color: '#C62828', fontWeight: 600 }}>{selectedEvent.registration_deadline ? formatDate(selectedEvent.registration_deadline) : 'N/A'}</span>
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '0.75rem', color: '#666', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>Capacity / Max</strong>
+                      <span style={{ fontSize: '0.9rem', color: '#222', fontWeight: 600 }}>{selectedEvent.max_participants || 'Unlimited'}</span>
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '0.75rem', color: '#666', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>Coordinator</strong>
+                      <span style={{ fontSize: '0.9rem', color: '#222', fontWeight: 600 }}>{selectedEvent.coordinator_name || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <strong style={{ fontSize: '0.75rem', color: '#666', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>Contact Number</strong>
+                      <span style={{ fontSize: '0.9rem', color: '#222', fontWeight: 600 }}>{selectedEvent.coordinator_number || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={styles.modalFooter}>
+                  <button type="button" onClick={closeModal} style={styles.cancelBtn}>Close</button>
+                  <button 
+                    type="button" 
+                    onClick={() => openRegistration(selectedEvent)}
+                    style={{ ...styles.submitBtn, marginTop: 0 }}
+                  >
+                    Proceed to Registration
+                  </button>
+                </div>
+              </div>
             ) : (
               <form onSubmit={submitRegistration} style={styles.formContainer}>
                 <h2 style={styles.modalTitle}>Register for {selectedEvent.event_title}</h2>
@@ -903,37 +952,6 @@ export default function StudentEvents() {
                   </div>
                 )}
 
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Semester *</label>
-                  <select 
-                    style={styles.input} 
-                    value={form.semester} 
-                    onChange={e => setForm({...form, semester: e.target.value})} 
-                    required
-                  >
-                    <option value="">-- Select Semester --</option>
-                    <option value="1st">1st Semester</option>
-                    <option value="2nd">2nd Semester</option>
-                    <option value="3rd">3rd Semester</option>
-                    <option value="4th">4th Semester</option>
-                    <option value="5th">5th Semester</option>
-                    <option value="6th">6th Semester</option>
-                    <option value="7th">7th Semester</option>
-                    <option value="8th">8th Semester</option>
-                  </select>
-                </div>
-
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>Special Requirements (Optional)</label>
-                  <input 
-                    style={styles.input} 
-                    type="text" 
-                    placeholder="e.g. Dietary needs, T-shirt size..."
-                    value={form.special_requirements}
-                    onChange={e => setForm({...form, special_requirements: e.target.value})}
-                  />
-                </div>
 
                 <div style={styles.modalFooter}>
                   <button type="button" onClick={closeModal} style={styles.cancelBtn}>Cancel</button>

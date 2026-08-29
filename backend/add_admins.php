@@ -18,7 +18,7 @@ try {
         ['name' => 'Events Admin', 'email' => 'events_admin@gmu.ac.in', 'role' => 'events_admin', 'emp_id' => 'EVT001', 'dept' => 'Events Management'],
     ];
 
-    $stmt = $conn->prepare("INSERT INTO users (full_name, email, password, system_role, department, usn_or_emp_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO users (NAME, EMAIL, PASSWORD, ROLE, DEPT, USERNAME) VALUES (?, ?, ?, ?, ?, ?)");
 
     foreach ($admins as $a) {
         $stmt->bind_param("ssssss", $a['name'], $a['email'], $defaultPassword, $a['role'], $a['dept'], $a['emp_id']);

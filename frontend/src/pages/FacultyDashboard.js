@@ -2201,11 +2201,15 @@ const styles = {
     borderRadius: theme.radii.xl,
     boxShadow: theme.shadows.md,
     border: '1px solid #ede9e3',
-    overflow: 'hidden',
     position: 'relative',
     flexShrink: 0,
+    padding: '2rem',
   },
   formCardAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     height: '4px',
     background: theme.gradients.header,
   },
@@ -2257,49 +2261,14 @@ const styles = {
 
   // Form fields
   form: {
-    padding: '1.75rem 2rem',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1.5rem',
+    display: 'flex', flexDirection: 'column', gap: '2rem'
   },
-  formRow: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '1.25rem',
-    alignItems: 'end',
-  },
-  formGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.4rem',
-    minWidth: '0',
-  },
-  formLabel: {
-    fontSize: '0.8rem',
-    fontWeight: theme.fontWeights.semiBold,
-    color: theme.colors.darkGray,
-    letterSpacing: '0.02em',
-  },
-  required: {
-    color: '#C62828',
-  },
-  optional: {
-    color: theme.colors.midGray,
-    fontWeight: theme.fontWeights.regular,
-  },
-  formInput: {
-    border: `1px solid #ddd`,
-    borderRadius: theme.radii.md,
-    padding: '0.7rem 0.9rem',
-    fontSize: '0.9rem',
-    color: theme.colors.charcoal,
-    outline: 'none',
-    transition: theme.transitions.fast,
-    fontFamily: theme.fonts.sansSerif,
-    background: '#FAFAFA',
-    width: '100%',
-    boxSizing: 'border-box',
-  },
+  formRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', alignItems: 'start' },
+  formGroup: { display: 'flex', flexDirection: 'column', gap: '0.6rem', minWidth: '0' },
+  formLabel: { fontSize: '0.9rem', fontWeight: '600', color: '#374151' },
+  required: { color: '#ef4444', marginLeft: '0.2rem' },
+  optional: { color: '#9ca3af', fontWeight: 'normal', fontSize: '0.8rem', marginLeft: '0.5rem' },
+  formInput: { border: '1px solid #d1d5db', borderRadius: '10px', padding: '0.8rem 1rem', fontSize: '0.95rem', color: '#1f2937', outline: 'none', background: '#ffffff', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit', transition: 'all 0.2s ease-in-out', boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.02)' },
   formSelect: {
     cursor: 'pointer',
   },
@@ -2335,41 +2304,12 @@ const styles = {
   },
 
   // Submit row
-  submitRow: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '1rem',
-    alignItems: 'center',
-    paddingTop: '0.5rem',
-    borderTop: '1px solid #f0ede8',
-  },
+  submitRow: { display: 'flex', justifyContent: 'flex-end', gap: '1rem', paddingTop: '1.5rem', borderTop: '1px solid #f3f4f6' },
   resetBtn: {
-    background: 'transparent',
-    border: `1px solid #ddd`,
-    borderRadius: theme.radii.full,
-    padding: '0.7rem 1.5rem',
-    fontSize: '0.9rem',
-    color: theme.colors.darkGray,
-    cursor: 'pointer',
-    transition: theme.transitions.fast,
-    fontFamily: theme.fonts.sansSerif,
+    background: 'transparent', border: `1px solid #d1d5db`, borderRadius: '12px', padding: '0.9rem 1.5rem', fontSize: '0.95rem', color: '#374151', cursor: 'pointer', transition: 'all 0.2s', fontFamily: 'inherit', fontWeight: '500'
   },
   submitBtn: {
-    background: theme.gradients.header,
-    color: theme.colors.gold,
-    border: 'none',
-    borderRadius: theme.radii.full,
-    padding: '0.75rem 2rem',
-    fontSize: '0.9rem',
-    fontWeight: theme.fontWeights.bold,
-    cursor: 'pointer',
-    boxShadow: theme.shadows.md,
-    transition: theme.transitions.normal,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    fontFamily: theme.fonts.sansSerif,
-    letterSpacing: '0.02em',
+    background: theme.colors.maroon, color: theme.colors.gold, border: 'none', borderRadius: '12px', padding: '0.9rem 2.5rem', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 14px rgba(128, 0, 0, 0.3)', transition: 'transform 0.1s, box-shadow 0.1s', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'inherit'
   },
   submitBtnDisabled: {
     opacity: 0.7,

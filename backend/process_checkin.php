@@ -96,7 +96,7 @@ if ($event_date && $event_time) {
 }
 
 // Mark checked_in in event_registrations
-$updateStmt = $conn->prepare("UPDATE event_registrations SET CHECK_IN_STATUS = 'checked_in', CHECK_IN_TIME = NOW(), STATUS = 'completed' WHERE QR_CODE = ?");
+$updateStmt = $conn->prepare("UPDATE event_registrations SET CHECK_IN_STATUS = 'checked_in', CHECK_IN_TIME = NOW() WHERE QR_CODE = ?");
 $updateStmt->bind_param("s", $qr_token);
 if (!$updateStmt->execute()) {
     echo json_encode(['success' => false, 'message' => 'Failed to process check-in.']);

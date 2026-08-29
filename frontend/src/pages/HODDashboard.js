@@ -1395,16 +1395,15 @@ const styles = {
   tabActive: { color: theme.colors.maroon, borderBottomColor: theme.colors.maroon },
 
   // Forms
-  form: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  formRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', alignItems: 'end' },
-  formGroup: { display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: '0' },
-  formLabel: { fontSize: '0.8rem', fontWeight: 'bold', color: '#444' },
-  required: { color: '#C62828' },
-  optional: { color: '#888', fontWeight: 'normal' },
-  formInput: { border: `1px solid #ddd`, borderRadius: '6px', padding: '0.7rem 0.9rem', fontSize: '0.9rem', color: '#333', outline: 'none', background: '#FAFAFA', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' },
-
-  submitRow: { display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #f0ede8' },
-  submitBtn: { background: theme.gradients.header, color: theme.colors.gold, border: 'none', borderRadius: '24px', padding: '0.75rem 2rem', fontSize: '0.9rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' },
+  form: { display: 'flex', flexDirection: 'column', gap: '2rem' },
+  formRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', alignItems: 'start' },
+  formGroup: { display: 'flex', flexDirection: 'column', gap: '0.6rem', minWidth: '0' },
+  formLabel: { fontSize: '0.9rem', fontWeight: '600', color: '#374151' },
+  required: { color: '#ef4444', marginLeft: '0.2rem' },
+  optional: { color: '#9ca3af', fontWeight: 'normal', fontSize: '0.8rem', marginLeft: '0.5rem' },
+  formInput: { border: '1px solid #d1d5db', borderRadius: '10px', padding: '0.8rem 1rem', fontSize: '0.95rem', color: '#1f2937', outline: 'none', background: '#ffffff', width: '100%', boxSizing: 'border-box', fontFamily: 'inherit', transition: 'all 0.2s ease-in-out', boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.02)' },
+  submitRow: { display: 'flex', justifyContent: 'flex-end', paddingTop: '1.5rem', borderTop: '1px solid #f3f4f6' },
+  submitBtn: { background: theme.colors.maroon, color: theme.colors.gold, border: 'none', borderRadius: '12px', padding: '0.9rem 2.5rem', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 14px rgba(128, 0, 0, 0.3)', transition: 'transform 0.1s, box-shadow 0.1s' },
 
   // Tables & Lists
   tableWrap: { overflowX: 'auto' },

@@ -51,7 +51,15 @@ catch (RuntimeException $e) {
     exit;
 }
 
-// 1. Verify: event is completed (via event_master) + student was checked in (via event_registrations)
+// 1. Resolve student USN first
+$usn_stmt = $conn->prepare("SELECT USERNAME FROM users WHERE USERNAME = ? OR ID = ? LIMIT 1");
+$usn_stmt->bind_param('ss', $student_id, $student_id);
+$usn_stmt->execute();
+$usn_row     = $usn_stmt->get_result()->fetch_assoc();
+$usn_stmt->close();
+$student_usn = $usn_row['USERNAME'] ?? $student_id;
+
+// 2. Verify: event is completed (via event_master) + student was checked in (via event_registrations)
 $check_sql = "
     SELECT er.CHECK_IN_STATUS, em.CURRENT_STATUS
     FROM event_registrations er
@@ -59,7 +67,7 @@ $check_sql = "
     WHERE er.EVENT_ID = ? AND er.USER_ID = ?
 ";
 $check_stmt = $conn->prepare($check_sql);
-$check_stmt->bind_param('ss', $event_id, $student_id);
+$check_stmt->bind_param('ss', $event_id, $student_usn);
 $check_stmt->execute();
 $check_result = $check_stmt->get_result();
 
@@ -79,13 +87,6 @@ if ($row['CHECK_IN_STATUS'] !== 'checked_in') {
     $conn->close(); exit;
 }
 
-// 2. Resolve student USN
-$usn_stmt = $conn->prepare("SELECT USERNAME FROM users WHERE USERNAME = ? OR ID = ? LIMIT 1");
-$usn_stmt->bind_param('ss', $student_id, $student_id);
-$usn_stmt->execute();
-$usn_row     = $usn_stmt->get_result()->fetch_assoc();
-$usn_stmt->close();
-$student_usn = $usn_row['USERNAME'] ?? $student_id;
 
 // 3. Check for duplicate feedback
 $dup_stmt = $conn->prepare("SELECT FEEDBACK_JSON FROM event_registrations WHERE USER_ID = ? AND EVENT_ID = ?");

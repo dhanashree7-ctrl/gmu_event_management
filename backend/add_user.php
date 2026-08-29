@@ -62,7 +62,7 @@ try {
 }
 
 // Check if user exists
-$check_stmt = $conn->prepare("SELECT id FROM users WHERE usn_or_emp_id = ? OR email = ?");
+$check_stmt = $conn->prepare("SELECT id FROM users WHERE USERNAME = ? OR EMAIL = ?");
 $check_stmt->bind_param('ss', $usn_or_emp_id, $email);
 $check_stmt->execute();
 if ($check_stmt->get_result()->num_rows > 0) {
@@ -76,8 +76,8 @@ $check_stmt->close();
 $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
 $ins_stmt = $conn->prepare("
-    INSERT INTO users (usn_or_emp_id, full_name, email, password, system_role, department, is_active) 
-    VALUES (?, ?, ?, ?, ?, ?, 1)
+    INSERT INTO users (USERNAME, NAME, EMAIL, PASSWORD, ROLE, DEPT) 
+    VALUES (?, ?, ?, ?, ?, ?)
 ");
 $ins_stmt->bind_param('ssssss', $usn_or_emp_id, $full_name, $email, $hashed_password, $system_role, $department);
 

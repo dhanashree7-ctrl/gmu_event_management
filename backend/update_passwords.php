@@ -5,7 +5,7 @@ $conn = get_db_connection();
 $new_password = 'pass123';
 $new_hash = password_hash($new_password, PASSWORD_DEFAULT);
 
-$sql = "UPDATE users SET password = ?";
+$sql = "UPDATE users SET PASSWORD = ?";
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
     die("Prepare failed: " . $conn->error);

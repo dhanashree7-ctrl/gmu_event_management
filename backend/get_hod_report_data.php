@@ -30,9 +30,10 @@ if (!$department) {
 
 // 1. Departmental Event Output (Monthly Bar Chart)
 $output_sql = "
-    SELECT DATE_FORMAT(START_DATE, '%Y-%m') AS month, COUNT(EVENT_ID) AS count
-    FROM event_master
-    WHERE DEPT = ? AND START_DATE IS NOT NULL
+    SELECT DATE_FORMAT(em.START_DATE, '%Y-%m') AS month, COUNT(em.EVENT_ID) AS count
+    FROM event_master em
+    JOIN users u ON em.PROPOSER_ID = u.USERNAME
+    WHERE u.DEPT = ? AND em.START_DATE IS NOT NULL
     GROUP BY month
     ORDER BY month ASC
 ";

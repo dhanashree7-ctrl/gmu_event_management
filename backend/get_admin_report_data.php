@@ -93,6 +93,7 @@ $participants_query = "
         COALESCE(u.DEPT, 'N/A')   AS department,
         COALESCE(u.FACULTY, 'N/A') AS faculty_name,
         COALESCE(u.SCHOOL, 'N/A')  AS school_name,
+        u.SEMESTER                 AS semester,
         er.EVENT_ID    AS event_id,
         em.EVENT_TITLE AS event_title
     FROM event_registrations er
@@ -126,6 +127,12 @@ while ($row = $participants_result->fetch_assoc()) {
         $dept = (strpos($row['usn'] ?? '', 'EXT') === 0) ? 'External' : 'Unknown';
     }
     $dept_breakdown[$dept] = ($dept_breakdown[$dept] ?? 0) + 1;
+
+    $sem = $row['semester'];
+    if ($sem) {
+        $sem_breakdown[$sem] = ($sem_breakdown[$sem] ?? 0) + 1;
+    }
+
     $participants[] = $row;
 }
 

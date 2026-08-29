@@ -5,7 +5,7 @@ try {
     $conn = get_db_connection();
     
     // Wipe existing admins to avoid duplicate email conflicts
-    $conn->query("DELETE FROM users WHERE system_role IN ('hod', 'director', 'dean', 'provc', 'vc', 'student_affairs', 'events_admin')");
+    $conn->query("DELETE FROM users WHERE ROLE IN ('hod', 'director', 'dean', 'provc', 'vc', 'student_affairs', 'events_admin')");
 
     // Exact hierarchy from seeder.php
     $hierarchy = [
@@ -44,7 +44,7 @@ try {
     }
 
     $defaultPassword = password_hash('pass123', PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("INSERT INTO users (full_name, email, password, system_role, department, faculty_name, school_name, usn_or_emp_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO users (NAME, EMAIL, PASSWORD, ROLE, DEPT, FACULTY, SCHOOL, USERNAME) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 
     echo "Generating Deans, Directors, and HODs...\n";
 
