@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 import { API_BASE } from "../config/api";
 import theme from "../theme";
@@ -114,6 +115,7 @@ function EventCard({ evt, onBrochure, onSelect, onViewTicket, isRegistered }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function StudentEvents() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Certificate Ref
   const certificateRef = useRef(null);
@@ -194,9 +196,7 @@ export default function StudentEvents() {
   };
 
   const openDetails = (evt) => {
-    setSelectedEvent(evt);
-    setShowDetails(true);
-    setShowModal(true);
+    navigate(`/student/event/${evt.id}`);
   };
 
   const openRegistration = (evt = selectedEvent) => {
@@ -698,6 +698,7 @@ export default function StudentEvents() {
                   <p style={{margin: 0, fontSize: "0.8rem", textTransform: "uppercase"}}>Admit One</p>
                 </div>
                 <div style={styles.ticketBody}>
+                  <div style={styles.ticketPerforation}></div>
                   <h3 style={styles.ticketTitle}>{selectedEvent.event_title}</h3>
                   <div style={styles.ticketMeta}>
                     <div style={{flex: 1}}>
@@ -748,20 +749,12 @@ export default function StudentEvents() {
                     <p style={styles.qrCodeText}>{ticketData}</p>
                     <button 
                       onClick={downloadQR} 
-                      style={{ 
-                        marginTop: "1rem", 
-                        padding: "8px 16px", 
-                        backgroundColor: theme.colors.maroon, 
-                        color: theme.colors.gold, 
-                        border: "none", 
-                        borderRadius: "20px", 
-                        cursor: "pointer",
-                        fontWeight: "bold"
-                      }}
+                      style={styles.downloadBtn}
                     >
-                      Download Ticket QR
+                      <span style={{ marginRight: '6px' }}></span> Download Pass
                     </button>
                   </div>
+                  <div style={styles.ticketPerforationBottom}></div>
                   <p style={styles.ticketFooter}>Present this code at the entrance.</p>
                 </div>
               </div>
@@ -1134,23 +1127,123 @@ const styles = {
     transition: "background 0.2s"
   },
 
-  // Digital Ticket
+  // Digital Ticket (Premium Layout)
   ticketContainer: {
-    background: "#fff", borderRadius: "16px", overflow: "hidden",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.1)", border: "1px solid #eef",
+    background: "#fff", 
+    borderRadius: "20px", 
+    overflow: "hidden",
+    boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", 
+    maxWidth: "400px",
+    width: "100%",
+    position: "relative",
+    margin: "0 auto",
   },
   ticketHeader: {
-    background: theme.colors.maroon, color: theme.colors.gold,
-    padding: "1.2rem", display: "flex", justifyContent: "space-between", alignItems: "center"
+    background: theme.gradients.header, 
+    color: theme.colors.gold,
+    padding: "1.5rem", 
+    display: "flex", 
+    justifyContent: "space-between", 
+    alignItems: "center",
+    borderBottom: "2px dashed rgba(255, 255, 255, 0.4)",
   },
-  ticketBody: { padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.2rem" },
-  ticketTitle: { fontSize: "1.3rem", fontWeight: "800", color: "#222", margin: 0, textAlign: "center", lineHeight: 1.3 },
-  ticketMeta: { display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #ddd", paddingBottom: "1rem" },
-  ticketLabel: { fontSize: "0.7rem", color: "#888", margin: "0 0 0.2rem", fontWeight: "700", letterSpacing: "0.05em" },
-  ticketVal: { fontSize: "0.9rem", color: "#333", margin: 0, fontWeight: "600" },
-  qrSection: { display: "flex", flexDirection: "column", alignItems: "center", marginTop: "1rem", padding: "1rem", background: "#f9f9f9", borderRadius: "12px" },
-  qrCodeText: { fontSize: "0.8rem", color: "#666", marginTop: "0.75rem", fontFamily: "monospace", letterSpacing: "0.05em" },
-  ticketFooter: { textAlign: "center", fontSize: "0.8rem", color: "#999", margin: 0, marginTop: "0.5rem", fontStyle: "italic" },
+  ticketBody: { 
+    padding: "0 1.5rem 1.5rem 1.5rem", 
+    display: "flex", 
+    flexDirection: "column", 
+    gap: "1.2rem",
+    position: "relative",
+    background: "#fff",
+  },
+  ticketPerforation: {
+    height: "20px",
+    width: "calc(100% + 3rem)",
+    marginLeft: "-1.5rem",
+    background: "radial-gradient(circle at 10px 0px, transparent 10px, #fff 11px) repeat-x",
+    backgroundSize: "20px 20px",
+    marginBottom: "1rem",
+  },
+  ticketPerforationBottom: {
+    height: "20px",
+    width: "calc(100% + 3rem)",
+    marginLeft: "-1.5rem",
+    background: "radial-gradient(circle at 10px 20px, transparent 10px, #fff 11px) repeat-x",
+    backgroundSize: "20px 20px",
+    marginTop: "1rem",
+    position: "absolute",
+    bottom: 0,
+  },
+  ticketTitle: { 
+    fontSize: "1.5rem", 
+    fontWeight: "900", 
+    color: theme.colors.charcoal, 
+    margin: 0, 
+    textAlign: "center", 
+    lineHeight: 1.2,
+    letterSpacing: "-0.5px"
+  },
+  ticketMeta: { 
+    display: "flex", 
+    justifyContent: "space-between", 
+    borderBottom: "1px solid #f0f0f0", 
+    paddingBottom: "1rem" 
+  },
+  ticketLabel: { 
+    fontSize: "0.65rem", 
+    color: "#a0a0a0", 
+    margin: "0 0 0.3rem", 
+    fontWeight: "800", 
+    letterSpacing: "0.1em",
+    textTransform: "uppercase"
+  },
+  ticketVal: { 
+    fontSize: "0.95rem", 
+    color: "#222", 
+    margin: 0, 
+    fontWeight: "700" 
+  },
+  qrSection: { 
+    display: "flex", 
+    flexDirection: "column", 
+    alignItems: "center", 
+    marginTop: "0.5rem", 
+    padding: "1.5rem", 
+    background: "#fafafa", 
+    borderRadius: "16px",
+    border: "1px solid #eee",
+  },
+  qrCodeText: { 
+    fontSize: "0.75rem", 
+    color: "#888", 
+    marginTop: "1rem", 
+    fontFamily: "monospace", 
+    letterSpacing: "0.1em" 
+  },
+  downloadBtn: {
+    marginTop: "1.2rem", 
+    padding: "10px 24px", 
+    background: theme.colors.maroon, 
+    color: theme.colors.gold, 
+    border: "none", 
+    borderRadius: "24px", 
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: "0.9rem",
+    boxShadow: "0 4px 12px rgba(136, 27, 27, 0.3)",
+    transition: "transform 0.2s, box-shadow 0.2s",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ticketFooter: { 
+    textAlign: "center", 
+    fontSize: "0.75rem", 
+    color: "#aaa", 
+    margin: "1.5rem 0 0 0", 
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em"
+  },
 
   // Tabs
   tabContainer: {

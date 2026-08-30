@@ -28,8 +28,10 @@ import QRScanner from './pages/QRScanner';
 import EventsAdminDashboard from './pages/EventsAdminDashboard';
 import EventDetails from './pages/EventDetails';
 import EventDrillDownPage from './pages/EventDrillDownPage';
+import StudentEventDetails from './pages/StudentEventDetails';
 import EventChatbot from './components/EventChatbot';
 import VolunteerDashboard from './pages/VolunteerDashboard';
+import { useFCMNotifications } from './hooks/useFCMNotifications'; // [FIREBASE MIGRATION — Phase 4]
 
 /**
  * ProtectedRoute
@@ -53,6 +55,11 @@ function ProtectedRoute({ children, allowedRoles }) {
  * BrowserRouter (hooks must be inside the router provider).
  */
 function AppRoutes() {
+  // [FIREBASE MIGRATION — Phase 4]
+  // Requests notification permission, fetches FCM token, registers with backend,
+  // and sets up the foreground message listener. No JSX needed — runs as a side effect.
+  useFCMNotifications();
+
   return (
     <>
     <Routes>
@@ -84,6 +91,11 @@ function AppRoutes() {
       <Route path="/student-dashboard" element={
         <ProtectedRoute allowedRoles={['student']}>
           <StudentDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/student/event/:eventId" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <StudentEventDetails />
         </ProtectedRoute>
       } />
       <Route path="/sa-dashboard" element={

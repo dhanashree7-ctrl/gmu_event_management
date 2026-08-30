@@ -25,7 +25,6 @@ import { API_BASE } from '../config/api';
 import theme from '../theme';
 import DashboardMetrics from '../components/DashboardMetrics';
 import AttendeeRoster from './AttendeeRoster';
-import NotificationView from '../components/NotificationView';
 import NotificationBell from '../components/NotificationBell';
 import UserProfileDropdown from '../components/UserProfileDropdown';
 import SettingsView from '../components/SettingsView';
@@ -56,7 +55,6 @@ const NAV_ITEMS = [
   { label: 'Calendar', icon: '📅' },
   { label: 'Archive', icon: '📦' },
   { label: 'Reports', icon: '📊' },
-  { label: 'Notifications', icon: '🔔' },
   { label: 'Settings', icon: '⚙️' },
 ];
 
@@ -66,7 +64,7 @@ const NAV_ITEMS = [
 const EMPTY_FORM = {
   event_title: '',
   description: '',
-  event_date: '', 
+  event_date: '',
   registration_date: '',
   coordinator_name: '',
   coordinator_number: '',
@@ -240,12 +238,12 @@ export default function StudentAffairsDashboard() {
     const formData = new FormData();
     formData.append('event_id', selectedEventId);
     formData.append('event_date', logistics.date);
-      formData.append('coordinator_name', form.coordinator_name);
+    formData.append('coordinator_name', form.coordinator_name);
     formData.append('event_time', logistics.time);
     formData.append('venue', logistics.venue);
     formData.append('registration_deadline', logistics.registration_deadline);
     if (logistics.max_participants !== '') formData.append('max_participants', logistics.max_participants);
-    if (logistics.max_volunteers   !== '') formData.append('max_volunteers',   logistics.max_volunteers);
+    if (logistics.max_volunteers !== '') formData.append('max_volunteers', logistics.max_volunteers);
     if (logistics.max_coordinators !== '') formData.append('max_coordinators', logistics.max_coordinators);
 
     try {
@@ -259,7 +257,7 @@ export default function StudentAffairsDashboard() {
         setToast({ type: 'success', message: 'Logistics updated successfully!' });
         setUploadModalOpen(false); // Close the form
         // Update local state to reflect the new 'published' status
-        setRecentEvents(prev => prev.map(evt => 
+        setRecentEvents(prev => prev.map(evt =>
           evt.id === selectedEventId ? { ...evt, status: 'published' } : evt
         ));
       } else {
@@ -282,7 +280,7 @@ export default function StudentAffairsDashboard() {
     }
 
     setReportSubmitting(true);
-    
+
     const formData = new FormData();
     formData.append('event_id', reportEventId);
     formData.append('faculty_id', user.id);
@@ -306,7 +304,7 @@ export default function StudentAffairsDashboard() {
         setReportModalOpen(false);
         setReportSummary('');
         setReportFile(null);
-        setRecentEvents(prev => prev.map(evt => 
+        setRecentEvents(prev => prev.map(evt =>
           evt.id === reportEventId ? { ...evt, status: 'completed' } : evt
         ));
         setStats(prev => ({
@@ -526,69 +524,69 @@ export default function StudentAffairsDashboard() {
 
 
 
-          {/* Stat cards */}
-          {activeNav === 'Dashboard' && (
-            <div style={styles.statsRow}>
-              {STAT_CARDS.map((stat) => (
-                <StatCard key={stat.key} stat={stat} value={stats[stat.key]} />
-              ))}
-            </div>
-          )}
+        {/* Stat cards */}
+        {activeNav === 'Dashboard' && (
+          <div style={styles.statsRow}>
+            {STAT_CARDS.map((stat) => (
+              <StatCard key={stat.key} stat={stat} value={stats[stat.key]} />
+            ))}
+          </div>
+        )}
 
-          
-          {/* Dashboard Metrics — side-by-side grid */}
-          {activeNav === 'Dashboard' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+
+        {/* Dashboard Metrics — side-by-side grid */}
+        {activeNav === 'Dashboard' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
+              <h3 style={{ fontSize: '0.95rem', color: '#6b1519', fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
+              <DashboardMetrics
+                data={[
+                  { name: 'Pending', count: stats.pending },
+                  { name: 'Approved', count: stats.approved },
+                  { name: 'Completed', count: stats.completed }
+                ]}
+                barName="Total Items"
+                chartType="bar"
+              />
+            </div>
+            {recentEvents.length > 0 && (
               <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
-                <h3 style={{ fontSize: '0.95rem', color: '#6b1519', fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
-                <DashboardMetrics 
-                  data={[
-                    { name: 'Pending', count: stats.pending },
-                    { name: 'Approved', count: stats.approved },
-                    { name: 'Completed', count: stats.completed }
-                  ]} 
-                  barName="Total Items"
-                  chartType="bar"
+                <h3 style={{ fontSize: '0.95rem', color: '#6b1519', fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Department Distribution</h3>
+                <DashboardMetrics
+                  data={Object.entries(
+                    recentEvents.reduce((acc, ev) => {
+                      const cat = ev.category || 'Other';
+                      acc[cat] = (acc[cat] || 0) + 1;
+                      return acc;
+                    }, {})
+                  ).map(([name, count]) => ({ name, count }))}
+                  type="category"
+                  chartType="pie"
+                  pieTitle=""
                 />
               </div>
-              {recentEvents.length > 0 && (
-                <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
-                  <h3 style={{ fontSize: '0.95rem', color: '#6b1519', fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Department Distribution</h3>
-                  <DashboardMetrics 
-                    data={Object.entries(
-                      recentEvents.reduce((acc, ev) => {
-                        const cat = ev.category || 'Other';
-                        acc[cat] = (acc[cat] || 0) + 1;
-                        return acc;
-                      }, {})
-                    ).map(([name, count]) => ({ name, count }))} 
-                    type="category" 
-                    chartType="pie"
-                    pieTitle=""
-                  />
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
-          {/* ── Event Request Form ─────────────────────────── */}
-          {activeNav === 'New Request' && (
-            <div style={styles.formCard}>
+        {/* ── Event Request Form ─────────────────────────── */}
+        {activeNav === 'New Request' && (
+          <div style={styles.formCard}>
 
             {/* Card header accent */}
             <div style={styles.formCardAccent} />
 
-              <div style={styles.formCardHeader}>
-                <div>
-                  <h2 style={styles.formCardTitle}>📝 New Event Request</h2>
-                  <p style={styles.formCardSub}>
-                    Complete the form below. Your request will be routed for approval automatically.
-                  </p>
-                </div>
-                <div style={styles.statusPill}>
-                  <span style={styles.statusDot} /> Status: Pending on Submit
-                </div>
+            <div style={styles.formCardHeader}>
+              <div>
+                <h2 style={styles.formCardTitle}>📝 New Event Request</h2>
+                <p style={styles.formCardSub}>
+                  Complete the form below. Your request will be routed for approval automatically.
+                </p>
               </div>
+              <div style={styles.statusPill}>
+                <span style={styles.statusDot} /> Status: Pending on Submit
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit} noValidate style={styles.form}>
 
@@ -635,7 +633,7 @@ export default function StudentAffairsDashboard() {
                     <p style={styles.fieldError}>{formErrors.category}</p>
                   )}
                 </div>
-                
+
                 {/* Scale */}
                 <div style={s(styles.formGroup, { flex: 1 })}>
                   <label htmlFor="event_scale" style={styles.formLabel}>
@@ -650,7 +648,7 @@ export default function StudentAffairsDashboard() {
                   >
                     <option value="">— Select —</option>
                     {SCALES.map((c) => (
-                      <option key={c} value={c} style={{textTransform: 'capitalize'}}>{c}</option>
+                      <option key={c} value={c} style={{ textTransform: 'capitalize' }}>{c}</option>
                     ))}
                   </select>
                   {formErrors.event_scale && (
@@ -677,7 +675,7 @@ export default function StudentAffairsDashboard() {
                     <p style={styles.fieldError}>{formErrors.date}</p>
                   )}
                 </div>
-                
+
                 <div style={s(styles.formGroup, { flex: 1 })}>
                   <label htmlFor="start_time" style={styles.formLabel}>
                     Start Time <span style={styles.required}>*</span>
@@ -789,7 +787,7 @@ export default function StudentAffairsDashboard() {
               {/* Description */}
               <div style={styles.formGroup}>
                 <label htmlFor="description" style={styles.formLabel}>
-                  Description <span style={{color:'red'}}>*</span>
+                  Description <span style={{ color: 'red' }}>*</span>
                 </label>
                 <textarea
                   id="description"
@@ -982,11 +980,11 @@ export default function StudentAffairsDashboard() {
               </div>
             </form>
           </div>
-          )}
+        )}
 
-          {/* ── Recent Submissions ────────────────────────── */}
-          {activeNav === 'Events' && (
-            <div style={styles.recentCard}>
+        {/* ── Recent Submissions ────────────────────────── */}
+        {activeNav === 'Events' && (
+          <div style={styles.recentCard}>
             <h3 style={styles.recentTitle}>📋 My Recent Submissions</h3>
 
             {fetchLoading ? (
@@ -1023,8 +1021,8 @@ export default function StudentAffairsDashboard() {
                       <span style={styles.categoryChip}>{evt.category}</span>
                     </span>
                     <span style={s(styles.tableCell, { flex: 1.5 })}>
-                      {evt.involved_departments?.length > 0 
-                        ? evt.involved_departments.join(', ') 
+                      {evt.involved_departments?.length > 0
+                        ? evt.involved_departments.join(', ')
                         : '—'}
                     </span>
                     <span style={s(styles.tableCell, { flex: 1 })}>
@@ -1056,7 +1054,7 @@ export default function StudentAffairsDashboard() {
                           Finalize Event
                         </button>
                       )}
-                      
+
                       {['published', 'completed', 'pending_report'].includes(evt.status?.toLowerCase()) && (
                         <button
                           style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
@@ -1086,187 +1084,248 @@ export default function StudentAffairsDashboard() {
               </div>
             )}
           </div>
-          )}
-
-          {activeNav === 'Notifications' && (
-            <NotificationView />
-          )}
-
-          {activeNav === 'Settings' && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-              <SettingsView user={user} />
-            </div>
-          )}
-
-          {/* ── Reports ────────────────────────────────── */}
-          {(activeNav === 'Reports') && (
-            <ReportsView user={user} />
-          )}
+        )}
 
 
-
-      {/* ── Attendee Roster Modal ──────────────────────────────── */}
-      {rosterModalOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(10,5,5,0.55)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '1rem',
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            width: '100%', maxWidth: '800px',
-            boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
-            overflow: 'hidden',
-            animation: 'fadeSlideUp 0.22s ease',
-            position: 'relative'
-          }}>
-            <button
-              onClick={() => setRosterModalOpen(false)}
-              style={{
-                position: 'absolute', top: '15px', right: '20px',
-                background: 'rgba(0,0,0,0.05)', border: 'none', borderRadius: '50%',
-                width: '32px', height: '32px', color: '#555', fontSize: '1.2rem',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 10,
-              }}
-            >✕</button>
-            <div style={{ padding: '1rem' }}>
-              <AttendeeRoster eventId={rosterEventId} />
-            </div>
+        {activeNav === 'Settings' && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+            <SettingsView user={user} />
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Report Submission Modal ──────────────────────────────── */}
-      {reportModalOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(10,5,5,0.55)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '1rem',
-        }}>
+        {/* ── Reports ────────────────────────────────── */}
+        {(activeNav === 'Reports') && (
+          <ReportsView user={user} />
+        )}
+
+
+
+        {/* ── Attendee Roster Modal ──────────────────────────────── */}
+        {rosterModalOpen && (
           <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            width: '100%', maxWidth: '500px',
-            boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
-            overflow: 'hidden',
-            animation: 'fadeSlideUp 0.22s ease',
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(10,5,5,0.55)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #1565C0 0%, #0D47A1 100%)',
-              padding: '1.5rem 1.75rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: '#fff',
+              borderRadius: '16px',
+              width: '100%', maxWidth: '800px',
+              boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
+              overflow: 'hidden',
+              animation: 'fadeSlideUp 0.22s ease',
+              position: 'relative'
             }}>
-              <div>
-                <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 700 }}>
-                  📄 Submit Post-Event Report
-                </h2>
-                <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.78rem' }}>
-                  Mark event as completed by providing a summary or uploading a PDF.
-                </p>
-              </div>
               <button
-                onClick={() => setReportModalOpen(false)}
+                onClick={() => setRosterModalOpen(false)}
                 style={{
-                  background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
-                  width: '32px', height: '32px', color: '#fff', fontSize: '1.2rem',
+                  position: 'absolute', top: '15px', right: '20px',
+                  background: 'rgba(0,0,0,0.05)', border: 'none', borderRadius: '50%',
+                  width: '32px', height: '32px', color: '#555', fontSize: '1.2rem',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  zIndex: 10,
                 }}
               >✕</button>
-            </div>
-            <form onSubmit={handleReportSubmit} style={{ padding: '1.75rem' }}>
-              <div style={styles.formGroup}>
-                <label style={styles.formLabel}>Written Summary (Optional)</label>
-                <textarea
-                  style={s(styles.formInput, { minHeight: '100px', resize: 'vertical' })}
-                  value={reportSummary}
-                  onChange={(e) => setReportSummary(e.target.value)}
-                  placeholder="Summarize key highlights..."
-                />
+              <div style={{ padding: '1rem' }}>
+                <AttendeeRoster eventId={rosterEventId} />
               </div>
-              <div style={s(styles.formGroup, { marginTop: '1rem' })}>
-                <label style={styles.formLabel}>Upload PDF Report (Optional)</label>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => setReportFile(e.target.files[0] || null)}
+            </div>
+          </div>
+        )}
+
+        {/* ── Report Submission Modal ──────────────────────────────── */}
+        {reportModalOpen && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(10,5,5,0.55)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+          }}>
+            <div style={{
+              background: '#fff',
+              borderRadius: '16px',
+              width: '100%', maxWidth: '500px',
+              boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
+              overflow: 'hidden',
+              animation: 'fadeSlideUp 0.22s ease',
+            }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #1565C0 0%, #0D47A1 100%)',
+                padding: '1.5rem 1.75rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <div>
+                  <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 700 }}>
+                    📄 Submit Post-Event Report
+                  </h2>
+                  <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.78rem' }}>
+                    Mark event as completed by providing a summary or uploading a PDF.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setReportModalOpen(false)}
                   style={{
-                    padding: '0.5rem', border: '1px dashed #ccc', borderRadius: '8px',
-                    background: '#FAFAFA', fontSize: '0.9rem', color: '#555'
+                    background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+                    width: '32px', height: '32px', color: '#fff', fontSize: '1.2rem',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}
-                />
-                <small style={{ color: '#666', fontSize: '0.8rem', marginTop: '0.25rem' }}>Max size: 5MB</small>
+                >✕</button>
               </div>
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-                <button type="button" style={s(styles.resetBtn, { flex: 1 })} onClick={() => setReportModalOpen(false)}>Cancel</button>
-                <button type="submit" style={s(styles.submitBtn, reportSubmitting && styles.submitBtnDisabled, { flex: 2, background: '#1565C0' })} disabled={reportSubmitting}>
-                  {reportSubmitting ? 'Submitting...' : 'Mark as Completed'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ── Brochure Upload Modal ──────────────────────────────── */}
-      {uploadModalOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(10,5,5,0.55)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '1rem',
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            width: '100%', maxWidth: '480px',
-            boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
-            overflow: 'hidden',
-            animation: 'fadeSlideUp 0.22s ease',
-          }}>
-            {/* Modal header */}
-            <div style={{
-              background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
-              padding: '1.5rem 1.75rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              <div>
-                <h2 style={{ margin: 0, color: '#FDD06F', fontSize: '1.15rem', fontWeight: 700 }}>
-                  🎯 Finalize Event
-                </h2>
-                <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.78rem' }}>
-                  Lock in logistics and upload the event brochure
-                </p>
-              </div>
-              <button
-                onClick={() => setUploadModalOpen(false)}
-                style={{
-                  background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '50%',
-                  width: '32px', height: '32px', color: '#fff', fontSize: '1rem',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  lineHeight: 1,
-                }}
-              >✕</button>
+              <form onSubmit={handleReportSubmit} style={{ padding: '1.75rem' }}>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Written Summary (Optional)</label>
+                  <textarea
+                    style={s(styles.formInput, { minHeight: '100px', resize: 'vertical' })}
+                    value={reportSummary}
+                    onChange={(e) => setReportSummary(e.target.value)}
+                    placeholder="Summarize key highlights..."
+                  />
+                </div>
+                <div style={s(styles.formGroup, { marginTop: '1rem' })}>
+                  <label style={styles.formLabel}>Upload PDF Report (Optional)</label>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(e) => setReportFile(e.target.files[0] || null)}
+                    style={{
+                      padding: '0.5rem', border: '1px dashed #ccc', borderRadius: '8px',
+                      background: '#FAFAFA', fontSize: '0.9rem', color: '#555'
+                    }}
+                  />
+                  <small style={{ color: '#666', fontSize: '0.8rem', marginTop: '0.25rem' }}>Max size: 5MB</small>
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                  <button type="button" style={s(styles.resetBtn, { flex: 1 })} onClick={() => setReportModalOpen(false)}>Cancel</button>
+                  <button type="submit" style={s(styles.submitBtn, reportSubmitting && styles.submitBtnDisabled, { flex: 2, background: '#1565C0' })} disabled={reportSubmitting}>
+                    {reportSubmitting ? 'Submitting...' : 'Mark as Completed'}
+                  </button>
+                </div>
+              </form>
             </div>
+          </div>
+        )}
 
-            {/* Modal body */}
-            <form onSubmit={handleFinalizeEvent} style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+        {/* ── Brochure Upload Modal ──────────────────────────────── */}
+        {uploadModalOpen && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(10,5,5,0.55)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+          }}>
+            <div style={{
+              background: '#fff',
+              borderRadius: '16px',
+              width: '100%', maxWidth: '480px',
+              boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
+              overflow: 'hidden',
+              animation: 'fadeSlideUp 0.22s ease',
+            }}>
+              {/* Modal header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
+                padding: '1.5rem 1.75rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <div>
+                  <h2 style={{ margin: 0, color: '#FDD06F', fontSize: '1.15rem', fontWeight: 700 }}>
+                    🎯 Finalize Event
+                  </h2>
+                  <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.78rem' }}>
+                    Lock in logistics and upload the event brochure
+                  </p>
+                </div>
+                <button
+                  onClick={() => setUploadModalOpen(false)}
+                  style={{
+                    background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '50%',
+                    width: '32px', height: '32px', color: '#fff', fontSize: '1rem',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    lineHeight: 1,
+                  }}
+                >✕</button>
+              </div>
 
-              {/* Date + Time row */}
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <div style={{ flex: 1 }}>
+              {/* Modal body */}
+              <form onSubmit={handleFinalizeEvent} style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+
+                {/* Date + Time row */}
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      📅 Event Date
+                    </label>
+                    <input
+                      type="date" required
+                      onChange={(e) => setLogistics({ ...logistics, date: e.target.value })}
+                      style={{
+                        width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
+                        border: '1.5px solid #E0E0E0', borderRadius: '8px',
+                        outline: 'none', boxSizing: 'border-box',
+                        transition: 'border-color 0.15s',
+                        fontFamily: 'inherit',
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#4A0404'}
+                      onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      🕐 Event Time
+                    </label>
+                    <input
+                      type="time" required
+                      onChange={(e) => setLogistics({ ...logistics, time: e.target.value })}
+                      style={{
+                        width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
+                        border: '1.5px solid #E0E0E0', borderRadius: '8px',
+                        outline: 'none', boxSizing: 'border-box',
+                        fontFamily: 'inherit',
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#4A0404'}
+                      onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
+                    />
+                  </div>
+                </div>
+
+                {/* Venue — only required for offline events */}
+                {selectedEventMode === 'offline' ? (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      📍 Venue <span style={{ color: '#C62828' }}>*</span>
+                    </label>
+                    <input
+                      type="text" placeholder="e.g., Main Auditorium, Block A" required
+                      onChange={(e) => setLogistics({ ...logistics, venue: e.target.value })}
+                      style={{
+                        width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
+                        border: '1.5px solid #E0E0E0', borderRadius: '8px',
+                        outline: 'none', boxSizing: 'border-box',
+                        fontFamily: 'inherit',
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#4A0404'}
+                      onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ background: '#E3F2FD', borderRadius: '8px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '1.1rem' }}>💻</span>
+                    <span style={{ fontSize: '0.85rem', color: '#1565C0', fontWeight: 500 }}>This is an online event — no venue required.</span>
+                  </div>
+                )}
+
+                {/* Registration Deadline */}
+                <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    📅 Event Date
+                    ⏳ Registration Deadline <span style={{ color: '#C62828' }}>*</span>
                   </label>
                   <input
-                    type="date" required
-                    onChange={(e) => setLogistics({ ...logistics, date: e.target.value })}
+                    type="datetime-local" required
+                    onChange={(e) => setLogistics({ ...logistics, registration_deadline: e.target.value })}
                     style={{
                       width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
                       border: '1.5px solid #E0E0E0', borderRadius: '8px',
@@ -1278,114 +1337,50 @@ export default function StudentAffairsDashboard() {
                     onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
                   />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    🕐 Event Time
-                  </label>
-                  <input
-                    type="time" required
-                    onChange={(e) => setLogistics({ ...logistics, time: e.target.value })}
+
+
+
+                {/* Divider */}
+                <div style={{ height: '1px', background: '#F0E8E8', margin: '0.25rem 0' }} />
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setUploadModalOpen(false)}
                     style={{
-                      width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
-                      border: '1.5px solid #E0E0E0', borderRadius: '8px',
-                      outline: 'none', boxSizing: 'border-box',
-                      fontFamily: 'inherit',
+                      flex: 1, padding: '0.7rem', borderRadius: '8px',
+                      border: '1.5px solid #E0E0E0', background: '#fff',
+                      color: '#555', fontSize: '0.9rem', fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      transition: 'background 0.15s',
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#4A0404'}
-                    onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
-                  />
-                </div>
-              </div>
-
-              {/* Venue — only required for offline events */}
-              {selectedEventMode === 'offline' ? (
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    📍 Venue <span style={{ color: '#C62828' }}>*</span>
-                  </label>
-                  <input
-                    type="text" placeholder="e.g., Main Auditorium, Block A" required
-                    onChange={(e) => setLogistics({ ...logistics, venue: e.target.value })}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#F5F5F5'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
                     style={{
-                      width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
-                      border: '1.5px solid #E0E0E0', borderRadius: '8px',
-                      outline: 'none', boxSizing: 'border-box',
-                      fontFamily: 'inherit',
+                      flex: 2, padding: '0.7rem', borderRadius: '8px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
+                      color: '#FDD06F', fontSize: '0.9rem', fontWeight: 700,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      boxShadow: '0 4px 14px rgba(74,4,4,0.3)',
+                      transition: 'opacity 0.15s, transform 0.1s',
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#4A0404'}
-                    onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
-                  />
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  >
+                    🚀 Upload &amp; Finalize
+                  </button>
                 </div>
-              ) : (
-                <div style={{ background: '#E3F2FD', borderRadius: '8px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '1.1rem' }}>💻</span>
-                  <span style={{ fontSize: '0.85rem', color: '#1565C0', fontWeight: 500 }}>This is an online event — no venue required.</span>
-                </div>
-              )}
-
-              {/* Registration Deadline */}
-              <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  ⏳ Registration Deadline <span style={{ color: '#C62828' }}>*</span>
-                </label>
-                <input
-                  type="datetime-local" required
-                  onChange={(e) => setLogistics({ ...logistics, registration_deadline: e.target.value })}
-                  style={{
-                    width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
-                    border: '1.5px solid #E0E0E0', borderRadius: '8px',
-                    outline: 'none', boxSizing: 'border-box',
-                    transition: 'border-color 0.15s',
-                    fontFamily: 'inherit',
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#4A0404'}
-                  onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
-                />
-              </div>
-
-
-
-              {/* Divider */}
-              <div style={{ height: '1px', background: '#F0E8E8', margin: '0.25rem 0' }} />
-
-              {/* Action buttons */}
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setUploadModalOpen(false)}
-                  style={{
-                    flex: 1, padding: '0.7rem', borderRadius: '8px',
-                    border: '1.5px solid #E0E0E0', background: '#fff',
-                    color: '#555', fontSize: '0.9rem', fontWeight: 600,
-                    cursor: 'pointer', fontFamily: 'inherit',
-                    transition: 'background 0.15s',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#F5F5F5'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    flex: 2, padding: '0.7rem', borderRadius: '8px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
-                    color: '#FDD06F', fontSize: '0.9rem', fontWeight: 700,
-                    cursor: 'pointer', fontFamily: 'inherit',
-                    boxShadow: '0 4px 14px rgba(74,4,4,0.3)',
-                    transition: 'opacity 0.15s, transform 0.1s',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
-                  🚀 Upload &amp; Finalize
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </>
     </DashboardLayout>
   );

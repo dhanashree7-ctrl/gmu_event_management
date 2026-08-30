@@ -8,6 +8,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/fcm_helper.php';
 try { $conn = get_db_connection(); }
 catch (RuntimeException $e) {
     echo "DB Connection failed: " . $e->getMessage();
@@ -31,13 +32,10 @@ if ($stmtTomorrow) {
     $stmtTomorrow->bind_param('s', $tomorrow);
     $stmtTomorrow->execute();
     $resTomorrow = $stmtTomorrow->get_result();
-    $notifStmt   = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/student-dashboard')");
     while ($row = $resTomorrow->fetch_assoc()) {
         $msg = "Reminder: The event '{$row['event_title']}' is happening tomorrow!";
-        $notifStmt->bind_param('ss', $row['student_id'], $msg);
-        $notifStmt->execute();
+        send_fcm_to_user($conn, $row['student_id'], '⏰ Event Tomorrow', $msg, '/student-dashboard');
     }
-    $notifStmt->close();
     $stmtTomorrow->close();
 }
 
@@ -53,7 +51,6 @@ if ($stmtToday) {
     $stmtToday->bind_param('s', $today);
     $stmtToday->execute();
     $resToday    = $stmtToday->get_result();
-    $notifStmt   = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/student-dashboard')");
     while ($row = $resToday->fetch_assoc()) {
         $eventTimeStr = $row['event_time'];
         if (!$eventTimeStr) continue;
@@ -61,16 +58,13 @@ if ($stmtToday) {
         $diffMins   = ($eventStart->getTimestamp() - $now->getTimestamp()) / 60;
         if ($diffMins <= 30 && $diffMins > 25) {
             $msg = "Check-in is now OPEN for '{$row['event_title']}'! Scan your QR code.";
-            $notifStmt->bind_param('ss', $row['student_id'], $msg);
-            $notifStmt->execute();
+            send_fcm_to_user($conn, $row['student_id'], '🎟️ Check-in Open', $msg, '/student-dashboard');
         }
         if ($diffMins <= 5 && $diffMins > 0) {
             $msg = "Hurry! Check-in for '{$row['event_title']}' closes in " . ceil($diffMins) . " minutes!";
-            $notifStmt->bind_param('ss', $row['student_id'], $msg);
-            $notifStmt->execute();
+            send_fcm_to_user($conn, $row['student_id'], '⚠️ Check-in Closing', $msg, '/student-dashboard');
         }
     }
-    $notifStmt->close();
     $stmtToday->close();
 }
 
@@ -80,7 +74,6 @@ $stmtDeadline = $conn->prepare($sqlDeadline);
 if ($stmtDeadline) {
     $stmtDeadline->execute();
     $resDeadline = $stmtDeadline->get_result();
-    $notifStmt   = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/student-dashboard')");
     $studStmt    = $conn->query("SELECT USERNAME FROM users WHERE ROLE = 'student'");
     $students    = [];
     while ($s = $studStmt->fetch_assoc()) $students[] = $s['USERNAME'];
@@ -90,12 +83,10 @@ if ($stmtDeadline) {
         if ($diffMins <= 1440 && $diffMins > 1435) {
             $msg = "⏳ Registration for '{$row['event_title']}' closes tomorrow. Secure your spot!";
             foreach ($students as $stud) {
-                $notifStmt->bind_param('ss', $stud, $msg);
-                $notifStmt->execute();
+                send_fcm_to_user($conn, $stud, '⏳ Registration Closing', $msg, '/student-dashboard');
             }
         }
     }
-    $notifStmt->close();
     $stmtDeadline->close();
 }
 
@@ -111,7 +102,6 @@ if ($stmtPast) {
     $stmtPast->bind_param('s', $today);
     $stmtPast->execute();
     $resPast   = $stmtPast->get_result();
-    $notifStmt = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/student-dashboard')");
     while ($row = $resPast->fetch_assoc()) {
         $eventTimeStr = $row['event_time'];
         if (!$eventTimeStr) continue;
@@ -119,11 +109,9 @@ if ($stmtPast) {
         $diffMins   = ($now->getTimestamp() - $eventStart->getTimestamp()) / 60;
         if ($diffMins >= 120 && $diffMins < 125) {
             $msg = "⭐ Thanks for attending '{$row['event_title']}'! Please leave feedback to unlock your certificate.";
-            $notifStmt->bind_param('ss', $row['student_id'], $msg);
-            $notifStmt->execute();
+            send_fcm_to_user($conn, $row['student_id'], '📝 Feedback Requested', $msg, '/student-dashboard');
         }
     }
-    $notifStmt->close();
     $stmtPast->close();
 }
 

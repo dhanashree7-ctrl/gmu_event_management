@@ -113,7 +113,6 @@ export default function AttendeeRoster({ eventId }) {
                 <th style={styles.th}>Student Name</th>
                 <th style={styles.th}>Role</th>
                 <th style={styles.th}>Semester</th>
-                <th style={styles.th}>Requirements</th>
                 <th style={styles.th}>Attendance Status</th>
               </tr>
             </thead>
@@ -143,11 +142,6 @@ export default function AttendeeRoster({ eventId }) {
                     })()}
                   </td>
                   <td style={styles.td}>{attendee.semester || "N/A"}</td>
-                  <td style={styles.td}>
-                    <span style={attendee.special_requirements ? styles.requirements : styles.noRequirements}>
-                      {attendee.special_requirements || "None"}
-                    </span>
-                  </td>
                   <td style={styles.td}>
                     {(() => {
                       const checkedIn = attendee.check_in_status === 'checked_in';

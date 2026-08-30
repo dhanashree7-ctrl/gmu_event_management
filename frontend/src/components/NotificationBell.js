@@ -1,9 +1,17 @@
+/**
+ * components/NotificationBell.js
+ * ─────────────────────────────────────────────────────────────────
+ * [FIREBASE MIGRATION — PHASE 1]
+ * The Bell Icon renders a dropdown pop-up.
+ * SQL polling (get_notifications.php) has been REMOVED.
+ * Notifications are now fed via Firebase Cloud Messaging (FCM).
+ * ─────────────────────────────────────────────────────────────────
+ */
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { API_BASE } from '../config/api';
 import theme from '../theme';
 import { Bell, MessageSquare, CheckCircle } from 'lucide-react';
+import { manualRequestFcmToken } from '../hooks/useFCMNotifications';
 
 const s = (...styles) => Object.assign({}, ...styles.filter(Boolean));
 
@@ -37,55 +45,41 @@ if (!document.getElementById('notif-bell-styles')) {
 
 export default function NotificationBell() {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
+  // ── Local notification state (fed by FCM in Phase 4) ─────────────
+  // TODO [Phase 4]: Replace this local state with notifications received
+  // via the Firebase onMessage() listener.
   const [notifications, setNotifications] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const [bellSeen, setBellSeen] = useState(false);
+  const [permissionStatus, setPermissionStatus] = useState('Notification' in window ? Notification.permission : 'denied');
   const dropdownRef = useRef(null);
   const prevCountRef = useRef(0);
 
-  // ── Fetch unread notifications ─────────────────────────────────
-  const fetchNotifications = async () => {
-    if (!user) return;
-    try {
-      const res = await fetch(`${API_BASE}/get_notifications.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.username, bell_only: true }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        const newCount = json.data.length;
-        // Shake the bell when new notifications arrive
-        if (newCount > prevCountRef.current) {
-          setIsShaking(true);
-          setBellSeen(false); // Reset bell seen status so dot shows again
-          setTimeout(() => setIsShaking(false), 700);
-        }
-        prevCountRef.current = newCount;
-        setNotifications(json.data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch notifications', err);
-    }
-  };
-
+  // ── Listen for FCM messages dispatched from the service worker ───
+  // TODO [Phase 4]: Wire this up to the real Firebase onMessage handler.
+  // For now, we listen for a custom DOM event 'fcm_notification' dispatched
+  // by the Firebase integration layer.
   useEffect(() => {
-    fetchNotifications();
-    // Poll every 10 seconds
-    const interval = setInterval(fetchNotifications, 10000);
-    
-    // Listen for manual updates from NotificationView
-    const handleUpdate = () => fetchNotifications();
-    window.addEventListener('notifications_updated', handleUpdate);
-    
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('notifications_updated', handleUpdate);
+    const handleFcmMessage = (event) => {
+      const { title, body, id } = event.detail || {};
+      if (!title && !body) return;
+      const newNotif = {
+        id: id || Date.now(),
+        message: body || title || 'New notification',
+        created_at: new Date().toISOString(),
+      };
+      setNotifications(prev => [newNotif, ...prev]);
+      setIsShaking(true);
+      setBellSeen(false);
+      setTimeout(() => setIsShaking(false), 700);
+      prevCountRef.current += 1;
     };
-  }, [user]);
+
+    window.addEventListener('fcm_notification', handleFcmMessage);
+    return () => window.removeEventListener('fcm_notification', handleFcmMessage);
+  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -98,68 +92,18 @@ export default function NotificationBell() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // ── Click a single notification ────────────────────────────────
-  const handleNotificationClick = async (notif) => {
-    // Optimistic UI update for the bell
-    setNotifications(prev => prev.filter(n => n.id !== notif.id));
+  // ── Dismiss a single notification from the dropdown ──────────────
+  const handleDismiss = (e, notifId) => {
+    e.stopPropagation();
+    setNotifications(prev => prev.filter(n => n.id !== notifId));
     prevCountRef.current = Math.max(0, prevCountRef.current - 1);
-    setIsOpen(false);
-    
-    // Only dismiss from the bell, do not mark as read globally
-    try {
-      await fetch(`${API_BASE}/dismiss_bell_notification.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notification_id: notif.id }),
-      });
-      // Do not dispatch notifications_updated because it's still unread in the sidebar
-    } catch (err) {
-      console.error('Failed to dismiss notification from bell', err);
-    }
-    
-    if (notif.target_link && notif.target_link !== '/dashboard') {
-      if (window.location.pathname === notif.target_link) {
-        window.dispatchEvent(new CustomEvent('navigate_tab', { detail: 'notifications' }));
-      } else {
-        navigate(notif.target_link);
-      }
-    } else {
-      window.dispatchEvent(new CustomEvent('navigate_tab', { detail: 'notifications' }));
-    }
   };
 
-  // ── Dismiss a single notification from bell ──────────────────────
-  const handleDismiss = async (e, notif) => {
-    e.stopPropagation(); // prevent clicking the notification
-    setNotifications(prev => prev.filter(n => n.id !== notif.id));
-    prevCountRef.current = Math.max(0, prevCountRef.current - 1);
-    try {
-      await fetch(`${API_BASE}/dismiss_bell_notification.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notification_id: notif.id }),
-      });
-      // Do not trigger global update as this doesn't change read status
-    } catch (err) {
-      console.error('Failed to dismiss notification', err);
-    }
-  };
-
-  // ── Dismiss ALL from bell ───────────────────────────────────────────
-  const handleDismissAll = async () => {
+  // ── Dismiss ALL from bell ────────────────────────────────────────
+  const handleDismissAll = () => {
     setNotifications([]);
     prevCountRef.current = 0;
     setIsOpen(false);
-    
-    try {
-      await fetch(`${API_BASE}/dismiss_all_bell_notifications.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.username }),
-      });
-    } catch (err) {
-      console.error('Failed to dismiss all notifications', err);
-    }
   };
 
   if (!user) return null;
@@ -190,7 +134,7 @@ export default function NotificationBell() {
           {/* Header */}
           <div style={styles.dropdownHeader}>
             <h3 style={{ margin: 0, fontSize: '1rem', color: '#fff' }}>Notifications</h3>
-            {hasUnread && (
+            {notifications.length > 0 && (
               <button onClick={handleDismissAll} style={styles.markAllBtn}>
                 Dismiss all
               </button>
@@ -201,15 +145,36 @@ export default function NotificationBell() {
           <div style={styles.dropdownBody}>
             {notifications.length === 0 ? (
               <div style={styles.emptyState}>
-                <CheckCircle size={32} color="#888" />
-                <p style={{ margin: '8px 0 0', color: '#888' }}>You're all caught up!</p>
+                {permissionStatus !== 'granted' ? (
+                  <>
+                    <Bell size={32} color="#888" />
+                    <p style={{ margin: '8px 0 0', color: '#888', fontSize: '0.9rem' }}>Enable push notifications to stay updated!</p>
+                    <button 
+                      onClick={async () => {
+                        const success = await manualRequestFcmToken(user);
+                        if (success) {
+                          setPermissionStatus('granted');
+                        } else {
+                          setPermissionStatus('denied');
+                        }
+                      }}
+                      style={{ marginTop: '12px', background: theme.colors.maroon, color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      Enable Notifications
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle size={32} color="#888" />
+                    <p style={{ margin: '8px 0 0', color: '#888' }}>You're all caught up!</p>
+                  </>
+                )}
               </div>
             ) : (
               notifications.map(notif => (
                 <div
                   key={notif.id}
                   style={styles.notifItem}
-                  onClick={() => handleNotificationClick(notif)}
                   onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F5F5F5')}
                   onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FFF8F8')}
                 >
@@ -224,9 +189,9 @@ export default function NotificationBell() {
                       })}
                     </span>
                   </div>
-                  <button 
-                    style={styles.dismissBtn} 
-                    onClick={(e) => handleDismiss(e, notif)}
+                  <button
+                    style={styles.dismissBtn}
+                    onClick={(e) => handleDismiss(e, notif.id)}
                     aria-label="Dismiss"
                   >
                     ×
@@ -261,13 +226,11 @@ const styles = {
     boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
     transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
   },
-  // Applied when there are unread notifications
   bellBtnActive: {
     background: '#FFF0F0',
     border: '2px solid #E53935',
     boxShadow: '0 4px 14px rgba(229,57,53,0.35)',
   },
-  bellIcon: { fontSize: '1.4rem' },
   badge: {
     position: 'absolute',
     top: '-4px',
@@ -295,7 +258,7 @@ const styles = {
     animation: 'slideDown 0.2s ease-out forwards',
   },
   dropdownHeader: {
-    background: `linear-gradient(135deg, ${theme.colors.maroon} 0%, ${theme.colors.maroonDark} 100%)`,
+    background: `linear-gradient(135deg, #8B0000 0%, #5D0000 100%)`,
     padding: '1rem',
     display: 'flex',
     alignItems: 'center',
@@ -324,7 +287,7 @@ const styles = {
     alignItems: 'flex-start',
     padding: '1rem',
     borderBottom: '1px solid #F0F0F0',
-    cursor: 'pointer',
+    cursor: 'default',
     transition: 'background-color 0.15s',
     backgroundColor: '#FFF8F8',
   },
@@ -361,6 +324,6 @@ const styles = {
     cursor: 'pointer',
     padding: '0 4px',
     marginLeft: '8px',
-    transition: 'color 0.2s'
+    transition: 'color 0.2s',
   }
 };

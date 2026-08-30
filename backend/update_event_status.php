@@ -147,19 +147,86 @@ if (!$update_stmt->execute()) {
 }
 $update_stmt->close();
 
-// Step 4: Notifications
+// ── Step 3b: FCM Broadcast Lock (fires only when event becomes published) ──
+require_once __DIR__ . '/fcm_helper.php';
+
+if ($new_status === 'published') {
+    $lock_stmt = $conn->prepare('SELECT notification_sent FROM event_master WHERE EVENT_ID = ? LIMIT 1');
+    if ($lock_stmt) {
+        $lock_stmt->bind_param('s', $event_id);
+        $lock_stmt->execute();
+        $lock_row = $lock_stmt->get_result()->fetch_assoc();
+        $lock_stmt->close();
+
+        if ((int)($lock_row['notification_sent'] ?? 0) === 0) {
+            $event_scale   = $event['event_scale'] ?? 'department';
+            $proposer_dept = '';
+
+            $dept_stmt = $conn->prepare('SELECT DEPT FROM users WHERE USERNAME = ? LIMIT 1');
+            if ($dept_stmt) {
+                $dept_stmt->bind_param('s', $event['proposer_username']);
+                $dept_stmt->execute();
+                if ($dept_row = $dept_stmt->get_result()->fetch_assoc()) {
+                    $proposer_dept = $dept_row['DEPT'] ?? '';
+                }
+                $dept_stmt->close();
+            }
+
+            if ($event_scale === 'university' || $proposer_dept === '') {
+                $tok_stmt = $conn->prepare(
+                    "SELECT fcm_web_token FROM users WHERE ROLE = 'student' AND fcm_web_token IS NOT NULL AND fcm_web_token != ''"
+                );
+                $tok_stmt->execute();
+            } else {
+                $tok_stmt = $conn->prepare(
+                    "SELECT fcm_web_token FROM users WHERE ROLE = 'student' AND DEPT = ? AND fcm_web_token IS NOT NULL AND fcm_web_token != ''"
+                );
+                $tok_stmt->bind_param('s', $proposer_dept);
+                $tok_stmt->execute();
+            }
+
+            $tok_res = $tok_stmt->get_result();
+            $ev_title_safe = htmlspecialchars_decode($event['event_title']);
+            while ($t = $tok_res->fetch_assoc()) {
+                send_fcm_notification(
+                    $t['fcm_web_token'],
+                    '🎉 New Event Published!',
+                    "'{$ev_title_safe}' is now open for registration. Check it out!",
+                    '/student-dashboard',
+                    null,
+                    'student'
+                );
+            }
+            $tok_stmt->close();
+
+            // Set the lock so it only sends once
+            $lock_update = $conn->prepare('UPDATE event_master SET notification_sent = 1 WHERE EVENT_ID = ?');
+            if ($lock_update) {
+                $lock_update->bind_param('s', $event_id);
+                $lock_update->execute();
+                $lock_update->close();
+            }
+        }
+    }
+}
+
+// ── Step 4: FCM Notifications to Proposer & Next-level Approver ──
 $proposer    = $event['proposer_username'] ?? null;
 $event_title = $event['event_title'];
 $budget      = (float)($event['budget'] ?? 0);
 
 if ($proposer) {
-    $remark_text = $remarks ? " Reason: $remarks" : "";
-    if ($new_status === 'published')  $msg = "🎉 Your proposal for '$event_title' is fully approved and published directly to the dashboard!$remark_text";
-    elseif ($new_status === 'rejected') $msg = "❌ Your proposal for '$event_title' was rejected by $role.$remark_text";
-    else $msg = "✅ Your proposal '$event_title' was approved by $role and moved to the next level.$remark_text";
-
-    $notif_stmt = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/faculty-dashboard')");
-    if ($notif_stmt) { $notif_stmt->bind_param('ss', $proposer, $msg); $notif_stmt->execute(); $notif_stmt->close(); }
+    $remark_text = $notes ? " Reason: $notes" : "";
+    if ($new_status === 'published') {
+        $msg = "🎉 Your proposal for '$event_title' is fully approved and published directly to the dashboard!$remark_text";
+        send_fcm_to_user($conn, $proposer, "✅ Event Published", $msg, '/faculty-dashboard');
+    } elseif ($new_status === 'rejected') {
+        $msg = "❌ Your proposal for '$event_title' was rejected by $role.$remark_text";
+        send_fcm_to_user($conn, $proposer, "❌ Proposal Rejected", $msg, '/faculty-dashboard');
+    } else {
+        $msg = "✅ Your proposal '$event_title' was approved by $role and moved to the next level.$remark_text";
+        send_fcm_to_user($conn, $proposer, "✅ Proposal Progressed", $msg, '/faculty-dashboard');
+    }
 }
 
 // Notify next-level approver
@@ -178,14 +245,9 @@ if ($next_role_notif) {
         $next_res    = $next_stmt->get_result();
         $budget_flag = ($budget > 500000 && in_array($next_role_notif, ['pro_vc', 'vc'])) ? " 💰 High-Budget Alert!" : "";
         $msg         = "New event '$event_title' has escalated to your queue.$budget_flag";
-        $notif_stmt  = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, ?)");
-        if ($notif_stmt) {
-            while ($row = $next_res->fetch_assoc()) {
-                $u = $row['USERNAME'];
-                $notif_stmt->bind_param('sss', $u, $msg, $next_link);
-                $notif_stmt->execute();
-            }
-            $notif_stmt->close();
+        while ($row = $next_res->fetch_assoc()) {
+            $u = $row['USERNAME'];
+            send_fcm_to_user($conn, $u, "📋 Event Escalated for Approval", $msg, $next_link);
         }
         $next_stmt->close();
     }

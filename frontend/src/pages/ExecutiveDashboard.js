@@ -6,7 +6,6 @@ import theme from '../theme';
 import AttendeeRoster from './AttendeeRoster';
 import EventArchive from '../components/EventArchive';
 import ReportsView from '../components/ReportsView';
-import NotificationView from '../components/NotificationView';
 import SettingsView from '../components/SettingsView';
 import NotificationBell from '../components/NotificationBell';
 import UserProfileDropdown from '../components/UserProfileDropdown';
@@ -1132,9 +1131,6 @@ export default function ExecutiveDashboard() {
             <EventArchive user={user} />
           )}
 
-          {activeNav === 'Notifications' && (
-            <NotificationView user={user} />
-          )}
 
           {activeNav === 'Settings' && (
             <SettingsView user={user} />

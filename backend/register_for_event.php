@@ -62,7 +62,8 @@ $event_stmt = $conn->prepare("
     SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
            em.START_DATE AS event_date, em.REGISTRATION_DEADLINE AS registration_deadline,
            em.MAX_PARTICIPANTS AS max_participants, em.CURRENT_STATUS AS current_status,
-           1 AS max_team_size
+           JSON_UNQUOTE(JSON_EXTRACT(em.ATTACHMENTS, '$.details.max_team_size')) AS max_team_size,
+           JSON_UNQUOTE(JSON_EXTRACT(em.ATTACHMENTS, '$.details.participation_type')) AS participation_type
     FROM event_master em 
     WHERE em.EVENT_ID = ? AND em.CURRENT_STATUS IN ('published', 'approved')
 ");
@@ -125,7 +126,9 @@ $qr_token = 'EVT-' . $event_id . '-STU-' . $student_id . '-' . uniqid();
 
 $team_members_str = null;
 if ($reg_role === 'participant') {
-    $max_size = $event_data['max_team_size'] ?? 1;
+    $max_size = isset($event_data['max_team_size']) && is_numeric($event_data['max_team_size']) 
+        ? (int)$event_data['max_team_size'] 
+        : 1;
     if ($max_size > 1 && count($team_members_arr) > ($max_size - 1)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => "Maximum team size is $max_size (including the lead)."]);
@@ -181,13 +184,15 @@ $reg_stmt->close();
 
 // ── Notification to student ───────────────────────────────────────────────────
 $role_label = ucfirst($reg_role);
-$notif_stmt = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/student-dashboard')");
-if ($notif_stmt) {
-    $msg = "Registration confirmed as $role_label for '{$event_data['event_title']}'! Check your tickets. 🎟️";
-    $notif_stmt->bind_param('ss', $student_id, $msg);
-    $notif_stmt->execute();
-    $notif_stmt->close();
-}
+// [FIREBASE MIGRATION] Legacy SQL notification commented out.
+// TODO: Trigger Firebase FCM push to $student_id here.
+// $notif_stmt = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/student-dashboard')");
+// if ($notif_stmt) {
+//     $msg = "Registration confirmed as $role_label for '{$event_data['event_title']}'! Check your tickets. 🎟️";
+//     $notif_stmt->bind_param('ss', $student_id, $msg);
+//     $notif_stmt->execute();
+//     $notif_stmt->close();
+// }
 
 // ── Milestone notification for proposer ──────────────────────────────────────
 $count_stmt = $conn->prepare("SELECT COUNT(*) AS total_reg FROM event_registrations WHERE EVENT_ID = ?");
@@ -204,12 +209,14 @@ if ($count_stmt) {
             $evt_stmt->execute();
             if ($evt_row = $evt_stmt->get_result()->fetch_assoc()) {
                 $msg     = "🎉 Milestone! $total_reg students registered for '{$evt_row['event_title']}'.";
-                $m_notif = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/faculty-dashboard')");
-                if ($m_notif) {
-                    $m_notif->bind_param('ss', $evt_row['proposer_id'], $msg);
-                    $m_notif->execute();
-                    $m_notif->close();
-                }
+                // [FIREBASE MIGRATION] Legacy SQL notification commented out.
+                // TODO: Trigger Firebase FCM push to $evt_row['proposer_id'] here.
+                // $m_notif = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/faculty-dashboard')");
+                // if ($m_notif) {
+                //     $m_notif->bind_param('ss', $evt_row['proposer_id'], $msg);
+                //     $m_notif->execute();
+                //     $m_notif->close();
+                // }
             }
             $evt_stmt->close();
         }

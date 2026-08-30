@@ -52,7 +52,6 @@ const ROLE_NAV_CONFIG = {
     { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
     { label: 'Archive',        icon: Archive,         id: 'Archive' },
     { label: 'Reports',        icon: FileText,        id: 'Reports' },
-    { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
     { label: 'Settings',       icon: Settings,        id: 'Settings' },
   ],
   hod: [
@@ -63,7 +62,6 @@ const ROLE_NAV_CONFIG = {
     { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
     { label: 'Archive',        icon: Archive,         id: 'Archive' },
     { label: 'Reports',        icon: FileText,        id: 'Reports' },
-    { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
     { label: 'Settings',       icon: Settings,        id: 'Settings' },
   ],
   executive: [
@@ -74,7 +72,6 @@ const ROLE_NAV_CONFIG = {
     { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
     { label: 'Archive',        icon: Archive,         id: 'Archive' },
     { label: 'Reports',        icon: FileText,        id: 'Reports' },
-    { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
     { label: 'Settings',       icon: Settings,        id: 'Settings' },
   ],
   student_affairs: [
@@ -85,7 +82,6 @@ const ROLE_NAV_CONFIG = {
     { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
     { label: 'Archive',        icon: Archive,         id: 'Archive' },
     { label: 'Reports',        icon: FileText,        id: 'Reports' },
-    { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
     { label: 'Settings',       icon: Settings,        id: 'Settings' },
   ],
   events_admin: [
@@ -101,7 +97,6 @@ const ROLE_NAV_CONFIG = {
     { label: 'Dashboard',      icon: LayoutDashboard, id: 'Dashboard' },
     { label: 'My Events',      icon: CalendarCheck,   id: 'Events' },
     { label: 'Calendar',       icon: Calendar,        id: 'Calendar' },
-    { label: 'Notifications',  icon: Bell,            id: 'Notifications' },
     { label: 'Settings',       icon: Settings,        id: 'Settings' },
   ],
   volunteer: [

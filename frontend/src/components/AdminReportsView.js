@@ -68,7 +68,6 @@ export default function AdminReportsView({ user }) {
       USN: p.usn,
       Email: p.email,
       Role: p.role,
-      Faculty: p.faculty_name,
       School: p.school_name,
       Semester: p.semester,
       Department: p.department
@@ -95,9 +94,9 @@ export default function AdminReportsView({ user }) {
     doc.setTextColor(0, 0, 0);
     doc.text("Admin Event Reports & Analytics", 14, 38);
     
-    const tableColumn = ["Event", "Name", "USN", "Role", "Faculty", "School", "Sem", "Dept"];
+    const tableColumn = ["Event", "Name", "USN", "Role", "School", "Sem", "Dept"];
     const tableRows = filteredData.map(p => [
-      p.event_title, p.participant_name, p.usn, p.role, p.faculty_name, p.school_name, p.semester, p.department
+      p.event_title, p.participant_name, p.usn, p.role, p.school_name, p.semester, p.department
     ]);
 
     const roleCounts = filteredData.reduce((acc, p) => {
@@ -436,7 +435,7 @@ export default function AdminReportsView({ user }) {
                     rel="noopener noreferrer"
                     style={styles.pdfButton}
                   >
-                     View Report: {ev.title}
+                     View Report: {ev.event_title || ev.title}
                   </a>
                 ))}
               </div>
@@ -453,7 +452,6 @@ export default function AdminReportsView({ user }) {
                     <th style={styles.th}>Participant</th>
                     <th style={styles.th}>USN/ID</th>
                     <th style={styles.th}>Role</th>
-                    <th style={styles.th}>Faculty</th>
                     <th style={styles.th}>School</th>
                     <th style={styles.th}>Dept</th>
                     <th style={styles.th}>Sem</th>
@@ -477,7 +475,6 @@ export default function AdminReportsView({ user }) {
                         <td style={styles.td}>{p.participant_name}</td>
                         <td style={styles.td}>{p.usn}</td>
                         <td style={styles.td}>{p.role}</td>
-                        <td style={styles.td}>{p.faculty_name || 'N/A'}</td>
                         <td style={styles.td}>{p.school_name || 'N/A'}</td>
                         <td style={styles.td}>{p.department}</td>
                         <td style={styles.td}>{p.semester || '-'}</td>

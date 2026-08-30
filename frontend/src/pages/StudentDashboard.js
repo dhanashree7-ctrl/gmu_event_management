@@ -20,7 +20,6 @@ import { API_BASE } from "../config/api";
 import theme from "../theme";
 import StudentEvents from "./StudentEvents";
 import SettingsView from "../components/SettingsView";
-import NotificationView from '../components/NotificationView';
 import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardLayout from '../components/layout/DashboardLayout';
@@ -35,7 +34,6 @@ const NAV_ITEMS = [
   { id: "home", label: "Home", icon: "" },
   { id: "registered", label: "Registered Events", icon: "️" },
   { id: "calendar", label: "My Calendar", icon: "" },
-  { id: "notifications", label: "Notifications", icon: "" },
   { id: "settings", label: "Settings", icon: "️" },
 ];
 
@@ -98,7 +96,9 @@ export default function StudentDashboard() {
     setLoadingMyEvents(true);
     setMyEventsError(null);
     try {
-      const res = await fetch(`${API_BASE}/get_student_events.php?student_id=${user.username}`);
+      const res = await fetch(`${API_BASE}/get_student_events.php?student_id=${user.username}`, {
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('jwt_token')}` }
+      });
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         setMyEvents(json.data);
@@ -115,7 +115,9 @@ export default function StudentDashboard() {
 
   const fetchGamificationData = async () => {
     try {
-      const res = await fetch(`${API_BASE}/get_student_report_data.php?student_id=${user.username}`);
+      const res = await fetch(`${API_BASE}/get_student_report_data.php?student_id=${user.username}`, {
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('jwt_token')}` }
+      });
       const json = await res.json();
       if (json.success) {
         setGamificationData(json.data);
@@ -145,7 +147,9 @@ export default function StudentDashboard() {
   const fetchSystemEvents = async () => {
     setLoadingSystemEvents(true);
     try {
-      const res = await fetch(`${API_BASE}/get_archived_events.php?role=student`);
+      const res = await fetch(`${API_BASE}/get_published_events.php`, {
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('jwt_token')}` }
+      });
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
         setSystemEvents(json.data);
@@ -341,9 +345,6 @@ export default function StudentDashboard() {
             </div>
           )}
 
-          {activeTab === 'Notifications' && (
-            <NotificationView />
-          )}
 
           {activeTab === 'Settings' && <SettingsView user={user} />}
 

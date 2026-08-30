@@ -95,16 +95,12 @@ if ($stmt->execute()) {
         $get_students->close();
 
         if ($student_res) {
-            $insert_notif = $conn->prepare("INSERT INTO Notifications (user_id, message, target_link) VALUES (?, ?, '/student-dashboard')");
-            if ($insert_notif) {
-                while ($student = $student_res->fetch_assoc()) {
-                    if ($student['USERNAME'] !== $event['proposer_uid']) {
-                        $uid = $student['USERNAME'];
-                        $insert_notif->bind_param('ss', $uid, $student_msg);
-                        $insert_notif->execute();
-                    }
+            require_once __DIR__ . '/fcm_helper.php';
+            while ($student = $student_res->fetch_assoc()) {
+                if ($student['USERNAME'] !== $event['proposer_uid']) {
+                    $uid = $student['USERNAME'];
+                    send_fcm_to_user($conn, $uid, "🎉 New Event Published!", $student_msg, "/student-dashboard");
                 }
-                $insert_notif->close();
             }
         }
     }

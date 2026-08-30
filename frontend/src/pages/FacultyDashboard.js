@@ -26,12 +26,11 @@ import theme from '../theme';
 import AttendeeRoster from './AttendeeRoster';
 import SettingsView from '../components/SettingsView';
 import EventArchive from '../components/EventArchive';
-import NotificationView from '../components/NotificationView';
 import ReportsView from '../components/ReportsView';
 import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
 import DashboardLayout from '../components/layout/DashboardLayout';
-import { X,  FileText, Clock, CheckCircle, CheckSquare, AlertTriangle } from 'lucide-react';
+import { X, FileText, Clock, CheckCircle, CheckSquare, AlertTriangle } from 'lucide-react';
 
 
 // ── Utility ─────────────────────────────────────────────────────────────────
@@ -41,10 +40,10 @@ const s = (...styles) => Object.assign({}, ...styles);
 const CATEGORIES = ['Academic', 'Cultural', 'Sports'];
 
 const STAT_CARDS = [
-  { label: 'Total Submitted', key: 'total',     icon: <FileText   size={22} />, color: '#701a1e' },
-  { label: 'Pending Approval',key: 'pending',   icon: <Clock      size={22} />, color: '#C17F24' },
-  { label: 'Approved',        key: 'approved',  icon: <CheckCircle size={22} />, color: '#2E7D32' },
-  { label: 'Completed',       key: 'completed', icon: <CheckSquare size={22} />, color: '#1565C0' },
+  { label: 'Total Submitted', key: 'total', icon: <FileText size={22} />, color: '#701a1e' },
+  { label: 'Pending Approval', key: 'pending', icon: <Clock size={22} />, color: '#C17F24' },
+  { label: 'Approved', key: 'approved', icon: <CheckCircle size={22} />, color: '#2E7D32' },
+  { label: 'Completed', key: 'completed', icon: <CheckSquare size={22} />, color: '#1565C0' },
 ];
 
 const NAV_ITEMS = [
@@ -55,7 +54,6 @@ const NAV_ITEMS = [
   { icon: '', label: 'Archive', active: false },
   { icon: '', label: 'Scanner', active: false },
   { icon: '', label: 'Reports', active: false },
-  { icon: '', label: 'Notifications', active: false },
   { icon: '', label: 'Settings', active: false },
 ];
 
@@ -63,7 +61,7 @@ const NAV_ITEMS = [
 const EMPTY_FORM = {
   event_title: '',
   description: '',
-  event_date: '', 
+  event_date: '',
   registration_date: '',
   coordinator_name: '',
   coordinator_number: '',
@@ -74,7 +72,7 @@ const EMPTY_FORM = {
   event_scale: '',
   event_mode: 'offline',
   budget: '',
-    rewards: '',
+  rewards: '',
   immediate_approval: false,
   brochureFile: null,
   approval_route: [],
@@ -203,7 +201,7 @@ export default function FacultyDashboard() {
     const formData = new FormData();
     formData.append('event_id', selectedEventId);
     formData.append('event_date', logistics.date);
-      formData.append('coordinator_name', form.coordinator_name);
+    formData.append('coordinator_name', form.coordinator_name);
     formData.append('event_time', logistics.time);
     formData.append('venue', logistics.venue);
     formData.append('registration_deadline', logistics.registration_deadline);
@@ -317,7 +315,7 @@ export default function FacultyDashboard() {
           }));
 
           setRecentEvents(mapped);
-          
+
           setStats({
             total: json.data.length,
             pending: json.data.filter((e) => {
@@ -412,8 +410,14 @@ export default function FacultyDashboard() {
     if (form.event_mode === 'offline' && !form.venue.trim()) {
       errs.venue = 'Venue is required for offline events.';
     }
+    if (!form.coordinator_name?.trim()) {
+      errs.coordinator_name = 'Coordinator name is required.';
+    }
+    if (!form.coordinator_number?.trim() || !/^\d{10}$/.test(form.coordinator_number)) {
+      errs.coordinator_number = 'Coordinator number must be exactly 10 digits.';
+    }
     setFormErrors(errs);
-    return Object.keys(errs).length === 0;
+    return errs;
   };
 
   /** Submits the form to create_event.php */
@@ -421,7 +425,12 @@ export default function FacultyDashboard() {
   // ── Submit handler ──────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    const errs = validateForm();
+    if (Object.keys(errs).length > 0) {
+      const firstField = Object.keys(errs)[0];
+      setToast({ type: 'error', message: `Please fill out or fix: ${firstField.replace('_', ' ')}` });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -503,201 +512,201 @@ export default function FacultyDashboard() {
     <DashboardLayout role="faculty" activeNav={activeNav} onNavChange={setActiveNav} onOpenSettings={() => setActiveNav('Settings')}>
       <>
 
-          {/* Toast notification */}
-          {toast && (
-            <Toast
-              type={toast.type}
-              message={toast.message}
-              onClose={() => setToast(null)}
-            />
-          )}
+        {/* Toast notification */}
+        {toast && (
+          <Toast
+            type={toast.type}
+            message={toast.message}
+            onClose={() => setToast(null)}
+          />
+        )}
 
-          {/* Welcome banner */}
-          {activeNav === 'Dashboard' && (
-            <div style={styles.welcomeBanner}>
-              <div>
-                <h2 style={styles.welcomeTitle}>
-                  Good {getGreeting()}, {user?.name?.split(' ')[0]} 
-                </h2>
-                <p style={styles.welcomeSub}>
-                  Submit a new event request or track the status of your existing proposals.
-                </p>
-              </div>
-              <div style={styles.welcomeDecor}>
-                <span style={styles.welcomeIcon}></span>
-              </div>
+        {/* Welcome banner */}
+        {activeNav === 'Dashboard' && (
+          <div style={styles.welcomeBanner}>
+            <div>
+              <h2 style={styles.welcomeTitle}>
+                Good {getGreeting()}, {user?.name?.split(' ')[0]}
+              </h2>
+              <p style={styles.welcomeSub}>
+                Submit a new event request or track the status of your existing proposals.
+              </p>
             </div>
-          )}
-
-          {/* Stat cards */}
-          {activeNav === 'Dashboard' && (
-            <div style={styles.statsRow}>
-              {STAT_CARDS.map((stat) => (
-                <StatCard key={stat.key} stat={stat} value={stats[stat.key]} />
-              ))}
+            <div style={styles.welcomeDecor}>
+              <span style={styles.welcomeIcon}></span>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Dashboard Metrics — side-by-side grid to stay above the fold */}
-          {activeNav === 'Dashboard' && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+        {/* Stat cards */}
+        {activeNav === 'Dashboard' && (
+          <div style={styles.statsRow}>
+            {STAT_CARDS.map((stat) => (
+              <StatCard key={stat.key} stat={stat} value={stats[stat.key]} />
+            ))}
+          </div>
+        )}
+
+        {/* Dashboard Metrics — side-by-side grid to stay above the fold */}
+        {activeNav === 'Dashboard' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
+              <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
+              <DashboardMetrics
+                data={[
+                  { name: 'Pending', count: stats.pending },
+                  { name: 'Approved', count: stats.approved },
+                  { name: 'Completed', count: stats.completed }
+                ]}
+                barName="Total Items"
+              />
+            </div>
+            {systemEvents.length > 0 && (
               <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
-                <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Event Status Overview</h3>
-                <DashboardMetrics 
-                  data={[
-                    { name: 'Pending', count: stats.pending },
-                    { name: 'Approved', count: stats.approved },
-                    { name: 'Completed', count: stats.completed }
-                  ]} 
-                  barName="Total Items"
+                <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Department Distribution</h3>
+                <DashboardMetrics
+                  data={Object.entries(
+                    systemEvents.reduce((acc, ev) => {
+                      const cat = ev.category || 'Other';
+                      acc[cat] = (acc[cat] || 0) + 1;
+                      return acc;
+                    }, {})
+                  ).map(([name, count]) => ({ name, count }))}
+                  type="category"
+                  chartType="pie"
                 />
               </div>
-              {systemEvents.length > 0 && (
-                <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
-                  <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Department Distribution</h3>
-                  <DashboardMetrics 
-                    data={Object.entries(
-                      systemEvents.reduce((acc, ev) => {
-                        const cat = ev.category || 'Other';
-                        acc[cat] = (acc[cat] || 0) + 1;
-                        return acc;
-                      }, {})
-                    ).map(([name, count]) => ({ name, count }))} 
-                    type="category" 
-                    chartType="pie"
-                  />
+            )}
+          </div>
+        )}
+
+        {/* ── Event Request Form ─────────────────────────── */}
+        {activeNav === 'Events' && showProposeForm && (
+          <div style={styles.formCard}>
+            {/* Card header accent */}
+            <div style={styles.formCardAccent} />
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid #f0ede8', paddingBottom: '1rem' }}>
+              <div>
+                <h2 style={styles.formCardTitle}> New Event Request</h2>
+                <p style={styles.formCardSub}>
+                  Complete the form below. Your request will be routed for approval automatically.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={styles.statusPill}>
+                  <span style={styles.statusDot} /> Status: Pending on Submit
                 </div>
-              )}
+                <button
+                  onClick={() => setShowProposeForm(false)}
+                  style={{ padding: '0.6rem 1.2rem', backgroundColor: '#e0e0e0', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  Back to List
+                </button>
+              </div>
             </div>
-          )}
 
-          {/* ── Event Request Form ─────────────────────────── */}
-          {activeNav === 'Events' && showProposeForm && (
-            <div style={styles.formCard}>
-              {/* Card header accent */}
-              <div style={styles.formCardAccent} />
+            <form onSubmit={handleSubmit} noValidate style={styles.form}>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid #f0ede8', paddingBottom: '1rem' }}>
-                <div>
-                  <h2 style={styles.formCardTitle}> New Event Request</h2>
-                  <p style={styles.formCardSub}>
-                    Complete the form below. Your request will be routed for approval automatically.
-                  </p>
+              {/* Row 1: Title + Category */}
+              <div style={styles.formRow}>
+                {/* Event Title */}
+                <div style={s(styles.formGroup, { flex: 2 })}>
+                  <label htmlFor="event_title" style={styles.formLabel}>
+                    Event Title <span style={styles.required}>*</span>
+                  </label>
+                  <input
+                    id="event_title"
+                    type="text"
+                    value={form.event_title}
+                    onChange={(e) => handleFieldChange('event_title', e.target.value)}
+                    placeholder="e.g. Annual Tech Symposium 2026"
+                    style={s(styles.formInput, formErrors.event_title && styles.inputError)}
+                    disabled={loading}
+                    maxLength={255}
+                  />
+                  {formErrors.event_title && (
+                    <p style={styles.fieldError}>{formErrors.event_title}</p>
+                  )}
                 </div>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div style={styles.statusPill}>
-                    <span style={styles.statusDot} /> Status: Pending on Submit
-                  </div>
-                  <button
-                    onClick={() => setShowProposeForm(false)}
-                    style={{ padding: '0.6rem 1.2rem', backgroundColor: '#e0e0e0', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+
+                {/* Category */}
+                <div style={s(styles.formGroup, { flex: 1 })}>
+                  <label htmlFor="category" style={styles.formLabel}>
+                    Category <span style={styles.required}>*</span>
+                  </label>
+                  <select
+                    id="category"
+                    value={form.category}
+                    onChange={(e) => handleFieldChange('category', e.target.value)}
+                    style={s(styles.formInput, styles.formSelect, formErrors.category && styles.inputError)}
+                    disabled={loading}
                   >
-                     Back to List
-                  </button>
+                    <option value="">— Select —</option>
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                  {formErrors.category && (
+                    <p style={styles.fieldError}>{formErrors.category}</p>
+                  )}
+                </div>
+
+                {/* Scale */}
+                <div style={s(styles.formGroup, { flex: 1 })}>
+                  <label htmlFor="event_scale" style={styles.formLabel}>
+                    Event Scale <span style={styles.required}>*</span>
+                  </label>
+                  <select
+                    id="event_scale"
+                    value={form.event_scale}
+                    onChange={(e) => handleFieldChange('event_scale', e.target.value)}
+                    style={s(styles.formInput, styles.formSelect, formErrors.event_scale && styles.inputError)}
+                    disabled={loading}
+                  >
+                    <option value="">— Select —</option>
+                    {availableScales.map((c) => (
+                      <option key={c} value={c} style={{ textTransform: 'capitalize' }}>{c}</option>
+                    ))}
+                  </select>
+                  {formErrors.event_scale && (
+                    <p style={styles.fieldError}>{formErrors.event_scale}</p>
+                  )}
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} noValidate style={styles.form}>
-
-                {/* Row 1: Title + Category */}
-                <div style={styles.formRow}>
-                  {/* Event Title */}
-                  <div style={s(styles.formGroup, { flex: 2 })}>
-                    <label htmlFor="event_title" style={styles.formLabel}>
-                      Event Title <span style={styles.required}>*</span>
-                    </label>
-                    <input
-                      id="event_title"
-                      type="text"
-                      value={form.event_title}
-                      onChange={(e) => handleFieldChange('event_title', e.target.value)}
-                      placeholder="e.g. Annual Tech Symposium 2026"
-                      style={s(styles.formInput, formErrors.event_title && styles.inputError)}
-                      disabled={loading}
-                      maxLength={255}
-                    />
-                    {formErrors.event_title && (
-                      <p style={styles.fieldError}>{formErrors.event_title}</p>
-                    )}
-                  </div>
-
-                  {/* Category */}
-                  <div style={s(styles.formGroup, { flex: 1 })}>
-                    <label htmlFor="category" style={styles.formLabel}>
-                      Category <span style={styles.required}>*</span>
-                    </label>
-                    <select
-                      id="category"
-                      value={form.category}
-                      onChange={(e) => handleFieldChange('category', e.target.value)}
-                      style={s(styles.formInput, styles.formSelect, formErrors.category && styles.inputError)}
-                      disabled={loading}
+              {/* Event Mode — Online / Offline toggle */}
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>
+                  Event Mode <span style={styles.required}>*</span>
+                </label>
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem' }}>
+                  {['offline', 'online'].map(mode => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => handleFieldChange('event_mode', mode)}
+                      style={{
+                        padding: '0.5rem 1.5rem',
+                        borderRadius: '20px',
+                        border: `2px solid ${form.event_mode === mode ? theme.colors.maroon : '#ddd'}`,
+                        background: form.event_mode === mode ? theme.colors.maroon : '#fff',
+                        color: form.event_mode === mode ? '#fff' : '#555',
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        textTransform: 'capitalize',
+                        transition: 'all 0.2s ease',
+                      }}
                     >
-                      <option value="">— Select —</option>
-                      {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                    {formErrors.category && (
-                      <p style={styles.fieldError}>{formErrors.category}</p>
-                    )}
-                  </div>
-
-                  {/* Scale */}
-                  <div style={s(styles.formGroup, { flex: 1 })}>
-                    <label htmlFor="event_scale" style={styles.formLabel}>
-                      Event Scale <span style={styles.required}>*</span>
-                    </label>
-                    <select
-                      id="event_scale"
-                      value={form.event_scale}
-                      onChange={(e) => handleFieldChange('event_scale', e.target.value)}
-                      style={s(styles.formInput, styles.formSelect, formErrors.event_scale && styles.inputError)}
-                      disabled={loading}
-                    >
-                      <option value="">— Select —</option>
-                      {availableScales.map((c) => (
-                        <option key={c} value={c} style={{ textTransform: 'capitalize' }}>{c}</option>
-                      ))}
-                    </select>
-                    {formErrors.event_scale && (
-                      <p style={styles.fieldError}>{formErrors.event_scale}</p>
-                    )}
-                  </div>
+                      {mode === 'offline' ? ' Offline' : ' Online'}
+                    </button>
+                  ))}
                 </div>
-
-                {/* Event Mode — Online / Offline toggle */}
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>
-                    Event Mode <span style={styles.required}>*</span>
-                  </label>
-                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.25rem' }}>
-                    {['offline', 'online'].map(mode => (
-                      <button
-                        key={mode}
-                        type="button"
-                        onClick={() => handleFieldChange('event_mode', mode)}
-                        style={{
-                          padding: '0.5rem 1.5rem',
-                          borderRadius: '20px',
-                          border: `2px solid ${form.event_mode === mode ? theme.colors.maroon : '#ddd'}`,
-                          background: form.event_mode === mode ? theme.colors.maroon : '#fff',
-                          color: form.event_mode === mode ? '#fff' : '#555',
-                          fontWeight: 600,
-                          fontSize: '0.9rem',
-                          cursor: 'pointer',
-                          textTransform: 'capitalize',
-                          transition: 'all 0.2s ease',
-                        }}
-                      >
-                        {mode === 'offline' ? ' Offline' : ' Online'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                                {/* Participation Type — Solo / Group toggle */}
-                <div style={styles.formRow}>
-                  {!(form.is_festival) && (<>
+              </div>
+              {/* Participation Type — Solo / Group toggle */}
+              <div style={styles.formRow}>
+                {!(form.is_festival) && (<>
                   <div style={styles.formGroup}>
                     <label style={styles.formLabel}>
                       Participation Type <span style={styles.required}>*</span>
@@ -726,7 +735,7 @@ export default function FacultyDashboard() {
                       ))}
                     </div>
                   </div>
-                  
+
                   {form.participation_type === 'group' && (
                     <div style={styles.formGroup}>
                       <label htmlFor="max_team_size" style={styles.formLabel}>
@@ -748,918 +757,1016 @@ export default function FacultyDashboard() {
                     </div>
                   )}
 
-                  </>)}
-                  {/* Start Time */}
-                  <div style={styles.formGroup}>
-                    <label htmlFor="start_time" style={styles.formLabel}>
-                      Start Time <span style={styles.requiredStar}>*</span>
-                    </label>
-                    <input
-                      type="time"
-                      id="start_time"
-                      name="start_time"
-                      value={form.start_time || ''}
-                      onChange={(e) => handleFieldChange('start_time', e.target.value)}
-                      style={styles.formInput}
-                      required
-                    />
-                  </div>
-
-                  {/* End Time */}
-                  <div style={styles.formGroup}>
-                    <label htmlFor="end_time" style={styles.formLabel}>
-                      End Time <span style={styles.requiredStar}>*</span>
-                    </label>
-                    <input
-                      type="time"
-                      id="end_time"
-                      name="end_time"
-                      value={form.end_time || ''}
-                      onChange={(e) => handleFieldChange('end_time', e.target.value)}
-                      style={styles.formInput}
-                      required
-                    />
-                  </div>
-
-                  {/* Venue */}
-                  <div style={styles.formGroup}>
-                    <label htmlFor="venue" style={styles.formLabel}>
-                      Venue <span style={styles.requiredStar}>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="venue"
-                      name="venue"
-                      value={form.venue || ''}
-                      onChange={(e) => handleFieldChange('venue', e.target.value)}
-                      style={styles.formInput}
-                      placeholder="e.g. Main Auditorium"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div style={styles.formRow}>
-                  <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem' }}>
-                    {form.event_mode === 'offline'
-                      ? 'Venue is required for offline events (set during logistics).'
-                      : 'No venue needed — event will be held virtually.'}
-                  </p>
-                </div>
-
-                {/* Sub-Events Toggle */}
-                <div style={s(styles.formGroup, { marginTop: '1rem', padding: '1rem', background: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '8px' })}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#333', fontWeight: 600 }}>
-                    <input
-                      type="checkbox"
-                      checked={form.is_festival}
-                      onChange={(e) => handleFieldChange('is_festival', e.target.checked)}
-                      disabled={loading}
-                      style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
-                    />
-                     This is a Festival / Mega-Event (Has Sub-Events)
+                </>)}
+                {/* Start Time */}
+                <div style={styles.formGroup}>
+                  <label htmlFor="start_time" style={styles.formLabel}>
+                    Start Time <span style={styles.required}>*</span>
                   </label>
-                  
-                  {form.is_festival && (
-                    <div style={{ marginTop: '1rem' }}>
-                      <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.5rem' }}>List the sub-events included in this festival:</p>
-                      {form.sub_events.map((sub, idx) => (
-                        <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed #ccc' }}>
-                          <input
-                            type="text"
-                            value={sub.name}
+                  <input
+                    type="time"
+                    id="start_time"
+                    name="start_time"
+                    value={form.start_time || ''}
+                    onChange={(e) => handleFieldChange('start_time', e.target.value)}
+                    style={styles.formInput}
+                    required
+                  />
+                </div>
+
+                {/* End Time */}
+                <div style={styles.formGroup}>
+                  <label htmlFor="end_time" style={styles.formLabel}>
+                    End Time <span style={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="time"
+                    id="end_time"
+                    name="end_time"
+                    value={form.end_time || ''}
+                    onChange={(e) => handleFieldChange('end_time', e.target.value)}
+                    style={styles.formInput}
+                    required
+                  />
+                </div>
+
+                {/* Venue */}
+                <div style={styles.formGroup}>
+                  <label htmlFor="venue" style={styles.formLabel}>
+                    Venue <span style={styles.required}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="venue"
+                    name="venue"
+                    value={form.venue || ''}
+                    onChange={(e) => handleFieldChange('venue', e.target.value)}
+                    style={styles.formInput}
+                    placeholder="e.g. Main Auditorium"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={styles.formRow}>
+                <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem' }}>
+                  {form.event_mode === 'offline'
+                    ? 'Venue is required for offline events (set during logistics).'
+                    : 'No venue needed — event will be held virtually.'}
+                </p>
+              </div>
+
+              {/* Sub-Events Toggle */}
+              <div style={s(styles.formGroup, { marginTop: '1rem', padding: '1rem', background: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '8px' })}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#333', fontWeight: 600 }}>
+                  <input
+                    type="checkbox"
+                    checked={form.is_festival}
+                    onChange={(e) => handleFieldChange('is_festival', e.target.checked)}
+                    disabled={loading}
+                    style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
+                  />
+                  This is a Festival / Mega-Event (Has Sub-Events)
+                </label>
+
+                {form.is_festival && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <p style={{ fontSize: '0.8rem', color: '#666', marginBottom: '0.5rem' }}>List the sub-events included in this festival:</p>
+                    {form.sub_events.map((sub, idx) => (
+                      <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed #ccc' }}>
+                        <input
+                          type="text"
+                          value={sub.name}
+                          onChange={(e) => {
+                            const newSubs = [...form.sub_events];
+                            newSubs[idx].name = e.target.value;
+                            handleFieldChange('sub_events', newSubs);
+                          }}
+                          placeholder={`Sub-Event ${idx + 1} Name`}
+                          style={s(styles.formInput, { padding: '8px', flex: 1 })}
+                          disabled={loading}
+                          required={form.is_festival}
+                        />
+                        <textarea
+                          value={sub.description}
+                          onChange={(e) => {
+                            const newSubs = [...form.sub_events];
+                            newSubs[idx].description = e.target.value;
+                            handleFieldChange('sub_events', newSubs);
+                          }}
+                          placeholder="Sub-Event Description"
+                          style={s(styles.formInput, { padding: '8px', flex: 1 })}
+                          disabled={loading}
+                          rows="2"
+                          required={form.is_festival}
+                        />
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                          <select
+                            value={sub.participation_type || 'solo'}
                             onChange={(e) => {
                               const newSubs = [...form.sub_events];
-                              newSubs[idx].name = e.target.value;
+                              newSubs[idx].participation_type = e.target.value;
                               handleFieldChange('sub_events', newSubs);
                             }}
-                            placeholder={`Sub-Event ${idx + 1} Name`}
-                            style={s(styles.formInput, { padding: '8px', flex: 1 })}
-                            disabled={loading}
-                            required={form.is_festival}
-                          />
-                          <textarea
-                            value={sub.description}
-                            onChange={(e) => {
-                              const newSubs = [...form.sub_events];
-                              newSubs[idx].description = e.target.value;
-                              handleFieldChange('sub_events', newSubs);
-                            }}
-                            placeholder="Sub-Event Description"
-                            style={s(styles.formInput, { padding: '8px', flex: 1 })}
-                            disabled={loading}
-                            rows="2"
-                            required={form.is_festival}
-                          />
-                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                            <select
-                              value={sub.participation_type || 'solo'}
-                              onChange={(e) => {
-                                const newSubs = [...form.sub_events];
-                                newSubs[idx].participation_type = e.target.value;
-                                handleFieldChange('sub_events', newSubs);
-                              }}
-                              style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
-                            >
-                              <option value="solo">Solo</option>
-                              <option value="group">Group</option>
-                            </select>
-                            {sub.participation_type === 'group' ? (
-                              <>
-                                <input
-                                  type="number"
-                                  value={sub.max_groups || ''}
-                                  onChange={(e) => {
-                                    const newSubs = [...form.sub_events];
-                                    newSubs[idx].max_groups = e.target.value;
-                                    handleFieldChange('sub_events', newSubs);
-                                  }}
-                                  placeholder="Max Groups"
-                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
-                                />
-                                <input
-                                  type="number"
-                                  value={sub.max_team_size || ''}
-                                  onChange={(e) => {
-                                    const newSubs = [...form.sub_events];
-                                    newSubs[idx].max_team_size = e.target.value;
-                                    handleFieldChange('sub_events', newSubs);
-                                  }}
-                                  placeholder="Max per Group"
-                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
-                                />
-                              </>
-                            ) : (
+                            style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                          >
+                            <option value="solo">Solo</option>
+                            <option value="group">Group</option>
+                          </select>
+                          {sub.participation_type === 'group' ? (
+                            <>
                               <input
                                 type="number"
-                                value={sub.max_participants || ''}
+                                value={sub.max_groups || ''}
                                 onChange={(e) => {
                                   const newSubs = [...form.sub_events];
-                                  newSubs[idx].max_participants = e.target.value;
+                                  newSubs[idx].max_groups = e.target.value;
                                   handleFieldChange('sub_events', newSubs);
                                 }}
-                                placeholder="Max Participants"
+                                placeholder="Max Groups"
                                 style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
                               />
-                            )}
+                              <input
+                                type="number"
+                                value={sub.max_team_size || ''}
+                                onChange={(e) => {
+                                  const newSubs = [...form.sub_events];
+                                  newSubs[idx].max_team_size = e.target.value;
+                                  handleFieldChange('sub_events', newSubs);
+                                }}
+                                placeholder="Max per Group"
+                                style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                              />
+                            </>
+                          ) : (
                             <input
-                              type="text"
-                              value={sub.coordinator_name || ''}
+                              type="number"
+                              value={sub.max_participants || ''}
                               onChange={(e) => {
                                 const newSubs = [...form.sub_events];
-                                newSubs[idx].coordinator_name = e.target.value;
+                                newSubs[idx].max_participants = e.target.value;
                                 handleFieldChange('sub_events', newSubs);
                               }}
-                              placeholder="Coordinator Name"
+                              placeholder="Max Participants"
                               style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
                             />
-                            <input
-                              type="text"
-                              value={sub.venue || ''}
-                              onChange={(e) => {
-                                const newSubs = [...form.sub_events];
-                                newSubs[idx].venue = e.target.value;
-                                handleFieldChange('sub_events', newSubs);
-                              }}
-                              placeholder="Sub-Event Venue"
-                              style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
-                            />
-                          </div>
-                          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <label style={{ fontSize: '0.8rem', color: '#666', whiteSpace: 'nowrap' }}>Start Time:</label>
-                                <input
-                                  type="time"
-                                  value={sub.start_time || ''}
-                                  onChange={(e) => {
-                                    const newSubs = [...form.sub_events];
-                                    newSubs[idx].start_time = e.target.value;
-                                    handleFieldChange('sub_events', newSubs);
-                                  }}
-                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
-                                />
-                            </div>
-                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <label style={{ fontSize: '0.8rem', color: '#666', whiteSpace: 'nowrap' }}>End Time:</label>
-                                <input
-                                  type="time"
-                                  value={sub.end_time || ''}
-                                  onChange={(e) => {
-                                    const newSubs = [...form.sub_events];
-                                    newSubs[idx].end_time = e.target.value;
-                                    handleFieldChange('sub_events', newSubs);
-                                  }}
-                                  style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
-                                />
-                            </div>
-                          </div>
-                          {form.sub_events.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newSubs = form.sub_events.filter((_, i) => i !== idx);
-                                handleFieldChange('sub_events', newSubs);
-                              }}
-                              style={{ alignSelf: 'flex-start', padding: '4px 8px', background: '#ffebee', color: '#c62828', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
-                            >Remove</button>
                           )}
+                          <input
+                            type="text"
+                            value={sub.coordinator_name || ''}
+                            onChange={(e) => {
+                              const newSubs = [...form.sub_events];
+                              newSubs[idx].coordinator_name = e.target.value;
+                              handleFieldChange('sub_events', newSubs);
+                            }}
+                            placeholder="Coordinator Name"
+                            style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                          />
+                          <input
+                            type="text"
+                            value={sub.venue || ''}
+                            onChange={(e) => {
+                              const newSubs = [...form.sub_events];
+                              newSubs[idx].venue = e.target.value;
+                              handleFieldChange('sub_events', newSubs);
+                            }}
+                            placeholder="Sub-Event Venue"
+                            style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                          />
                         </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => handleFieldChange('sub_events', [...form.sub_events, { name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }])}
-                        style={{ marginTop: '0.5rem', padding: '6px 12px', background: '#e0f7fa', color: '#006064', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}
-                      >
-                        + Add Another Sub-Event
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Description */}
-                <div style={styles.formGroup}>
-                  <label htmlFor="description" style={styles.formLabel}>
-                    Description <span style={styles.required}>*</span>
-                  </label>
-                  <textarea
-                    id="description"
-                    value={form.description}
-                    onChange={(e) => handleFieldChange('description', e.target.value)}
-                    placeholder="Describe the event objectives, expected participants, agenda highlights…"
-                    rows={4}
-                    style={s(styles.formInput, styles.formTextarea)}
-                    disabled={loading}
-                    required
-                  />
-                </div>
-
-                {/* Event Date (Optional at this stage) */}
-                <div style={styles.formGroup}>
-                  <label htmlFor="event_date" style={styles.formLabel}>
-                    Event Date <span style={{ color: 'red' }}>*</span>
-                  </label>
-                  <input
-                    id="event_date"
-                    type="date"
-                    value={form.event_date || ''}
-                    onChange={(e) => handleFieldChange('event_date', e.target.value)}
-                    style={styles.formInput}
-                    disabled={loading}
-                  />
-                </div>
-
-                {/* Registration Date */}
-                <div style={styles.formGroup}>
-                  <label htmlFor="registration_date" style={styles.formLabel}>
-                    Registration Date (Deadline) <span style={{ color: 'red' }}>*</span>
-                  </label>
-                  <input
-                    id="registration_date"
-                    type="date"
-                    value={form.registration_date || ''}
-                    onChange={(e) => handleFieldChange('registration_date', e.target.value)}
-                    style={styles.formInput}
-                    disabled={loading}
-                    required
-                  />
-                </div>
-                
-                {/* Max Participants */}
-                <div style={styles.formGroup}>
-                  <label htmlFor="max_participants" style={styles.formLabel}>
-                    Max Participants <span style={{ color: 'red' }}>*</span>
-                  </label>
-                  <input
-                    id="max_participants"
-                    type="number"
-                    min="1"
-                    value={form.max_participants || ''}
-                    onChange={(e) => handleFieldChange('max_participants', e.target.value)}
-                    style={styles.formInput}
-                    disabled={loading}
-                    required
-                  />
-                </div>
-
-                <div style={styles.formRow}>
-                  {/* Coordinator Name */}
-                  <div style={s(styles.formGroup, { flex: 1 })}>
-                    <label htmlFor="coordinator_name" style={styles.formLabel}>
-                      Coordinator Name <span style={{ color: 'red' }}>*</span>
-                    </label>
-                    <input
-                      id="coordinator_name"
-                      type="text"
-                      value={form.coordinator_name || ''}
-                      onChange={(e) => handleFieldChange('coordinator_name', e.target.value)}
-                      style={styles.formInput}
-                      placeholder="e.g. Dr. John Doe"
-                      disabled={loading}
-                      required
-                    />
-                  </div>
-
-                  {/* Coordinator Number */}
-                  <div style={s(styles.formGroup, { flex: 1 })}>
-                    <label htmlFor="coordinator_number" style={styles.formLabel}>
-                      Coordinator Number <span style={{ color: 'red' }}>*</span>
-                    </label>
-                    <input
-                      id="coordinator_number"
-                      type="text"
-                      value={form.coordinator_number || ''}
-                      onChange={(e) => handleFieldChange('coordinator_number', e.target.value)}
-                      style={styles.formInput}
-                      placeholder="e.g. +91 9876543210"
-                      disabled={loading}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Brochure File */}
-                <div style={styles.formGroup}>
-                  <label style={styles.formLabel}>Brochure Document <span style={styles.required}>*</span></label>
-                  <input
-                    style={s(styles.formInput, formErrors.brochureFile && styles.inputError)}
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => handleFieldChange('brochureFile', e.target.files[0])}
-                    disabled={loading}
-                  />
-                  {formErrors.brochureFile && <p style={styles.fieldError}>{formErrors.brochureFile}</p>}
-                  <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem' }}>
-                    Upload the official event brochure (PDF/JPG/PNG). This will be reviewed by authorities.
-                  </p>
-                </div>
-
-                {/* Budget */}
-                <div style={s(styles.formGroup, { maxWidth: '320px' })}>
-                  <label htmlFor="budget" style={styles.formLabel}>
-                    Estimated Budget (₹) <span style={styles.required}>*</span>
-                  </label>
-                  <div style={styles.budgetWrap}>
-                    <span style={styles.budgetPrefix}>₹</span>
-                    <input
-                      id="budget"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={form.budget}
-                      onChange={(e) => handleFieldChange('budget', e.target.value)}
-                      placeholder="0.00"
-                      style={s(styles.formInput, styles.budgetInput, formErrors.budget && styles.inputError)}
-                      disabled={loading}
-                    />
-                  </div>
-                  {formErrors.budget && (
-                    <p style={styles.fieldError}>{formErrors.budget}</p>
-                  )}
-                </div>
-
-                {/* Capacities */}
-                <div style={s(styles.formGroup, { marginTop: '1rem', padding: '1rem', background: '#fcfcfc', border: '1px solid #eee', borderRadius: '8px' })}>
-                  <label style={s(styles.formLabel, { marginBottom: '0.8rem' })}>
-                    Event Capacities <span style={styles.optional}>(optional)</span>
-                  </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
-                    <div>
-                      <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Participants</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={form.max_participants}
-                        onChange={(e) => handleFieldChange('max_participants', e.target.value)}
-                        placeholder="e.g. 100"
-                        style={s(styles.formInput, { padding: '8px' })}
-                        disabled={loading}
-                      />
-                    </div>
-                    <div>
-                      <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Volunteers</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={form.max_volunteers}
-                        onChange={(e) => handleFieldChange('max_volunteers', e.target.value)}
-                        placeholder="e.g. 10"
-                        style={s(styles.formInput, { padding: '8px' })}
-                        disabled={loading}
-                      />
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Immediate Approval */}
-                <div style={s(styles.formGroup, { marginTop: '1rem' })}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#555', fontWeight: 600 }}>
-                    <input
-                      type="checkbox"
-                      checked={form.immediate_approval}
-                      onChange={(e) => handleFieldChange('immediate_approval', e.target.checked)}
-                      disabled={loading}
-                      style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
-                    />
-                     Needs Immediate Approval (Urgent)
-                  </label>
-                  <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem', marginLeft: '1.8rem' }}>
-                    Check this only if the event requires urgent attention (e.g. Independence Day).
-                  </p>
-                </div>
-
-                {/* Submit row */}
-                <div style={styles.submitRow}>
-                  <button
-                    type="button"
-                    onClick={() => { setForm(EMPTY_FORM); setFormErrors({}); }}
-                    style={styles.resetBtn}
-                    disabled={loading}
-                  >
-                    Reset
-                  </button>
-                  <button
-                    type="submit"
-                    style={s(styles.submitBtn, loading && styles.submitBtnDisabled)}
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <span style={styles.spinner} /> Submitting…
-                      </>
-                    ) : (
-                      ' Submit Event Request'
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {/* ── Recent Submissions ────────────────────────── */}
-          {activeNav === 'Events' && !showProposeForm && (
-            <div style={styles.recentCard}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                <h3 style={{...styles.recentTitle, margin: 0}}> My Recent Submissions</h3>
-                <button
-                  onClick={() => setShowProposeForm(true)}
-                  style={{ padding: '0.6rem 1.2rem', backgroundColor: theme.colors.maroon, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-                >
-                  + New Proposal
-                </button>
-              </div>
-
-              {fetchLoading ? (
-                /* Loading spinner while API call is in-flight */
-                <div style={styles.emptyState}>
-                  <span style={styles.fetchSpinner} />
-                  <p style={styles.emptyText}>Loading your submissions…</p>
-                </div>
-              ) : recentEvents.length === 0 ? (
-                <div style={styles.emptyState}>
-                  <span style={styles.emptyIcon}></span>
-                  <p style={styles.emptyText}>No submissions yet. Use the form above to get started!</p>
-                </div>
-              ) : (
-                <div style={styles.table}>
-                  {/* Table header */}
-                  <div style={s(styles.tableRow, styles.tableHeader)}>
-                    <span style={s(styles.tableCell, { flex: 3 })}>Event Title</span>
-                    <span style={s(styles.tableCell, { flex: 1 })}>Scale</span>
-                    <span style={s(styles.tableCell, { flex: 1 })}>Category</span>
-                    <span style={s(styles.tableCell, { flex: 1 })}>Budget</span>
-                    <span style={s(styles.tableCell, { flex: 1 })}>Status</span>
-                  </div>
-                  {recentEvents.map((evt) => (
-                    <div key={evt.id} style={styles.tableRow}>
-                      <span style={s(styles.tableCell, { flex: 3, fontWeight: 500 })}>
-                        {evt.event_title}
-                      </span>
-                      <span style={s(styles.tableCell, { flex: 1 })}>
-                        <span style={styles.scaleChip}>{evt.event_scale}</span>
-                      </span>
-                      <span style={s(styles.tableCell, { flex: 1 })}>
-                        <span style={styles.categoryChip}>{evt.category}</span>
-                      </span>
-                      <span style={s(styles.tableCell, { flex: 1 })}>
-                        ₹{Number(evt.budget).toLocaleString('en-IN')}
-                      </span>
-                      <span style={s(styles.tableCell, { flex: 1 })}>
-                        <StatusBadge status={evt.status} />
-                        {!['published', 'completed', 'pending_report'].includes(evt.status?.toLowerCase()) && (
-                          <button
-                            style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: '#e0e0e0', color: '#333', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%', fontWeight: '500' }}
-                            onClick={() => navigate(`/event-details/${evt.id}`)}
-                          >
-                            Track Status 
-                          </button>
-                        )}
-                        {evt.remarks && (
-                          <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#666', background: '#f5f5f5', padding: '6px', borderRadius: '4px', borderLeft: '3px solid #ccc', whiteSpace: 'normal', wordBreak: 'break-word', overflow: 'visible' }}>
-                            <strong>Notes:</strong> {evt.remarks}
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <label style={{ fontSize: '0.8rem', color: '#666', whiteSpace: 'nowrap' }}>Start Time:</label>
+                            <input
+                              type="time"
+                              value={sub.start_time || ''}
+                              onChange={(e) => {
+                                const newSubs = [...form.sub_events];
+                                newSubs[idx].start_time = e.target.value;
+                                handleFieldChange('sub_events', newSubs);
+                              }}
+                              style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                            />
                           </div>
-                        )}
-
-                        {evt.status?.toLowerCase() === 'approved' && (
-                          <button
-                            style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
-                            onClick={() => {
-                              setSelectedEventId(evt.id);
-                              setSelectedEventMode(evt.event_mode || 'offline');
-                              setSelectedEventDetails(evt.details || null);
-                              setLogistics(prev => ({
-                                ...prev,
-                                sub_events_logistics: evt.details?.is_festival && Array.isArray(evt.details?.sub_events)
-                                  ? evt.details.sub_events.map(sub => ({ name: typeof sub === 'string' ? sub : sub.name, description: typeof sub === 'string' ? '' : sub.description, venue: '', start_time: '', end_time: '' }))
-                                  : []
-                              }));
-                              setUploadModalOpen(true);
-                            }}
-                          >
-                            Finalize Event
-                          </button>
-                        )}
-
-                        {['published', 'completed', 'pending_report'].includes(evt.status?.toLowerCase()) && (
-                          <button
-                            style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
-                            onClick={() => {
-                              setRosterEventId(evt.id);
-                              setRosterModalOpen(true);
-                            }}
-                          >
-                            View Roster
-                          </button>
-                        )}
-
-                        {['published', 'pending_report'].includes(evt.status?.toLowerCase()) && (
-                          <button
-                            style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: theme.colors.info, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
-                            onClick={() => {
-                              setReportEventId(evt.id);
-                              setReportModalOpen(true);
-                            }}
-                          >
-                            Submit Final Report
-                          </button>
-                        )}
-
-                        {evt.status?.toLowerCase() === 'completed' && (
-                          <button
-                            style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: '#673AB7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
-                            onClick={() => {
-                              setFeedbackEventId(evt.id);
-                              setFeedbackModalOpen(true);
-                              fetchFeedbackData(evt.id);
-                            }}
-                          >
-                            Insights / Feedback 
-                          </button>
-                        )}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Calendar Content */}
-          {activeNav === 'Calendar' && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-              <div style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
-                <h2 style={styles.sectionTitle}>Event Calendar</h2>
-                <p style={styles.sectionSub}>View your proposed and upcoming events.</p>
-              </div>
-              <EventCalendar events={recentEvents} />
-            </div>
-          )}
-
-          {activeNav === 'Archive' && (
-            <EventArchive user={user} />
-          )}
-
-          {activeNav === 'Notifications' && (
-            <NotificationView />
-          )}
-
-          {activeNav === 'Settings' && (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-              <SettingsView user={user} />
-            </div>
-          )}
-
-          {/* ── Reports ────────────────────────────────── */}
-          {(activeNav === 'Reports') && (
-            <ReportsView user={user} />
-          )}
-
-      {/* ── Attendee Roster Modal ──────────────────────────────── */}
-      {rosterModalOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(10,5,5,0.55)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '1rem',
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            width: '100%', maxWidth: '800px',
-            boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
-            overflow: 'hidden',
-            animation: 'fadeSlideUp 0.22s ease',
-            position: 'relative'
-          }}>
-            <button
-              onClick={() => setRosterModalOpen(false)}
-              style={{
-                position: 'absolute', top: '15px', right: '20px',
-                background: 'rgba(0,0,0,0.05)', border: 'none', borderRadius: '50%',
-                width: '32px', height: '32px', color: '#555', fontSize: '1.2rem',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 100,
-              }}
-            ><X size={20} /></button>
-            <div style={{ padding: '1rem' }}>
-              <AttendeeRoster eventId={rosterEventId} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Feedback Insights Modal ──────────────────────────────── */}
-      {feedbackModalOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(10,5,5,0.55)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '1rem',
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            width: '100%', maxWidth: '600px',
-            maxHeight: '90vh',
-            display: 'flex', flexDirection: 'column',
-            boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
-            overflow: 'hidden',
-            animation: 'fadeSlideUp 0.22s ease',
-          }}>
-            {/* Modal header */}
-            <div style={{
-              background: 'linear-gradient(135deg, #673AB7 0%, #512DA8 100%)',
-              padding: '1.5rem 1.75rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              flexShrink: 0
-            }}>
-              <div>
-                <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 700 }}>
-                   Event Insights & Feedback
-                </h2>
-                <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.78rem' }}>
-                  Student ratings and comments
-                </p>
-              </div>
-              <button
-                onClick={() => setFeedbackModalOpen(false)}
-                style={{
-                  background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
-                  width: '32px', height: '32px', color: '#fff', fontSize: '1.2rem',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  zIndex: 100,
-                }}
-              ><X size={20} /></button>
-            </div>
-
-            {/* Modal body */}
-            <div style={{ padding: '1.5rem', overflowY: 'auto' }}>
-              {feedbackLoading ? (
-                <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>Loading insights...</div>
-              ) : !feedbackData ? (
-                <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>Could not load feedback.</div>
-              ) : (
-                <>
-                  <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                    <div style={{ flex: 1, background: '#F5F5F5', padding: '1.5rem', borderRadius: '12px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#673AB7' }}>
-                        {feedbackData.average_rating}
-                      </div>
-                      <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Average Rating
-                      </div>
-                    </div>
-                    <div style={{ flex: 1, background: '#F5F5F5', padding: '1.5rem', borderRadius: '12px', textAlign: 'center' }}>
-                      <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#673AB7' }}>
-                        {feedbackData.total_feedback}
-                      </div>
-                      <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Total Responses
-                      </div>
-                    </div>
-                  </div>
-
-                  <h3 style={{ fontSize: '1rem', color: '#333', marginBottom: '1rem', borderBottom: '2px solid #EEE', paddingBottom: '0.5rem' }}>
-                    Student Comments
-                  </h3>
-
-                  {feedbackData.comments.length === 0 ? (
-                    <p style={{ color: '#888', fontStyle: 'italic' }}>No comments submitted yet.</p>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      {feedbackData.comments.map((fb, idx) => (
-                        <div key={idx} style={{ padding: '1rem', background: '#FAFAFA', borderRadius: '8px', border: '1px solid #EEE' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                            <strong style={{ color: '#444' }}>{fb.student_name}</strong>
-                            <span style={{ color: '#FBC02D' }}>{''.repeat(fb.rating)}{''.repeat(5 - fb.rating)}</span>
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <label style={{ fontSize: '0.8rem', color: '#666', whiteSpace: 'nowrap' }}>End Time:</label>
+                            <input
+                              type="time"
+                              value={sub.end_time || ''}
+                              onChange={(e) => {
+                                const newSubs = [...form.sub_events];
+                                newSubs[idx].end_time = e.target.value;
+                                handleFieldChange('sub_events', newSubs);
+                              }}
+                              style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                            />
                           </div>
-                          {fb.comments && <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#555' }}>{fb.comments}</p>}
-                          <small style={{ color: '#999', fontSize: '0.75rem' }}>
-                            {new Date(fb.created_at).toLocaleDateString()}
-                          </small>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Report Submission Modal ──────────────────────────────── */}
-      {reportModalOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(10,5,5,0.55)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '1rem',
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            width: '100%', maxWidth: '500px',
-            boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
-            overflow: 'hidden',
-            animation: 'fadeSlideUp 0.22s ease',
-          }}>
-            {/* Modal header */}
-            <div style={{
-              background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
-              padding: '1.5rem 1.75rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              <div>
-                <h2 style={{ margin: 0, color: '#FDD06F', fontSize: '1.15rem', fontWeight: 700 }}>
-                   Submit Post-Event Report
-                </h2>
-                <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.78rem' }}>
-                  Mark event as completed by providing a summary or uploading a PDF.
-                </p>
+                        {form.sub_events.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newSubs = form.sub_events.filter((_, i) => i !== idx);
+                              handleFieldChange('sub_events', newSubs);
+                            }}
+                            style={{ alignSelf: 'flex-start', padding: '4px 8px', background: '#ffebee', color: '#c62828', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
+                          >Remove</button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => handleFieldChange('sub_events', [...form.sub_events, { name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }])}
+                      style={{ marginTop: '0.5rem', padding: '6px 12px', background: '#e0f7fa', color: '#006064', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}
+                    >
+                      + Add Another Sub-Event
+                    </button>
+                  </div>
+                )}
               </div>
-              <button
-                onClick={() => setReportModalOpen(false)}
-                style={{
-                  background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
-                  width: '32px', height: '32px', color: '#fff', fontSize: '1.2rem',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'background 0.2s',
-                  zIndex: 100,
-                }}
-                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
-                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-              ><X size={20} /></button>
-            </div>
 
-            <form onSubmit={handleReportSubmit} style={{ padding: '1.75rem' }}>
+              {/* Description */}
               <div style={styles.formGroup}>
-                <label style={{...styles.label, fontWeight: 600, color: '#333'}}>Written Summary (Optional)</label>
+                <label htmlFor="description" style={styles.formLabel}>
+                  Description <span style={styles.required}>*</span>
+                </label>
                 <textarea
-                  style={{ ...styles.input, minHeight: '120px', resize: 'vertical', borderRadius: '12px', padding: '1rem', border: '1px solid #E0E0E0', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
-                  value={reportSummary}
-                  onChange={(e) => setReportSummary(e.target.value)}
-                  placeholder="Summarize key highlights, achievements, and feedback..."
+                  id="description"
+                  value={form.description}
+                  onChange={(e) => handleFieldChange('description', e.target.value)}
+                  placeholder="Describe the event objectives, expected participants, agenda highlights…"
+                  rows={4}
+                  style={s(styles.formInput, styles.formTextarea)}
+                  disabled={loading}
+                  required
                 />
               </div>
 
-              <div style={{ ...styles.formGroup, marginTop: '1.5rem' }}>
-                <label style={{...styles.label, fontWeight: 600, color: '#333'}}>Upload PDF Report (Optional)</label>
-                <div style={{
-                  position: 'relative',
-                  border: '2px dashed #BDBDBD',
-                  borderRadius: '12px',
-                  background: '#FAFAFA',
-                  padding: '2rem 1rem',
-                  textAlign: 'center',
-                  transition: 'all 0.2s',
-                  cursor: 'pointer'
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.borderColor = '#7B1A1A'; e.currentTarget.style.background = '#FFF5F5'; }}
-                onMouseOut={(e) => { e.currentTarget.style.borderColor = '#BDBDBD'; e.currentTarget.style.background = '#FAFAFA'; }}
-                >
+              {/* Event Date (Optional at this stage) */}
+              <div style={styles.formGroup}>
+                <label htmlFor="event_date" style={styles.formLabel}>
+                  Event Date <span style={{ color: 'red' }}>*</span>
+                </label>
+                <input
+                  id="event_date"
+                  type="date"
+                  value={form.event_date || ''}
+                  onChange={(e) => handleFieldChange('event_date', e.target.value)}
+                  style={styles.formInput}
+                  disabled={loading}
+                />
+              </div>
+
+              {/* Registration Date */}
+              <div style={styles.formGroup}>
+                <label htmlFor="registration_date" style={styles.formLabel}>
+                  Registration Date (Deadline) <span style={{ color: 'red' }}>*</span>
+                </label>
+                <input
+                  id="registration_date"
+                  type="date"
+                  value={form.registration_date || ''}
+                  onChange={(e) => handleFieldChange('registration_date', e.target.value)}
+                  style={styles.formInput}
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              {/* Max Participants */}
+              <div style={styles.formGroup}>
+                <label htmlFor="max_participants" style={styles.formLabel}>
+                  Max Participants <span style={{ color: 'red' }}>*</span>
+                </label>
+                <input
+                  id="max_participants"
+                  type="number"
+                  min="1"
+                  value={form.max_participants || ''}
+                  onChange={(e) => handleFieldChange('max_participants', e.target.value)}
+                  style={styles.formInput}
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              <div style={styles.formRow}>
+                {/* Coordinator Name */}
+                <div style={s(styles.formGroup, { flex: 1 })}>
+                  <label htmlFor="coordinator_name" style={styles.formLabel}>
+                    Coordinator Name <span style={{ color: 'red' }}>*</span>
+                  </label>
                   <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={(e) => setReportFile(e.target.files[0] || null)}
-                    style={{
-                      position: 'absolute', inset: 0, width: '100%', height: '100%',
-                      opacity: 0, cursor: 'pointer'
-                    }}
+                    id="coordinator_name"
+                    type="text"
+                    value={form.coordinator_name || ''}
+                    onChange={(e) => handleFieldChange('coordinator_name', e.target.value)}
+                    style={styles.formInput}
+                    placeholder="e.g. Dr. John Doe"
+                    disabled={loading}
+                    required
                   />
-                  <div style={{ pointerEvents: 'none' }}>
-                    <div style={{ marginBottom: '0.5rem', color: '#7B1A1A' }}>
-                      <FileText size={32} style={{ margin: '0 auto' }} />
-                    </div>
-                    <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600, color: '#333' }}>
-                      {reportFile ? reportFile.name : 'Click or drag PDF here to upload'}
-                    </p>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#666' }}>
-                      {reportFile ? `${(reportFile.size / (1024*1024)).toFixed(2)} MB` : 'Max size: 5MB (PDF only)'}
-                    </p>
-                  </div>
+                </div>
+
+                {/* Coordinator Number */}
+                <div style={s(styles.formGroup, { flex: 1 })}>
+                  <label htmlFor="coordinator_number" style={styles.formLabel}>
+                    Coordinator Number <span style={{ color: 'red' }}>*</span>
+                  </label>
+                  <input
+                    id="coordinator_number"
+                    type="text"
+                    value={form.coordinator_number || ''}
+                    onChange={(e) => handleFieldChange('coordinator_number', e.target.value)}
+                    style={styles.formInput}
+                    placeholder="e.g. +91 9876543210"
+                    disabled={loading}
+                    required
+                  />
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+              {/* Brochure File */}
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>Brochure Document <span style={styles.required}>*</span></label>
+                <input
+                  style={s(styles.formInput, formErrors.brochureFile && styles.inputError)}
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => handleFieldChange('brochureFile', e.target.files[0])}
+                  disabled={loading}
+                />
+                {formErrors.brochureFile && <p style={styles.fieldError}>{formErrors.brochureFile}</p>}
+                <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem' }}>
+                  Upload the official event brochure (PDF/JPG/PNG). This will be reviewed by authorities.
+                </p>
+              </div>
+
+              {/* Budget */}
+              <div style={s(styles.formGroup, { maxWidth: '320px' })}>
+                <label htmlFor="budget" style={styles.formLabel}>
+                  Estimated Budget (₹) <span style={styles.required}>*</span>
+                </label>
+                <div style={styles.budgetWrap}>
+                  <span style={styles.budgetPrefix}>₹</span>
+                  <input
+                    id="budget"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={form.budget}
+                    onChange={(e) => handleFieldChange('budget', e.target.value)}
+                    placeholder="0.00"
+                    style={s(styles.formInput, styles.budgetInput, formErrors.budget && styles.inputError)}
+                    disabled={loading}
+                  />
+                </div>
+                {formErrors.budget && (
+                  <p style={styles.fieldError}>{formErrors.budget}</p>
+                )}
+              </div>
+
+              {/* Capacities */}
+              <div style={s(styles.formGroup, { marginTop: '1rem', padding: '1rem', background: '#fcfcfc', border: '1px solid #eee', borderRadius: '8px' })}>
+                <label style={s(styles.formLabel, { marginBottom: '0.8rem' })}>
+                  Event Capacities <span style={styles.optional}>(optional)</span>
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Participants</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={form.max_participants}
+                      onChange={(e) => handleFieldChange('max_participants', e.target.value)}
+                      placeholder="e.g. 100"
+                      style={s(styles.formInput, { padding: '8px' })}
+                      disabled={loading}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Volunteers</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={form.max_volunteers}
+                      onChange={(e) => handleFieldChange('max_volunteers', e.target.value)}
+                      placeholder="e.g. 10"
+                      style={s(styles.formInput, { padding: '8px' })}
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Immediate Approval */}
+              <div style={s(styles.formGroup, { marginTop: '1rem' })}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#555', fontWeight: 600 }}>
+                  <input
+                    type="checkbox"
+                    checked={form.immediate_approval}
+                    onChange={(e) => handleFieldChange('immediate_approval', e.target.checked)}
+                    disabled={loading}
+                    style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
+                  />
+                  Needs Immediate Approval (Urgent)
+                </label>
+                <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem', marginLeft: '1.8rem' }}>
+                  Check this only if the event requires urgent attention (e.g. Independence Day).
+                </p>
+              </div>
+
+              {/* Submit row */}
+              <div style={styles.submitRow}>
                 <button
                   type="button"
-                  style={s(styles.resetBtn, { flex: 1 })}
-                  onClick={() => setReportModalOpen(false)}
+                  onClick={() => { setForm(EMPTY_FORM); setFormErrors({}); }}
+                  style={styles.resetBtn}
+                  disabled={loading}
                 >
-                  Cancel
+                  Reset
                 </button>
                 <button
                   type="submit"
-                  style={s(styles.submitBtn, reportSubmitting && styles.submitBtnDisabled, { flex: 2, background: '#4A0404' })}
-                  disabled={reportSubmitting}
+                  style={s(styles.submitBtn, loading && styles.submitBtnDisabled)}
+                  disabled={loading}
                 >
-                  {reportSubmitting ? 'Submitting...' : 'Mark as Completed'}
+                  {loading ? (
+                    <>
+                      <span style={styles.spinner} /> Submitting…
+                    </>
+                  ) : (
+                    ' Submit Event Request'
+                  )}
                 </button>
               </div>
             </form>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Brochure Upload Modal ──────────────────────────────── */}
-      {uploadModalOpen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(10,5,5,0.55)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '1rem',
-        }}>
-          <div style={{
-            background: '#fff',
-            borderRadius: '16px',
-            width: '100%', maxWidth: '480px',
-            boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
-            overflow: 'hidden',
-            animation: 'fadeSlideUp 0.22s ease',
-          }}>
-            {/* Modal header */}
-            <div style={{
-              background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
-              padding: '1.5rem 1.75rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              <div>
-                <h2 style={{ margin: 0, color: '#FDD06F', fontSize: '1.15rem', fontWeight: 700 }}>
-                   Finalize Event
-                </h2>
-                <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.78rem' }}>
-                  Lock in logistics and upload the event brochure
-                </p>
-              </div>
+        {/* ── Recent Submissions ────────────────────────── */}
+        {activeNav === 'Events' && !showProposeForm && (
+          <div style={styles.recentCard}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+              <h3 style={{ ...styles.recentTitle, margin: 0 }}> My Recent Submissions</h3>
               <button
-                onClick={() => setUploadModalOpen(false)}
+                onClick={() => setShowProposeForm(true)}
+                style={{ padding: '0.6rem 1.2rem', backgroundColor: theme.colors.maroon, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                + New Proposal
+              </button>
+            </div>
+
+            {fetchLoading ? (
+              /* Loading spinner while API call is in-flight */
+              <div style={styles.emptyState}>
+                <span style={styles.fetchSpinner} />
+                <p style={styles.emptyText}>Loading your submissions…</p>
+              </div>
+            ) : recentEvents.length === 0 ? (
+              <div style={styles.emptyState}>
+                <span style={styles.emptyIcon}></span>
+                <p style={styles.emptyText}>No submissions yet. Use the form above to get started!</p>
+              </div>
+            ) : (
+              <div style={styles.table}>
+                {/* Table header */}
+                <div style={s(styles.tableRow, styles.tableHeader)}>
+                  <span style={s(styles.tableCell, { flex: 3 })}>Event Title</span>
+                  <span style={s(styles.tableCell, { flex: 1 })}>Scale</span>
+                  <span style={s(styles.tableCell, { flex: 1 })}>Category</span>
+                  <span style={s(styles.tableCell, { flex: 1 })}>Budget</span>
+                  <span style={s(styles.tableCell, { flex: 1 })}>Status</span>
+                </div>
+                {recentEvents.map((evt) => (
+                  <div key={evt.id} style={styles.tableRow}>
+                    <span style={s(styles.tableCell, { flex: 3, fontWeight: 500 })}>
+                      {evt.event_title}
+                    </span>
+                    <span style={s(styles.tableCell, { flex: 1 })}>
+                      <span style={styles.scaleChip}>{evt.event_scale}</span>
+                    </span>
+                    <span style={s(styles.tableCell, { flex: 1 })}>
+                      <span style={styles.categoryChip}>{evt.category}</span>
+                    </span>
+                    <span style={s(styles.tableCell, { flex: 1 })}>
+                      ₹{Number(evt.budget).toLocaleString('en-IN')}
+                    </span>
+                    <span style={s(styles.tableCell, { flex: 1 })}>
+                      <StatusBadge status={evt.status} />
+                      {!['published', 'completed', 'pending_report'].includes(evt.status?.toLowerCase()) && (
+                        <button
+                          style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: '#e0e0e0', color: '#333', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%', fontWeight: '500' }}
+                          onClick={() => navigate(`/event-details/${evt.id}`)}
+                        >
+                          Track Status
+                        </button>
+                      )}
+                      {evt.remarks && (
+                        <div style={{ marginTop: '8px', fontSize: '0.8rem', color: '#666', background: '#f5f5f5', padding: '6px', borderRadius: '4px', borderLeft: '3px solid #ccc', whiteSpace: 'normal', wordBreak: 'break-word', overflow: 'visible' }}>
+                          <strong>Notes:</strong> {evt.remarks}
+                        </div>
+                      )}
+
+                      {evt.status?.toLowerCase() === 'approved' && (
+                        <button
+                          style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
+                          onClick={() => {
+                            setSelectedEventId(evt.id);
+                            setSelectedEventMode(evt.event_mode || 'offline');
+                            setSelectedEventDetails(evt.details || null);
+                            setLogistics(prev => ({
+                              ...prev,
+                              sub_events_logistics: evt.details?.is_festival && Array.isArray(evt.details?.sub_events)
+                                ? evt.details.sub_events.map(sub => ({ name: typeof sub === 'string' ? sub : sub.name, description: typeof sub === 'string' ? '' : sub.description, venue: '', start_time: '', end_time: '' }))
+                                : []
+                            }));
+                            setUploadModalOpen(true);
+                          }}
+                        >
+                          Finalize Event
+                        </button>
+                      )}
+
+                      {['published', 'completed', 'pending_report'].includes(evt.status?.toLowerCase()) && (
+                        <button
+                          style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: theme.colors.maroon, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
+                          onClick={() => {
+                            setRosterEventId(evt.id);
+                            setRosterModalOpen(true);
+                          }}
+                        >
+                          View Roster
+                        </button>
+                      )}
+
+                      {['published', 'pending_report'].includes(evt.status?.toLowerCase()) && (
+                        <button
+                          style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: theme.colors.info, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
+                          onClick={() => {
+                            setReportEventId(evt.id);
+                            setReportModalOpen(true);
+                          }}
+                        >
+                          Submit Final Report
+                        </button>
+                      )}
+
+                      {evt.status?.toLowerCase() === 'completed' && (
+                        <button
+                          style={{ marginTop: '8px', display: 'block', padding: '5px 10px', backgroundColor: '#673AB7', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%' }}
+                          onClick={() => {
+                            setFeedbackEventId(evt.id);
+                            setFeedbackModalOpen(true);
+                            fetchFeedbackData(evt.id);
+                          }}
+                        >
+                          Insights / Feedback
+                        </button>
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Calendar Content */}
+        {activeNav === 'Calendar' && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+            <div style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
+              <h2 style={styles.sectionTitle}>Event Calendar</h2>
+              <p style={styles.sectionSub}>View your proposed and upcoming events.</p>
+            </div>
+            <EventCalendar events={recentEvents} />
+          </div>
+        )}
+
+        {activeNav === 'Archive' && (
+          <EventArchive user={user} />
+        )}
+
+
+        {activeNav === 'Settings' && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+            <SettingsView user={user} />
+          </div>
+        )}
+
+        {/* ── Reports ────────────────────────────────── */}
+        {(activeNav === 'Reports') && (
+          <ReportsView user={user} />
+        )}
+
+        {/* ── Attendee Roster Modal ──────────────────────────────── */}
+        {rosterModalOpen && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(10,5,5,0.55)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+          }}>
+            <div style={{
+              background: '#fff',
+              borderRadius: '16px',
+              width: '100%', maxWidth: '800px',
+              boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
+              overflow: 'hidden',
+              animation: 'fadeSlideUp 0.22s ease',
+              position: 'relative'
+            }}>
+              <button
+                onClick={() => setRosterModalOpen(false)}
                 style={{
-                  background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '50%',
-                  width: '32px', height: '32px', color: '#fff', fontSize: '1rem',
+                  position: 'absolute', top: '15px', right: '20px',
+                  background: 'rgba(0,0,0,0.05)', border: 'none', borderRadius: '50%',
+                  width: '32px', height: '32px', color: '#555', fontSize: '1.2rem',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  lineHeight: 1,
                   zIndex: 100,
                 }}
               ><X size={20} /></button>
+              <div style={{ padding: '1rem' }}>
+                <AttendeeRoster eventId={rosterEventId} />
+              </div>
             </div>
+          </div>
+        )}
 
-            {/* Modal body */}
-            <form onSubmit={handleFinalizeEvent} style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.1rem', maxHeight: '75vh', overflowY: 'auto' }}>
+        {/* ── Feedback Insights Modal ──────────────────────────────── */}
+        {feedbackModalOpen && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(10,5,5,0.55)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+          }}>
+            <div style={{
+              background: '#fff',
+              borderRadius: '16px',
+              width: '100%', maxWidth: '600px',
+              maxHeight: '90vh',
+              display: 'flex', flexDirection: 'column',
+              boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
+              overflow: 'hidden',
+              animation: 'fadeSlideUp 0.22s ease',
+            }}>
+              {/* Modal header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #673AB7 0%, #512DA8 100%)',
+                padding: '1.5rem 1.75rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                flexShrink: 0
+              }}>
+                <div>
+                  <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 700 }}>
+                    Event Insights & Feedback
+                  </h2>
+                  <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.78rem' }}>
+                    Student ratings and comments
+                  </p>
+                </div>
+                <button
+                  onClick={() => setFeedbackModalOpen(false)}
+                  style={{
+                    background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+                    width: '32px', height: '32px', color: '#fff', fontSize: '1.2rem',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 100,
+                  }}
+                ><X size={20} /></button>
+              </div>
 
-              {/* Date + Time row */}
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <div style={{ flex: 1 }}>
+              {/* Modal body */}
+              <div style={{ padding: '1.5rem', overflowY: 'auto' }}>
+                {feedbackLoading ? (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>Loading insights...</div>
+                ) : !feedbackData ? (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>Could not load feedback.</div>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+                      <div style={{ flex: 1, background: '#F5F5F5', padding: '1.5rem', borderRadius: '12px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#673AB7' }}>
+                          {feedbackData.average_rating}
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Average Rating
+                        </div>
+                      </div>
+                      <div style={{ flex: 1, background: '#F5F5F5', padding: '1.5rem', borderRadius: '12px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#673AB7' }}>
+                          {feedbackData.total_feedback}
+                        </div>
+                        <div style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Total Responses
+                        </div>
+                      </div>
+                    </div>
+
+                    <h3 style={{ fontSize: '1rem', color: '#333', marginBottom: '1rem', borderBottom: '2px solid #EEE', paddingBottom: '0.5rem' }}>
+                      Student Comments
+                    </h3>
+
+                    {feedbackData.comments.length === 0 ? (
+                      <p style={{ color: '#888', fontStyle: 'italic' }}>No comments submitted yet.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {feedbackData.comments.map((fb, idx) => (
+                          <div key={idx} style={{ padding: '1rem', background: '#FAFAFA', borderRadius: '8px', border: '1px solid #EEE' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                              <strong style={{ color: '#444' }}>{fb.student_name}</strong>
+                              <span style={{ color: '#FBC02D' }}>{''.repeat(fb.rating)}{''.repeat(5 - fb.rating)}</span>
+                            </div>
+                            {fb.comments && <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#555' }}>{fb.comments}</p>}
+                            <small style={{ color: '#999', fontSize: '0.75rem' }}>
+                              {new Date(fb.created_at).toLocaleDateString()}
+                            </small>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Report Submission Modal ──────────────────────────────── */}
+        {reportModalOpen && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(10,5,5,0.55)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+          }}>
+            <div style={{
+              background: '#fff',
+              borderRadius: '16px',
+              width: '100%', maxWidth: '500px',
+              boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
+              overflow: 'hidden',
+              animation: 'fadeSlideUp 0.22s ease',
+            }}>
+              {/* Modal header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
+                padding: '1.5rem 1.75rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <div>
+                  <h2 style={{ margin: 0, color: '#FDD06F', fontSize: '1.15rem', fontWeight: 700 }}>
+                    Submit Post-Event Report
+                  </h2>
+                  <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.78rem' }}>
+                    Mark event as completed by providing a summary or uploading a PDF.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setReportModalOpen(false)}
+                  style={{
+                    background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+                    width: '32px', height: '32px', color: '#fff', fontSize: '1.2rem',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'background 0.2s',
+                    zIndex: 100,
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                ><X size={20} /></button>
+              </div>
+
+              <form onSubmit={handleReportSubmit} style={{ padding: '1.75rem' }}>
+                <div style={styles.formGroup}>
+                  <label style={{ ...styles.label, fontWeight: 600, color: '#333' }}>Written Summary (Optional)</label>
+                  <textarea
+                    style={{ ...styles.input, minHeight: '120px', resize: 'vertical', borderRadius: '12px', padding: '1rem', border: '1px solid #E0E0E0', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
+                    value={reportSummary}
+                    onChange={(e) => setReportSummary(e.target.value)}
+                    placeholder="Summarize key highlights, achievements, and feedback..."
+                  />
+                </div>
+
+                <div style={{ ...styles.formGroup, marginTop: '1.5rem' }}>
+                  <label style={{ ...styles.label, fontWeight: 600, color: '#333' }}>Upload PDF Report (Optional)</label>
+                  <div style={{
+                    position: 'relative',
+                    border: '2px dashed #BDBDBD',
+                    borderRadius: '12px',
+                    background: '#FAFAFA',
+                    padding: '2rem 1rem',
+                    textAlign: 'center',
+                    transition: 'all 0.2s',
+                    cursor: 'pointer'
+                  }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = '#7B1A1A'; e.currentTarget.style.background = '#FFF5F5'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.borderColor = '#BDBDBD'; e.currentTarget.style.background = '#FAFAFA'; }}
+                  >
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={(e) => setReportFile(e.target.files[0] || null)}
+                      style={{
+                        position: 'absolute', inset: 0, width: '100%', height: '100%',
+                        opacity: 0, cursor: 'pointer'
+                      }}
+                    />
+                    <div style={{ pointerEvents: 'none' }}>
+                      <div style={{ marginBottom: '0.5rem', color: '#7B1A1A' }}>
+                        <FileText size={32} style={{ margin: '0 auto' }} />
+                      </div>
+                      <p style={{ margin: '0 0 0.25rem 0', fontWeight: 600, color: '#333' }}>
+                        {reportFile ? reportFile.name : 'Click or drag PDF here to upload'}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#666' }}>
+                        {reportFile ? `${(reportFile.size / (1024 * 1024)).toFixed(2)} MB` : 'Max size: 5MB (PDF only)'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                  <button
+                    type="button"
+                    style={s(styles.resetBtn, { flex: 1 })}
+                    onClick={() => setReportModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    style={s(styles.submitBtn, reportSubmitting && styles.submitBtnDisabled, { flex: 2, background: '#4A0404' })}
+                    disabled={reportSubmitting}
+                  >
+                    {reportSubmitting ? 'Submitting...' : 'Mark as Completed'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ── Brochure Upload Modal ──────────────────────────────── */}
+        {uploadModalOpen && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            background: 'rgba(10,5,5,0.55)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+          }}>
+            <div style={{
+              background: '#fff',
+              borderRadius: '16px',
+              width: '100%', maxWidth: '480px',
+              boxShadow: '0 24px 60px rgba(74,4,4,0.22)',
+              overflow: 'hidden',
+              animation: 'fadeSlideUp 0.22s ease',
+            }}>
+              {/* Modal header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
+                padding: '1.5rem 1.75rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <div>
+                  <h2 style={{ margin: 0, color: '#FDD06F', fontSize: '1.15rem', fontWeight: 700 }}>
+                    Finalize Event
+                  </h2>
+                  <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: '0.78rem' }}>
+                    Lock in logistics and upload the event brochure
+                  </p>
+                </div>
+                <button
+                  onClick={() => setUploadModalOpen(false)}
+                  style={{
+                    background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '50%',
+                    width: '32px', height: '32px', color: '#fff', fontSize: '1rem',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    lineHeight: 1,
+                    zIndex: 100,
+                  }}
+                ><X size={20} /></button>
+              </div>
+
+              {/* Modal body */}
+              <form onSubmit={handleFinalizeEvent} style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.1rem', maxHeight: '75vh', overflowY: 'auto' }}>
+
+                {/* Date + Time row */}
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      Event Date
+                    </label>
+                    <input
+                      type="date" required
+                      onChange={(e) => setLogistics({ ...logistics, date: e.target.value })}
+                      style={{
+                        width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
+                        border: '1.5px solid #E0E0E0', borderRadius: '8px',
+                        outline: 'none', boxSizing: 'border-box',
+                        transition: 'border-color 0.15s',
+                        fontFamily: 'inherit',
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#4A0404'}
+                      onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {selectedEventDetails?.is_festival ? 'Main Event / Inauguration Time' : 'Event Time'}
+                    </label>
+                    <input
+                      type="time" required
+                      onChange={(e) => setLogistics({ ...logistics, time: e.target.value })}
+                      style={{
+                        width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
+                        border: '1.5px solid #E0E0E0', borderRadius: '8px',
+                        outline: 'none', boxSizing: 'border-box',
+                        fontFamily: 'inherit',
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#4A0404'}
+                      onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
+                    />
+                  </div>
+                </div>
+
+                {/* Venue — only required for offline events */}
+                {selectedEventMode === 'offline' ? (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {selectedEventDetails?.is_festival ? 'Main Event / Inauguration Venue' : 'Venue'} <span style={{ color: '#C62828' }}>*</span>
+                    </label>
+                    <input
+                      type="text" placeholder="e.g., Main Auditorium, Block A" required
+                      onChange={(e) => setLogistics({ ...logistics, venue: e.target.value })}
+                      style={{
+                        width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
+                        border: '1.5px solid #E0E0E0', borderRadius: '8px',
+                        outline: 'none', boxSizing: 'border-box',
+                        fontFamily: 'inherit',
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#4A0404'}
+                      onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ background: '#E3F2FD', borderRadius: '8px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '1.1rem' }}></span>
+                    <span style={{ fontSize: '0.85rem', color: '#1565C0', fontWeight: 500 }}>This is an online event — no venue required.</span>
+                  </div>
+                )}
+
+                {selectedEventDetails?.is_festival && selectedEventMode === 'offline' && (
+                  <div style={{ marginTop: '0.5rem', padding: '1rem', background: '#FAFAFA', borderRadius: '8px', border: '1px solid #E0E0E0' }}>
+                    <h4 style={{ margin: '0 0 1rem 0', color: theme.colors.maroon }}> Sub-Events Allocation</h4>
+                    {logistics.sub_events_logistics.map((sub, idx) => (
+                      <div key={idx} style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: idx === logistics.sub_events_logistics.length - 1 ? 'none' : '1px solid #EEE' }}>
+                        <strong style={{ display: 'block', marginBottom: '0.5rem', color: '#333' }}>{sub.name}</strong>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#555' }}>Start Time</label>
+                            <input type="time" required value={sub.start_time} onChange={(e) => {
+                              const newLogistics = [...logistics.sub_events_logistics];
+                              newLogistics[idx].start_time = e.target.value;
+                              setLogistics({ ...logistics, sub_events_logistics: newLogistics });
+                            }} style={{ width: '100%', padding: '0.5rem', border: '1.5px solid #E0E0E0', borderRadius: '6px' }} />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#555' }}>End Time</label>
+                            <input type="time" required value={sub.end_time} onChange={(e) => {
+                              const newLogistics = [...logistics.sub_events_logistics];
+                              newLogistics[idx].end_time = e.target.value;
+                              setLogistics({ ...logistics, sub_events_logistics: newLogistics });
+                            }} style={{ width: '100%', padding: '0.5rem', border: '1.5px solid #E0E0E0', borderRadius: '6px' }} />
+                          </div>
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#555' }}>Venue</label>
+                          <input type="text" required placeholder="Sub-event Venue" value={sub.venue} onChange={(e) => {
+                            const newLogistics = [...logistics.sub_events_logistics];
+                            newLogistics[idx].venue = e.target.value;
+                            setLogistics({ ...logistics, sub_events_logistics: newLogistics });
+                          }} style={{ width: '100%', padding: '0.5rem', border: '1.5px solid #E0E0E0', borderRadius: '6px' }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Registration Deadline */}
+                <div>
                   <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                     Event Date
+                    Registration Deadline <span style={{ color: '#C62828' }}>*</span>
                   </label>
                   <input
-                    type="date" required
-                    onChange={(e) => setLogistics({ ...logistics, date: e.target.value })}
+                    type="datetime-local" required
+                    onChange={(e) => setLogistics({ ...logistics, registration_deadline: e.target.value })}
                     style={{
                       width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
                       border: '1.5px solid #E0E0E0', borderRadius: '8px',
@@ -1671,152 +1778,51 @@ export default function FacultyDashboard() {
                     onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
                   />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                     {selectedEventDetails?.is_festival ? 'Main Event / Inauguration Time' : 'Event Time'}
-                  </label>
-                  <input
-                    type="time" required
-                    onChange={(e) => setLogistics({ ...logistics, time: e.target.value })}
+
+
+
+                {/* Divider */}
+                <div style={{ height: '1px', background: '#F0E8E8', margin: '0.25rem 0' }} />
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setUploadModalOpen(false)}
                     style={{
-                      width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
-                      border: '1.5px solid #E0E0E0', borderRadius: '8px',
-                      outline: 'none', boxSizing: 'border-box',
-                      fontFamily: 'inherit',
+                      flex: 1, padding: '0.7rem', borderRadius: '8px',
+                      border: '1.5px solid #E0E0E0', background: '#fff',
+                      color: '#555', fontSize: '0.9rem', fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      transition: 'background 0.15s',
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#4A0404'}
-                    onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
-                  />
-                </div>
-              </div>
-
-              {/* Venue — only required for offline events */}
-              {selectedEventMode === 'offline' ? (
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                     {selectedEventDetails?.is_festival ? 'Main Event / Inauguration Venue' : 'Venue'} <span style={{ color: '#C62828' }}>*</span>
-                  </label>
-                  <input
-                    type="text" placeholder="e.g., Main Auditorium, Block A" required
-                    onChange={(e) => setLogistics({ ...logistics, venue: e.target.value })}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#F5F5F5'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
                     style={{
-                      width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
-                      border: '1.5px solid #E0E0E0', borderRadius: '8px',
-                      outline: 'none', boxSizing: 'border-box',
-                      fontFamily: 'inherit',
+                      flex: 2, padding: '0.7rem', borderRadius: '8px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
+                      color: '#FDD06F', fontSize: '0.9rem', fontWeight: 700,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      boxShadow: '0 4px 14px rgba(74,4,4,0.3)',
+                      transition: 'opacity 0.15s, transform 0.1s',
                     }}
-                    onFocus={(e) => e.target.style.borderColor = '#4A0404'}
-                    onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
-                  />
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                  >
+                    Upload &amp; Finalize
+                  </button>
                 </div>
-              ) : (
-                <div style={{ background: '#E3F2FD', borderRadius: '8px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '1.1rem' }}></span>
-                  <span style={{ fontSize: '0.85rem', color: '#1565C0', fontWeight: 500 }}>This is an online event — no venue required.</span>
-                </div>
-              )}
-
-              {selectedEventDetails?.is_festival && selectedEventMode === 'offline' && (
-                <div style={{ marginTop: '0.5rem', padding: '1rem', background: '#FAFAFA', borderRadius: '8px', border: '1px solid #E0E0E0' }}>
-                  <h4 style={{ margin: '0 0 1rem 0', color: theme.colors.maroon }}> Sub-Events Allocation</h4>
-                  {logistics.sub_events_logistics.map((sub, idx) => (
-                    <div key={idx} style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: idx === logistics.sub_events_logistics.length - 1 ? 'none' : '1px solid #EEE' }}>
-                      <strong style={{ display: 'block', marginBottom: '0.5rem', color: '#333' }}>{sub.name}</strong>
-                      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                        <div style={{ flex: 1 }}>
-                           <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#555' }}>Start Time</label>
-                           <input type="time" required value={sub.start_time} onChange={(e) => {
-                             const newLogistics = [...logistics.sub_events_logistics];
-                             newLogistics[idx].start_time = e.target.value;
-                             setLogistics({ ...logistics, sub_events_logistics: newLogistics });
-                           }} style={{ width: '100%', padding: '0.5rem', border: '1.5px solid #E0E0E0', borderRadius: '6px' }} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                           <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#555' }}>End Time</label>
-                           <input type="time" required value={sub.end_time} onChange={(e) => {
-                             const newLogistics = [...logistics.sub_events_logistics];
-                             newLogistics[idx].end_time = e.target.value;
-                             setLogistics({ ...logistics, sub_events_logistics: newLogistics });
-                           }} style={{ width: '100%', padding: '0.5rem', border: '1.5px solid #E0E0E0', borderRadius: '6px' }} />
-                        </div>
-                      </div>
-                      <div>
-                        <label style={{ fontSize: '0.7rem', fontWeight: 600, color: '#555' }}>Venue</label>
-                        <input type="text" required placeholder="Sub-event Venue" value={sub.venue} onChange={(e) => {
-                             const newLogistics = [...logistics.sub_events_logistics];
-                             newLogistics[idx].venue = e.target.value;
-                             setLogistics({ ...logistics, sub_events_logistics: newLogistics });
-                           }} style={{ width: '100%', padding: '0.5rem', border: '1.5px solid #E0E0E0', borderRadius: '6px' }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Registration Deadline */}
-              <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#555', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                   Registration Deadline <span style={{ color: '#C62828' }}>*</span>
-                </label>
-                <input
-                  type="datetime-local" required
-                  onChange={(e) => setLogistics({ ...logistics, registration_deadline: e.target.value })}
-                  style={{
-                    width: '100%', padding: '0.6rem 0.85rem', fontSize: '0.9rem',
-                    border: '1.5px solid #E0E0E0', borderRadius: '8px',
-                    outline: 'none', boxSizing: 'border-box',
-                    transition: 'border-color 0.15s',
-                    fontFamily: 'inherit',
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = '#4A0404'}
-                  onBlur={(e) => e.target.style.borderColor = '#E0E0E0'}
-                />
-              </div>
-
-
-
-              {/* Divider */}
-              <div style={{ height: '1px', background: '#F0E8E8', margin: '0.25rem 0' }} />
-
-              {/* Action buttons */}
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setUploadModalOpen(false)}
-                  style={{
-                    flex: 1, padding: '0.7rem', borderRadius: '8px',
-                    border: '1.5px solid #E0E0E0', background: '#fff',
-                    color: '#555', fontSize: '0.9rem', fontWeight: 600,
-                    cursor: 'pointer', fontFamily: 'inherit',
-                    transition: 'background 0.15s',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#F5F5F5'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#fff'}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    flex: 2, padding: '0.7rem', borderRadius: '8px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #4A0404 0%, #7B1A1A 100%)',
-                    color: '#FDD06F', fontSize: '0.9rem', fontWeight: 700,
-                    cursor: 'pointer', fontFamily: 'inherit',
-                    boxShadow: '0 4px 14px rgba(74,4,4,0.3)',
-                    transition: 'opacity 0.15s, transform 0.1s',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                >
-                   Upload &amp; Finalize
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
-    </>
+        )}
+      </>
     </DashboardLayout>
   );
 }

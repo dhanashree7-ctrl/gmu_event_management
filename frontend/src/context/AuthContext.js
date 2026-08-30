@@ -16,6 +16,7 @@
  */
 
 import React, { createContext, useContext, useState } from 'react';
+import { API_BASE } from '../config/api';
 
 const AuthContext = createContext(null);
 
@@ -63,6 +64,16 @@ export function AuthProvider({ children }) {
    * Clears both React state and the persisted sessionStorage entry.
    */
   const logout = () => {
+    try {
+      const token = sessionStorage.getItem('jwt_token');
+      if (token) {
+        fetch(`${API_BASE}/remove_fcm_token.php`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(() => {});
+      }
+    } catch { /* ignore */ }
+
     setUser(null);
     try {
       sessionStorage.removeItem(STORAGE_KEY);

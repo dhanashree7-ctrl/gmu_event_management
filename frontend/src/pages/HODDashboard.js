@@ -7,7 +7,6 @@ import theme from '../theme';
 import AttendeeRoster from './AttendeeRoster';
 import EventArchive from '../components/EventArchive';
 import ReportsView from '../components/ReportsView';
-import NotificationView from '../components/NotificationView';
 import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
 import SettingsView from '../components/SettingsView';
@@ -1096,10 +1095,6 @@ export default function HODDashboard() {
 
         {activeNav === 'Archive' && (
           <EventArchive user={user} />
-        )}
-
-        {activeNav === 'Notifications' && (
-          <NotificationView user={user} />
         )}
 
         {activeNav === 'Settings' && (
