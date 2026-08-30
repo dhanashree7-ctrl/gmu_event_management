@@ -25,7 +25,7 @@ import { API_BASE } from '../config/api';
 import theme from '../theme';
 import DashboardMetrics from '../components/DashboardMetrics';
 import AttendeeRoster from './AttendeeRoster';
-import NotificationBell from '../components/NotificationBell';
+
 import UserProfileDropdown from '../components/UserProfileDropdown';
 import SettingsView from '../components/SettingsView';
 import ReportsView from '../components/ReportsView';

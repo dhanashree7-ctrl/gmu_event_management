@@ -7,7 +7,7 @@ import AttendeeRoster from './AttendeeRoster';
 import EventArchive from '../components/EventArchive';
 import ReportsView from '../components/ReportsView';
 import SettingsView from '../components/SettingsView';
-import NotificationBell from '../components/NotificationBell';
+
 import UserProfileDropdown from '../components/UserProfileDropdown';
 import EventCalendar from '../components/EventCalendar';
 import DashboardMetrics from '../components/DashboardMetrics';
