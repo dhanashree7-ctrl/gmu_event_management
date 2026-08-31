@@ -6,10 +6,12 @@
 
 declare(strict_types=1);
 
+
+require_once __DIR__ . '/config/cors.php';
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -61,7 +63,7 @@ $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION 
                u.NAME AS proposed_by, u.DEPT AS department
         FROM event_master AS em
         JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
-        WHERE em.CURRENT_STATUS IN ($in_clause) AND em.SCALE = 'university'
+        WHERE em.CURRENT_STATUS IN ($in_clause)
         ORDER BY em.START_DATE DESC";
 
 $stmt = $conn->prepare($sql);
@@ -96,3 +98,4 @@ $stmt->close(); $conn->close();
 http_response_code(200);
 echo json_encode(['success' => true, 'data' => $events]);
 ?>
+

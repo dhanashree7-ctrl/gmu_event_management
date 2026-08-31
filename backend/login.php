@@ -8,17 +8,15 @@
 
 declare(strict_types=1);
 
+
+require_once __DIR__ . '/config/cors.php';
 // ---------- CORS headers (adjust origin to your React dev URL) ----------
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *'); // Relaxed for dev, restrict in prod
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// Handle browser pre-flight (OPTIONS) request.
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
-    exit;
-}
+
+
+
+
 
 // ---------- Guard: only POST is accepted ---------------------------------
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

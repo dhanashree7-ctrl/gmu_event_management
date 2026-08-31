@@ -201,6 +201,7 @@ const styles = {
     wordBreak: 'break-word',
     overflow: 'hidden',
     cursor: 'pointer',
-    fontWeight: '600'
+    fontWeight: '600',
+    flexShrink: 0
   }
 };

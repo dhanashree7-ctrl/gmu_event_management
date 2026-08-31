@@ -80,7 +80,7 @@ const EMPTY_FORM = {
   max_volunteers: '',
   max_coordinators: '',
   is_festival: false,
-  sub_events: [{ name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }],
+  sub_events: [{ name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '', coordinator_phone: '' }],
   participation_type: 'solo',
   max_team_size: '',
 };
@@ -119,7 +119,13 @@ export default function FacultyDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeNav, setActiveNav] = useState(location.state?.activeNav || 'Dashboard');
+  const [activeNav, setActiveNav] = useState(
+    () => localStorage.getItem('gmu_tab_faculty') || (location.state?.activeNav || 'Dashboard')
+  );
+  const handleNavChange = (nav) => {
+    localStorage.setItem('gmu_tab_faculty', nav);
+    setActiveNav(nav);
+  };
   const [showProposeForm, setShowProposeForm] = useState(false);
 
   // Event form state
@@ -509,7 +515,7 @@ export default function FacultyDashboard() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <DashboardLayout role="faculty" activeNav={activeNav} onNavChange={setActiveNav} onOpenSettings={() => setActiveNav('Settings')}>
+    <DashboardLayout role="faculty" activeNav={activeNav} onNavChange={handleNavChange} onOpenSettings={() => setActiveNav('Settings')}>
       <>
 
         {/* Toast notification */}
@@ -923,6 +929,20 @@ export default function FacultyDashboard() {
                             style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
                           />
                           <input
+                            type="tel"
+                            inputMode="numeric"
+                            maxLength={10}
+                            value={sub.coordinator_phone || ''}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                              const newSubs = [...form.sub_events];
+                              newSubs[idx].coordinator_phone = val;
+                              handleFieldChange('sub_events', newSubs);
+                            }}
+                            placeholder="Coordinator Phone (10 digits)"
+                            style={Object.assign({}, styles.formInput, { padding: '8px', flex: 1 })}
+                          />
+                          <input
                             type="text"
                             value={sub.venue || ''}
                             onChange={(e) => {
@@ -976,7 +996,7 @@ export default function FacultyDashboard() {
                     ))}
                     <button
                       type="button"
-                      onClick={() => handleFieldChange('sub_events', [...form.sub_events, { name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }])}
+                      onClick={() => handleFieldChange('sub_events', [...form.sub_events, { name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '', coordinator_phone: '' }])}
                       style={{ marginTop: '0.5rem', padding: '6px 12px', background: '#e0f7fa', color: '#006064', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}
                     >
                       + Add Another Sub-Event
@@ -1033,22 +1053,25 @@ export default function FacultyDashboard() {
                 />
               </div>
 
-              {/* Max Participants */}
-              <div style={styles.formGroup}>
-                <label htmlFor="max_participants" style={styles.formLabel}>
-                  Max Participants <span style={{ color: 'red' }}>*</span>
-                </label>
-                <input
-                  id="max_participants"
-                  type="number"
-                  min="1"
-                  value={form.max_participants || ''}
-                  onChange={(e) => handleFieldChange('max_participants', e.target.value)}
-                  style={styles.formInput}
-                  disabled={loading}
-                  required
-                />
-              </div>
+
+              {/* Max Participants — hidden for festivals (captured per sub-event) */}
+              {!form.is_festival && (
+                <div style={styles.formGroup}>
+                  <label htmlFor="max_participants" style={styles.formLabel}>
+                    Max Participants <span style={{ color: 'red' }}>*</span>
+                  </label>
+                  <input
+                    id="max_participants"
+                    type="number"
+                    min="1"
+                    value={form.max_participants || ''}
+                    onChange={(e) => handleFieldChange('max_participants', e.target.value)}
+                    style={styles.formInput}
+                    disabled={loading}
+                    required
+                  />
+                </div>
+              )}
 
               <div style={styles.formRow}>
                 {/* Coordinator Name */}
@@ -1075,11 +1098,13 @@ export default function FacultyDashboard() {
                   </label>
                   <input
                     id="coordinator_number"
-                    type="text"
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
                     value={form.coordinator_number || ''}
-                    onChange={(e) => handleFieldChange('coordinator_number', e.target.value)}
-                    style={styles.formInput}
-                    placeholder="e.g. +91 9876543210"
+                    onChange={(e) => handleFieldChange('coordinator_number', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    style={s(styles.formInput, formErrors.coordinator_number && styles.inputError)}
+                    placeholder="10-digit phone number"
                     disabled={loading}
                     required
                   />
@@ -1132,18 +1157,20 @@ export default function FacultyDashboard() {
                   Event Capacities <span style={styles.optional}>(optional)</span>
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Participants</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={form.max_participants}
-                      onChange={(e) => handleFieldChange('max_participants', e.target.value)}
-                      placeholder="e.g. 100"
-                      style={s(styles.formInput, { padding: '8px' })}
-                      disabled={loading}
-                    />
-                  </div>
+                  {!form.is_festival && (
+                    <div>
+                      <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Participants</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={form.max_participants}
+                        onChange={(e) => handleFieldChange('max_participants', e.target.value)}
+                        placeholder="e.g. 100"
+                        style={s(styles.formInput, { padding: '8px' })}
+                        disabled={loading}
+                      />
+                    </div>
+                  )}
                   <div>
                     <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Max Volunteers</label>
                     <input
@@ -1158,23 +1185,6 @@ export default function FacultyDashboard() {
                   </div>
                 </div>
 
-              </div>
-
-              {/* Immediate Approval */}
-              <div style={s(styles.formGroup, { marginTop: '1rem' })}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#555', fontWeight: 600 }}>
-                  <input
-                    type="checkbox"
-                    checked={form.immediate_approval}
-                    onChange={(e) => handleFieldChange('immediate_approval', e.target.checked)}
-                    disabled={loading}
-                    style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
-                  />
-                  Needs Immediate Approval (Urgent)
-                </label>
-                <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem', marginLeft: '1.8rem' }}>
-                  Check this only if the event requires urgent attention (e.g. Independence Day).
-                </p>
               </div>
 
               {/* Submit row */}
@@ -1335,12 +1345,12 @@ export default function FacultyDashboard() {
 
         {/* Calendar Content */}
         {activeNav === 'Calendar' && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', padding: '0.5rem 0' }}>
             <div style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
               <h2 style={styles.sectionTitle}>Event Calendar</h2>
-              <p style={styles.sectionSub}>View your proposed and upcoming events.</p>
+              <p style={styles.sectionSub}>View your schedule and upcoming university events.</p>
             </div>
-            <EventCalendar events={recentEvents} />
+            <EventCalendar events={[...new Map([...systemEvents, ...recentEvents].map(e => [e.id, e])).values()]} />
           </div>
         )}
 
@@ -1866,6 +1876,8 @@ function StatusBadge({ status }) {
 
 // ── Styles ─────────────────────────────────────────────────────────────────
 const styles = {
+  sectionTitle: { fontFamily: theme.fonts.serif, fontSize: '1.25rem', fontWeight: 'bold', color: '#333', marginBottom: '0.3rem' },
+  sectionSub: { fontSize: '0.85rem', color: '#666', marginBottom: '1.5rem' },
   root: {
     display: 'flex',
     minHeight: '100vh',

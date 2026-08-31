@@ -1,4 +1,6 @@
 <?php
+
+require_once __DIR__ . '/config/cors.php';
 require_once __DIR__ . '/config/db.php';
 $conn = get_db_connection();
 
@@ -15,3 +17,4 @@ $stmt->close();
 echo "Successfully marked $affected past events as 'pending_report'.\n";
 $conn->close();
 ?>
+

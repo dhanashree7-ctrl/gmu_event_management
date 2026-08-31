@@ -19,7 +19,13 @@ export default function ExecutiveDashboard() {
   
   // Navigation state
   const location = useLocation();
-  const [activeNav, setActiveNav] = useState(location.state?.activeNav || 'Dashboard'); // dashboard, action-center, my-proposals, approved-history
+  const [activeNav, setActiveNav] = useState(
+    () => localStorage.getItem('gmu_tab_executive') || (location.state?.activeNav || 'Dashboard')
+  );
+  const handleNavChange = (nav) => {
+    localStorage.setItem('gmu_tab_executive', nav);
+    setActiveNav(nav);
+  };
   const [collapsed, setCollapsed] = useState(false);
   
   // Tab state within My Proposals
@@ -321,7 +327,7 @@ export default function ExecutiveDashboard() {
   if (user.role === 'vc') title = 'VC Dashboard';
 
   return (
-    <DashboardLayout role={user.role} activeNav={activeNav} onNavChange={setActiveNav} onOpenSettings={() => setActiveNav('Settings')}>
+    <DashboardLayout role={user.role} activeNav={activeNav} onNavChange={handleNavChange} onOpenSettings={() => setActiveNav('Settings')}>
       <>
         {/* Dashboard View */}
         {activeNav === 'Dashboard' && (
@@ -441,8 +447,8 @@ export default function ExecutiveDashboard() {
                               ₹{Number(ev.budget).toLocaleString('en-IN')}
                             </span>
                             <span style={s(styles.tableCell, { flex: 1 })}>
-                              {ev.brochure_path ? (
-                                <a href={`${API_BASE}/${ev.brochure_path}`} target="_blank" rel="noreferrer" style={{ color: theme.colors.maroon, textDecoration: 'underline' }}>View</a>
+                              {ev.brochure_file_path ? (
+                                <a href={`${API_BASE}/${ev.brochure_file_path}`} target="_blank" rel="noreferrer" style={{ color: theme.colors.maroon, textDecoration: 'underline' }}>View</a>
                               ) : 'N/A'}
                             </span>
                             <span style={s(styles.tableCell, { flex: '0 0 190px', minWidth: '190px', textAlign: 'right', overflow: 'visible', display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' })}>
@@ -529,10 +535,10 @@ export default function ExecutiveDashboard() {
                       </span>
                       <span style={{ ...styles.tableCell, flex: 1 }}>
                         <span style={{ ...styles.statusBadge(ev.current_status), display: 'inline-block', marginBottom: '8px' }}>{ev.current_status}</span>
-                        {ev.brochure_path && (
+                        {ev.brochure_file_path && (
                           <button
                             style={{ display: 'block', padding: '5px 10px', backgroundColor: '#333', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', width: '100%', marginBottom: '6px' }}
-                            onClick={() => window.open(`${API_BASE}/${ev.brochure_path.startsWith('uploads/') ? ev.brochure_path : `uploads/${ev.brochure_path}`}`, '_blank')}
+                            onClick={() => window.open(`${API_BASE}/${ev.brochure_file_path.startsWith('uploads/') ? ev.brochure_file_path : `uploads/${ev.brochure_file_path}`}`, '_blank')}
                           >
                             Brochure
                           </button>
@@ -965,21 +971,6 @@ export default function ExecutiveDashboard() {
                         </div>
                       </div>
 
-                      <div style={s(styles.formGroup, { marginTop: '1rem' })}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#555', fontWeight: 600 }}>
-                          <input
-                            type="checkbox"
-                            checked={formData.immediate_approval}
-                            onChange={(e) => setFormData({...formData, immediate_approval: e.target.checked})}
-                            disabled={proposeLoading}
-                            style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
-                          />
-                          🚨 Needs Immediate Approval (Urgent)
-                        </label>
-                        <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem', marginLeft: '1.8rem' }}>
-                          Check this only if the event requires urgent attention (e.g. Independence Day).
-                        </p>
-                      </div>
 
                       <div style={styles.submitRow}>
                         <button type="submit" style={styles.submitBtn} disabled={proposeLoading}>
@@ -1115,13 +1106,16 @@ export default function ExecutiveDashboard() {
             </div>
           )}
 
-          {activeNav === 'Calendar' && (
-            <div style={styles.contentCard}>
+        {/* Calendar Content */}
+        {activeNav === 'Calendar' && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', padding: '0.5rem 0' }}>
+            <div style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
               <h2 style={styles.sectionTitle}>Event Calendar</h2>
-              <p style={styles.sectionSub}>View your proposed and upcoming events.</p>
-              <EventCalendar events={myEvents} />
+              <p style={styles.sectionSub}>View your schedule and upcoming university events.</p>
             </div>
-          )}
+            <EventCalendar events={[...new Map([...systemEvents, ...myEvents].map(e => [e.id, e])).values()]} />
+          </div>
+        )}
 
           {activeNav === 'Reports' && (
             <ReportsView user={user} />

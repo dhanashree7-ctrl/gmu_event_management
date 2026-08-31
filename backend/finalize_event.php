@@ -4,6 +4,8 @@
  * Sets logistics and publishes the event (CURRENT_STATUS → 'published') in event_master.
  */
 
+
+require_once __DIR__ . '/config/cors.php';
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
     header('Access-Control-Allow-Credentials: true');
@@ -112,3 +114,4 @@ if ($stmt->execute()) {
 
 $stmt->close(); $conn->close();
 ?>
+

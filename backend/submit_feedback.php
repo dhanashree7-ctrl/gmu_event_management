@@ -6,13 +6,15 @@
  */
 
 declare(strict_types=1);
+
+require_once __DIR__ . '/config/cors.php';
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -114,3 +116,4 @@ if ($update_stmt->execute() && $update_stmt->affected_rows > 0) {
     echo json_encode(['success' => false, 'message' => 'Failed to save feedback. Registration may not exist.']);
 }
 ?>
+

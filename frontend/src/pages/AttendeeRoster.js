@@ -123,6 +123,16 @@ export default function AttendeeRoster({ eventId }) {
                     <div style={styles.studentInfo}>
                       <span style={styles.studentName}>{attendee.student_name}</span>
                       <span style={styles.studentEmail}>{attendee.usn || attendee.username}</span>
+                      {attendee.team_lead && (
+                         <div style={{ marginTop: '6px', fontSize: '0.75rem', color: '#555', background: '#f5f5f5', padding: '4px 6px', borderRadius: '4px', display: 'inline-block' }}>
+                           <strong style={{ color: '#2c3e50' }}>Team Lead:</strong> {attendee.team_lead === attendee.usn ? 'Self (Lead)' : attendee.team_lead}
+                         </div>
+                      )}
+                      {attendee.team_members && (
+                         <div style={{ marginTop: '4px', fontSize: '0.75rem', color: '#555', background: '#f5f5f5', padding: '4px 6px', borderRadius: '4px' }}>
+                           <strong style={{ color: '#2c3e50' }}>Members:</strong> {attendee.team_members}
+                         </div>
+                      )}
                     </div>
                   </td>
                   <td style={styles.td}>

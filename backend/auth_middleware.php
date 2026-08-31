@@ -4,6 +4,8 @@
  * Provides basic JWT generation and verification for the Sandbox.
  */
 
+
+require_once __DIR__ . '/config/cors.php';
 // Secret key for JWT signing
 define('JWT_SECRET', 'event_management_super_secret_key_2026');
 
@@ -82,3 +84,4 @@ function require_auth() {
     exit;
 }
 ?>
+

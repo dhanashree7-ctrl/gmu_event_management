@@ -17,7 +17,13 @@ export default function HODDashboard() {
 
   // Navigation state
   const location = useLocation();
-  const [activeNav, setActiveNav] = useState(location.state?.activeNav || 'Dashboard'); // dashboard, action-center, propose-event, my-proposals, approved-history
+  const [activeNav, setActiveNav] = useState(
+    () => localStorage.getItem('gmu_tab_hod') || (location.state?.activeNav || 'Dashboard')
+  );
+  const handleNavChange = (nav) => {
+    localStorage.setItem('gmu_tab_hod', nav);
+    setActiveNav(nav);
+  };
   const [collapsed, setCollapsed] = useState(false);
 
   // Tab state within Action Center
@@ -312,7 +318,7 @@ export default function HODDashboard() {
   if (!user) return null;
 
   return (
-    <DashboardLayout role="hod" activeNav={activeNav} onNavChange={setActiveNav}>
+    <DashboardLayout role="hod" activeNav={activeNav} onNavChange={handleNavChange}>
       <>
 
         {/* Dashboard View */}
@@ -881,21 +887,6 @@ export default function HODDashboard() {
                   </div>
                 </div>
 
-                <div style={s(styles.formGroup, { marginTop: '1rem' })}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#555', fontWeight: 600 }}>
-                    <input
-                      type="checkbox"
-                      checked={formData.immediate_approval}
-                      onChange={(e) => setFormData({ ...formData, immediate_approval: e.target.checked })}
-                      disabled={proposeLoading}
-                      style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
-                    />
-                    Needs Immediate Approval (Urgent)
-                  </label>
-                  <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem', marginLeft: '1.8rem' }}>
-                    Check this only if the event requires urgent attention (e.g. Independence Day).
-                  </p>
-                </div>
 
                 <div style={styles.submitRow}>
                   <button type="submit" style={styles.submitBtn} disabled={proposeLoading}>
@@ -1082,10 +1073,12 @@ export default function HODDashboard() {
         )}
 
         {activeNav === 'Calendar' && (
-          <div style={styles.contentCard}>
-            <h2 style={styles.sectionTitle}>Event Calendar</h2>
-            <p style={styles.sectionSub}>View your proposed and upcoming events.</p>
-            <EventCalendar events={myEvents} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', padding: '0.5rem 0' }}>
+            <div style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
+              <h2 style={styles.sectionTitle}>Event Calendar</h2>
+              <p style={styles.sectionSub}>View your schedule and upcoming university events.</p>
+            </div>
+            <EventCalendar events={[...new Map([...systemEvents, ...myEvents].map(e => [e.id, e])).values()]} />
           </div>
         )}
 

@@ -5,6 +5,8 @@
  * Updates event_registrations (CHECK_IN_STATUS, STATUS).
  */
 
+
+require_once __DIR__ . '/config/cors.php';
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
     header('Access-Control-Allow-Credentials: true');
@@ -113,3 +115,4 @@ echo json_encode([
 ]);
 $conn->close();
 ?>
+

@@ -186,7 +186,13 @@ export default function StudentAffairsDashboard() {
 
   // Layout state
   const [collapsed, setCollapsed] = useState(false);
-  const [activeNav, setActiveNav] = useState('Dashboard');
+  const [activeNav, setActiveNav] = useState(
+    () => localStorage.getItem('gmu_tab_sa') || 'Dashboard'
+  );
+  const handleNavChange = (nav) => {
+    localStorage.setItem('gmu_tab_sa', nav);
+    setActiveNav(nav);
+  };
 
   // Event form state
   const [form, setForm] = useState(EMPTY_FORM);
@@ -501,7 +507,7 @@ export default function StudentAffairsDashboard() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <DashboardLayout role="student_affairs" activeNav={activeNav} onNavChange={setActiveNav} onOpenSettings={() => setActiveNav('Settings')}>
+    <DashboardLayout role="student_affairs" activeNav={activeNav} onNavChange={handleNavChange} onOpenSettings={() => setActiveNav('Settings')}>
       <>
         {toast && (
           <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />
@@ -937,22 +943,6 @@ export default function StudentAffairsDashboard() {
                 </div>
               </div>
 
-              {/* Immediate Approval */}
-              <div style={s(styles.formGroup, { marginTop: '1rem' })}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: '#555', fontWeight: 600 }}>
-                  <input
-                    type="checkbox"
-                    checked={form.immediate_approval}
-                    onChange={(e) => handleFieldChange('immediate_approval', e.target.checked)}
-                    disabled={loading}
-                    style={{ width: '18px', height: '18px', accentColor: theme.colors.maroon }}
-                  />
-                  🚨 Needs Immediate Approval (Urgent)
-                </label>
-                <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.4rem', marginLeft: '1.8rem' }}>
-                  Check this only if the event requires urgent attention (e.g. Independence Day).
-                </p>
-              </div>
 
               {/* Submit row */}
               <div style={styles.submitRow}>

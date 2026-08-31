@@ -7,10 +7,12 @@
 
 declare(strict_types=1);
 
+
+require_once __DIR__ . '/config/cors.php';
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 require_once __DIR__ . '/auth_middleware.php';
@@ -75,7 +77,9 @@ $sql = "SELECT
             u.NAME                    AS student_name,
             u.EMAIL                   AS student_email,
             u.USERNAME                AS usn,
-            u.DEPT                    AS department
+            u.DEPT                    AS department,
+            er.TEAM_LEAD              AS team_lead,
+            er.TEAM_MEMBERS           AS team_members
         FROM event_registrations er
         LEFT JOIN users u ON er.USER_ID = u.USERNAME
         WHERE er.EVENT_ID = ?
@@ -123,3 +127,4 @@ $stmt->close(); $conn->close();
 http_response_code(200);
 echo json_encode(['success' => true, 'data' => $attendees, 'capacities' => $capacities]);
 ?>
+

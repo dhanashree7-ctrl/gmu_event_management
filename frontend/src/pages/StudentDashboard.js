@@ -1,7 +1,7 @@
 /**
  * src/pages/StudentDashboard.js
  * -----------------------------------------------------------------
- * Student portal — shows all published (approved + logistics set)
+ * Student portal â€” shows all published (approved + logistics set)
  * events as a browsable card grid.
  *
  * Layout:
@@ -16,6 +16,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Sun, Moon, Sunrise } from "lucide-react";
 import { API_BASE } from "../config/api";
 import theme from "../theme";
 import StudentEvents from "./StudentEvents";
@@ -26,18 +27,18 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import EventArchive from '../components/EventArchive';
 import ReportsView from '../components/ReportsView';
 
-// ── Utility ──────────────────────────────────────────────────────────────────
+// â”€â”€ Utility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const s = (...styles) => Object.assign({}, ...styles);
 
-// ── Nav items ────────────────────────────────────────────────────────────────
+// â”€â”€ Nav items â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const NAV_ITEMS = [
   { id: "home", label: "Home", icon: "" },
-  { id: "registered", label: "Registered Events", icon: "️" },
+  { id: "registered", label: "Registered Events", icon: "ï¸" },
   { id: "calendar", label: "My Calendar", icon: "" },
-  { id: "settings", label: "Settings", icon: "️" },
+  { id: "settings", label: "Settings", icon: "ï¸" },
 ];
 
-// ── Category colour map ───────────────────────────────────────────────────────
+// â”€â”€ Category colour map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CATEGORY_COLORS = {
   University: { bg: "#EDE7F6", color: "#512DA8" },
   Academic:    { bg: "#E3F2FD", color: "#1565C0" },
@@ -49,7 +50,7 @@ function getCategoryStyle(cat) {
   return CATEGORY_COLORS[cat] ?? { bg: "#F5F5F5", color: "#555" };
 }
 
-// ── Helper: format date ───────────────────────────────────────────────────────
+// â”€â”€ Helper: format date â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function formatDate(dateStr) {
   if (!dateStr) return "TBD";
   return new Date(dateStr).toLocaleDateString("en-IN", {
@@ -57,7 +58,7 @@ function formatDate(dateStr) {
   });
 }
 
-// ── Helper: format time ───────────────────────────────────────────────────────
+// â”€â”€ Helper: format time â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function formatTime(timeStr) {
   if (!timeStr) return "TBD";
   const [h, m] = timeStr.split(":");
@@ -67,7 +68,15 @@ function formatTime(timeStr) {
   return `${display} ${ampm}`;
 }
 
-// ── Helper: greeting ─────────────────────────────────────────────────────────
+// â”€â”€ Helper: greeting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function getGreetingIcon() {
+  const h = new Date().getHours();
+  if (h < 4) return <Moon size={36} color="#FDD06F" />;
+  if (h < 12) return <Sunrise size={36} color="#FDD06F" />;
+  if (h < 17) return <Sun size={36} color="#FDD06F" />;
+  return <Moon size={36} color="#FDD06F" />;
+}
+
 function getGreeting() {
   const h = new Date().getHours();
   if (h < 4) return "Good Evening";
@@ -76,14 +85,20 @@ function getGreeting() {
   return "Good Evening";
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-    const [activeTab, setActiveTab] = useState("Dashboard");
+    const [activeTab, setActiveTab] = useState(
+    () => localStorage.getItem('gmu_tab_student') || 'Dashboard'
+  );
+  const handleTabChange = (tab) => {
+    localStorage.setItem('gmu_tab_student', tab);
+    setActiveTab(tab);
+  };
   const [myEvents, setMyEvents] = useState([]);
   const [loadingMyEvents, setLoadingMyEvents] = useState(false);
   const [myEventsError, setMyEventsError] = useState(null);
@@ -139,7 +154,7 @@ export default function StudentDashboard() {
 
   // Listen for navigate_tab events from NotificationBell
   useEffect(() => {
-    const handler = (e) => setActiveTab(e.detail);
+    const handler = (e) => handleTabChange(e.detail);
     window.addEventListener('navigate_tab', handler);
     return () => window.removeEventListener('navigate_tab', handler);
   }, []);
@@ -209,9 +224,9 @@ export default function StudentDashboard() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
 
-  // ── Render ───────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
-    <DashboardLayout role="student" activeNav={activeTab} onNavChange={setActiveTab}>
+    <DashboardLayout role="student" activeNav={activeTab} onNavChange={handleTabChange}>
       <div>
           {/* Welcome banner */}
           {activeTab === 'Dashboard' && (
@@ -226,7 +241,7 @@ export default function StudentDashboard() {
                   </p>
                 </div>
                 <div style={styles.welcomeDecor}>
-                  <span style={styles.welcomeIcon}></span>
+                  <span style={styles.welcomeIcon}>{getGreetingIcon()}</span>
                 </div>
               </div>
 
@@ -325,26 +340,26 @@ export default function StudentDashboard() {
           )}
 
           {activeTab === 'Calendar' && (
-            <div>
-              <h2 style={{ fontSize: "1.4rem", color: theme.colors.maroon, marginBottom: "1.5rem" }}>
-                My Calendar
-              </h2>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', padding: '0.5rem 0' }}>
+              <div style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
+                <h2 style={styles.sectionTitle}>Event Calendar</h2>
+                <p style={styles.sectionSub}>View your schedule and upcoming university events.</p>
+              </div>
               {loadingMyEvents ? (
                 <div style={styles.centreState}>
                   <div style={styles.spinner} />
-                  <p style={styles.stateText}>Loading your calendar…</p>
+                  <p style={styles.stateText}>Loading your calendar...</p>
                 </div>
               ) : myEventsError ? (
                 <div style={styles.centreState}>
-                  <span style={{ fontSize: "2.5rem" }}>⚠️</span>
+                  <span style={{ fontSize: "2.5rem" }}>?</span>
                   <p style={styles.stateText}>{myEventsError}</p>
                 </div>
               ) : (
-                <EventCalendar events={myEvents} />
+                <EventCalendar events={[...new Map([...systemEvents, ...myEvents].map(e => [e.id, e])).values()]} />
               )}
             </div>
           )}
-
 
           {activeTab === 'Settings' && <SettingsView user={user} />}
 
@@ -356,8 +371,10 @@ export default function StudentDashboard() {
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
+// â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const styles = {
+  sectionTitle: { fontFamily: theme.fonts.serif, fontSize: '1.25rem', fontWeight: 'bold', color: '#333', marginBottom: '0.3rem' },
+  sectionSub: { fontSize: '0.85rem', color: '#666', marginBottom: '1.5rem' },
   root: {
     display: "flex",
     minHeight: "100vh",
@@ -365,7 +382,7 @@ const styles = {
     fontFamily: theme.fonts.sansSerif,
   },
 
-  // ── Sidebar ───────────────────────────────────────────────────────
+  // â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   sidebar: {
     width: "240px",
     minHeight: "100vh",
@@ -475,7 +492,7 @@ const styles = {
     overflow: "hidden",
   },
 
-  // ── Top bar ───────────────────────────────────────────────────────
+  // â”€â”€ Top bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   main: { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 },
   topBar: {
     display: "flex",
@@ -530,7 +547,7 @@ const styles = {
   },
   topBarUserRole: { fontSize: "0.72rem", color: theme.colors.midGray, margin: 0 },
 
-  // ── Content ───────────────────────────────────────────────────────
+  // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   content: { flex: 1, padding: "2rem", overflowY: "auto" },
 
   welcomeBanner: {
@@ -565,7 +582,7 @@ const styles = {
   },
   welcomeIcon: { fontSize: "2.2rem" },
 
-  // ── Toolbar (search + filter) ─────────────────────────────────────
+  // â”€â”€ Toolbar (search + filter) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   toolbar: {
     display: "flex",
     flexDirection: "column",
@@ -619,7 +636,7 @@ const styles = {
     marginBottom: "1rem",
   },
 
-  // ── Event grid ────────────────────────────────────────────────────
+  // â”€â”€ Event grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
@@ -627,7 +644,7 @@ const styles = {
     alignItems: "flex-start",
   },
 
-  // ── Event card ────────────────────────────────────────────────────
+  // â”€â”€ Event card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   card: {
     background: theme.colors.white,
     borderRadius: theme.radii.lg,
@@ -675,7 +692,7 @@ const styles = {
   metaRow: { display: "flex", flexDirection: "column", gap: "0.3rem", marginTop: "0.5rem" },
   metaItem: { fontSize: "0.8rem", color: theme.colors.darkGray },
 
-  // ── Card footer ───────────────────────────────────────────────────
+  // â”€â”€ Card footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   cardFooter: {
     display: "flex",
     gap: "0.5rem",
@@ -711,7 +728,7 @@ const styles = {
     fontFamily: "inherit",
   },
 
-  // ── Empty / loading states ────────────────────────────────────────
+  // â”€â”€ Empty / loading states â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   centreState: {
     display: "flex",
     flexDirection: "column",

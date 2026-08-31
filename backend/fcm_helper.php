@@ -9,6 +9,8 @@
 
 declare(strict_types=1);
 
+
+require_once __DIR__ . '/config/cors.php';
 /**
  * Generates an OAuth2 access token using the Firebase Service Account JSON.
  *
@@ -166,3 +168,4 @@ function send_fcm_to_user(mysqli $conn, string $username, string $title, string 
     }
     return false;
 }
+

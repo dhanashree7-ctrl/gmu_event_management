@@ -11,7 +11,7 @@
  * -----------------------------------------------------------------
  */
 
-export const API_BASE = 'http://localhost:8080/backend';
+export const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8080/backend';
 // export const API_BASE = 'http://172.21.3.137:8080/backend';
 
 const originalFetch = window.fetch;
