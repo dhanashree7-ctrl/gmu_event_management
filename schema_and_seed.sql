@@ -79,7 +79,7 @@ CREATE TABLE `event_master` (
   `ATTACHMENTS` json DEFAULT NULL,
   `CURRENT_STATUS` varchar(50) DEFAULT 'pending_hod',
   `APPROVAL_WORKFLOW` json DEFAULT NULL,
-  `notification_sent` tinyint(1) DEFAULT '0' COMMENT 'FCM broadcast lock — 1 = already fired, prevents duplicate pushes',
+  `NOTIFICATION_SENT` tinyint(1) DEFAULT '0' COMMENT 'FCM broadcast lock — 1 = already fired, prevents duplicate pushes',
   PRIMARY KEY (`EVENT_ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -148,7 +148,7 @@ CREATE TABLE `users` (
   `DEPT` varchar(100) DEFAULT NULL,
   `FACULTY` varchar(100) DEFAULT NULL,
   `SCHOOL` varchar(200) DEFAULT NULL,
-  `fcm_web_token` varchar(500) DEFAULT NULL COMMENT 'Firebase Cloud Messaging web push token',
+  `FCM_WEB_TOKEN` varchar(500) DEFAULT NULL COMMENT 'Firebase Cloud Messaging web push token',
   PRIMARY KEY (`ID`),
   UNIQUE KEY `USERNAME` (`USERNAME`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -174,3 +174,5 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-08-31 12:33:03
+
+

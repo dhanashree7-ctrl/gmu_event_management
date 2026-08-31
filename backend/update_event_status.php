@@ -153,14 +153,14 @@ $update_stmt->close();
 require_once __DIR__ . '/fcm_helper.php';
 
 if ($new_status === 'published') {
-    $lock_stmt = $conn->prepare('SELECT notification_sent FROM event_master WHERE EVENT_ID = ? LIMIT 1');
+    $lock_stmt = $conn->prepare('SELECT NOTIFICATION_SENT FROM event_master WHERE EVENT_ID = ? LIMIT 1');
     if ($lock_stmt) {
         $lock_stmt->bind_param('s', $event_id);
         $lock_stmt->execute();
         $lock_row = $lock_stmt->get_result()->fetch_assoc();
         $lock_stmt->close();
 
-        if ((int)($lock_row['notification_sent'] ?? 0) === 0) {
+        if ((int)($lock_row['NOTIFICATION_SENT'] ?? 0) === 0) {
             $event_scale   = $event['event_scale'] ?? 'department';
             $proposer_dept = '';
 
@@ -176,12 +176,12 @@ if ($new_status === 'published') {
 
             if ($event_scale === 'university' || $proposer_dept === '') {
                 $tok_stmt = $conn->prepare(
-                    "SELECT fcm_web_token FROM users WHERE ROLE = 'student' AND fcm_web_token IS NOT NULL AND fcm_web_token != ''"
+                    "SELECT FCM_WEB_TOKEN FROM users WHERE ROLE = 'student' AND FCM_WEB_TOKEN IS NOT NULL AND FCM_WEB_TOKEN != ''"
                 );
                 $tok_stmt->execute();
             } else {
                 $tok_stmt = $conn->prepare(
-                    "SELECT fcm_web_token FROM users WHERE ROLE = 'student' AND DEPT = ? AND fcm_web_token IS NOT NULL AND fcm_web_token != ''"
+                    "SELECT FCM_WEB_TOKEN FROM users WHERE ROLE = 'student' AND DEPT = ? AND FCM_WEB_TOKEN IS NOT NULL AND FCM_WEB_TOKEN != ''"
                 );
                 $tok_stmt->bind_param('s', $proposer_dept);
                 $tok_stmt->execute();
@@ -191,7 +191,7 @@ if ($new_status === 'published') {
             $ev_title_safe = htmlspecialchars_decode($event['event_title']);
             while ($t = $tok_res->fetch_assoc()) {
                 send_fcm_notification(
-                    $t['fcm_web_token'],
+                    $t['FCM_WEB_TOKEN'],
                     '🎉 New Event Published!',
                     "'{$ev_title_safe}' is now open for registration. Check it out!",
                     '/student-dashboard',
@@ -202,7 +202,7 @@ if ($new_status === 'published') {
             $tok_stmt->close();
 
             // Set the lock so it only sends once
-            $lock_update = $conn->prepare('UPDATE event_master SET notification_sent = 1 WHERE EVENT_ID = ?');
+            $lock_update = $conn->prepare('UPDATE event_master SET NOTIFICATION_SENT = 1 WHERE EVENT_ID = ?');
             if ($lock_update) {
                 $lock_update->bind_param('s', $event_id);
                 $lock_update->execute();
@@ -265,3 +265,5 @@ echo json_encode([
     'event_title' => $event['event_title'],
 ]);
 ?>
+
+

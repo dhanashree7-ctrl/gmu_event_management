@@ -5,7 +5,7 @@
  * [FIREBASE MIGRATION — PHASE 3]
  * Receives a Firebase Cloud Messaging (FCM) web push token from the
  * React frontend and persists it against the authenticated user's row
- * in the `users` table (fcm_web_token column).
+ * in the `users` table (FCM_WEB_TOKEN column).
  *
  * Method : POST
  * Auth   : Bearer token or username in payload
@@ -89,7 +89,7 @@ catch (RuntimeException $e) {
 }
 
 // 2. Assign the token to the current user
-$stmt = $conn->prepare('UPDATE users SET fcm_web_token = ? WHERE USERNAME = ?');
+$stmt = $conn->prepare('UPDATE users SET FCM_WEB_TOKEN = ? WHERE USERNAME = ?');
 if (!$stmt) {
     $conn->close();
     http_response_code(500);
@@ -119,4 +119,5 @@ echo json_encode([
         : 'FCM token unchanged (already up to date).',
 ]);
 ?>
+
 

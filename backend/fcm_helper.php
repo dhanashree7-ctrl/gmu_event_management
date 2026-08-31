@@ -156,16 +156,17 @@ function send_fcm_notification(string $device_token, string $title, string $body
  * @return bool
  */
 function send_fcm_to_user(mysqli $conn, string $username, string $title, string $body, string $link = '/'): bool {
-    $stmt = $conn->prepare("SELECT fcm_web_token FROM users WHERE USERNAME = ? AND fcm_web_token IS NOT NULL AND fcm_web_token != '' LIMIT 1");
+    $stmt = $conn->prepare("SELECT FCM_WEB_TOKEN FROM users WHERE USERNAME = ? AND FCM_WEB_TOKEN IS NOT NULL AND FCM_WEB_TOKEN != '' LIMIT 1");
     if (!$stmt) return false;
     $stmt->bind_param('s', $username);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (!empty($row['fcm_web_token'])) {
-        return send_fcm_notification($row['fcm_web_token'], $title, $body, $link, $username);
+    if (!empty($row['FCM_WEB_TOKEN'])) {
+        return send_fcm_notification($row['FCM_WEB_TOKEN'], $title, $body, $link, $username);
     }
     return false;
 }
+
 

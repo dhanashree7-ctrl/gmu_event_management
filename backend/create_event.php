@@ -206,14 +206,14 @@ if (!empty($details_arr)) {
 $attachments_json = !empty($attachments_arr) ? json_encode($attachments_arr) : null;
 
 $immediate_approval = isset($_POST['immediate_approval']) && $_POST['immediate_approval'] === 'true' ? 1 : 0;
-$notification_sent = 0;
+$NOTIFICATION_SENT = 0;
 
 $event_id_val = 'EVT-' . strtoupper(uniqid());
 
 $sql = 'INSERT INTO event_master
             (PROPOSER_ID, EVENT_TITLE, DESCRIPTION, CATEGORY, SCALE, MODE, VENUE,
              START_DATE, END_DATE, START_TIME, END_TIME, REGISTRATION_DEADLINE, MAX_PARTICIPANTS, BUDGET, COORDINATOR_NAME, CORDINATOR_CONTACT,
-             ATTACHMENTS, CURRENT_STATUS, APPROVAL_WORKFLOW, notification_sent)
+             ATTACHMENTS, CURRENT_STATUS, APPROVAL_WORKFLOW, NOTIFICATION_SENT)
         VALUES
             (?, ?, ?, ?, ?, ?, ?,
              ?, ?, ?, ?, ?, ?, ?, ?, ?,
@@ -250,7 +250,7 @@ try {
         $attachments_json,
         $initial_status,
         $workflow_json,
-        $notification_sent
+        $NOTIFICATION_SENT
     );
 
     if (!$stmt->execute()) {
@@ -296,3 +296,4 @@ echo json_encode([
     'status_assigned' => $initial_status,
 ]);
 ?>
+

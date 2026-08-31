@@ -45,7 +45,7 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$stmt = $conn->prepare('UPDATE users SET fcm_web_token = NULL WHERE USERNAME = ?');
+$stmt = $conn->prepare('UPDATE users SET FCM_WEB_TOKEN = NULL WHERE USERNAME = ?');
 if ($stmt) {
     $stmt->bind_param('s', $username);
     $stmt->execute();
@@ -54,4 +54,5 @@ if ($stmt) {
 $conn->close();
 
 echo json_encode(['success' => true, 'message' => 'Token removed']);
+
 
