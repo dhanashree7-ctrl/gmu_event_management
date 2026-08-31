@@ -51,5 +51,5 @@ The React frontend is environment-aware and requires the backend API URL to be s
 
 ## Verification
 - Navigate to the frontend URL.
-- Log in using one of the seeded accounts (e.g., HOD: `dr_hod_cse`, Password: `password123`).
+- Log in using one of the seeded accounts (e.g., HOD: `cshod01`, Password: `pass123`).
 - Verify that the dashboard loads and API requests are succeeding. Check `backend/error.log` if any issues arise.
