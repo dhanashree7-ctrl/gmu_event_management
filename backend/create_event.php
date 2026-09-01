@@ -47,8 +47,8 @@ $budget_raw = $_POST['budget'] ?? null;
 $budget = is_numeric($budget_raw) ? (float) $budget_raw : -1;
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$proposed_by_id = $auth_payload['USER_NAME'] ?? '';
-$DESIGNATION = strtolower($auth_payload['DESIGNATION'] ?? '');
+$proposed_by_id = $auth_payload['username'] ?? '';
+$DESIGNATION = strtolower($auth_payload['designation'] ?? '');
 
 $max_participants = isset($_POST['max_participants']) && $_POST['max_participants'] !== '' ? (int) $_POST['max_participants'] : null;
 $max_volunteers = isset($_POST['max_volunteers']) && $_POST['max_volunteers'] !== '' ? (int) $_POST['max_volunteers'] : null;

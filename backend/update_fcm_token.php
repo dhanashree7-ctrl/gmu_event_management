@@ -39,7 +39,7 @@ $auth_header = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 if (!empty($auth_header)) {
     try {
         $auth_payload = require_auth();
-        $USER_NAME = trim((string)($auth_payload['USER_NAME'] ?? ''));
+        $USER_NAME = trim((string)($auth_payload['username'] ?? ''));
     } catch (Throwable $t) {
         // Fallback to body USER_NAME if token verification throws
     }

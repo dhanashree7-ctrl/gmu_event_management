@@ -41,7 +41,7 @@ $remarks         = trim((string)($body['remarks'] ?? ''));
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$DESIGNATION = strtolower($auth_payload['DESIGNATION']);
+$DESIGNATION = strtolower($auth_payload['designation']);
 $department_name = $auth_payload['department_name']; // Optional: override department with verified data
 
 
@@ -121,7 +121,7 @@ if ($action === 'reject') {
 
 
 // Step 2 & 3: Update event_master and append to history array
-$approver_id = $auth_payload['USER_NAME'] ?? '';
+$approver_id = $auth_payload['username'] ?? '';
 $notes       = trim($body['notes'] ?? $body['remarks'] ?? '');
 
 $workflow['current_step'] = $next_step;

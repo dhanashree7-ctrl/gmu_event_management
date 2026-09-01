@@ -33,7 +33,7 @@ catch (RuntimeException $e) {
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
 
-$student_id         = $auth_payload['USER_NAME'] ?? '';
+$student_id         = $auth_payload['username'] ?? '';
 $student_department = '';
 $student_usn        = '';
 

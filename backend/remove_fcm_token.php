@@ -27,7 +27,7 @@ require_once __DIR__ . '/auth_middleware.php';
 
 try {
     $auth_payload = require_auth();
-    $USER_NAME = trim((string)($auth_payload['USER_NAME'] ?? ''));
+    $USER_NAME = trim((string)($auth_payload['username'] ?? ''));
     if ($USER_NAME === '') {
         throw new Exception("Missing USER_NAME");
     }

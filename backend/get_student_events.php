@@ -25,7 +25,7 @@ register_shutdown_function(function () {
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$studentId = $auth_payload['USER_NAME'] ?? null;
+$studentId = $auth_payload['username'] ?? null;
 
 if (!$studentId) {
     echo json_encode(['success' => false, 'message' => 'Missing USER_NAME in token.']);

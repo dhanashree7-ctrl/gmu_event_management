@@ -22,7 +22,7 @@ catch (RuntimeException $e) {
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$user_id = $auth_payload['USER_NAME'] ?? '';
+$user_id = $auth_payload['username'] ?? '';
 
 if (!$user_id) {
     http_response_code(400);

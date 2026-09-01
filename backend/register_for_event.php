@@ -33,7 +33,7 @@ require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
 
 $event_id   = $body['event_id'] ?? null;
-$student_id = trim((string)($auth_payload['USER_NAME'] ?? ''));
+$student_id = trim((string)($auth_payload['username'] ?? ''));
 
 $allowed_roles = ['participant', 'volunteer', 'coordinator'];
 $reg_role = strtolower(trim((string)($body['DESIGNATION'] ?? 'participant')));
