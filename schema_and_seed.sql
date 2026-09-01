@@ -19,10 +19,9 @@
 -- Table structure for table `approval_rules`
 --
 
-DROP TABLE IF EXISTS `approval_rules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `approval_rules` (
+CREATE TABLE IF NOT EXISTS `approval_rules` (
   `ID` int NOT NULL AUTO_INCREMENT,
   `SCALE_NAME` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `REQUIRED_CHAIN` json NOT NULL,
@@ -45,10 +44,9 @@ UNLOCK TABLES;
 -- Table structure for table `event_master`
 --
 
-DROP TABLE IF EXISTS `event_master`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `event_master` (
+CREATE TABLE IF NOT EXISTS `event_master` (
   `EVENT_ID` int NOT NULL AUTO_INCREMENT,
   `PROPOSER_ID` varchar(50) NOT NULL,
   `EVENT_TITLE` varchar(200) NOT NULL,
@@ -98,10 +96,9 @@ UNLOCK TABLES;
 -- Table structure for table `event_registrations`
 --
 
-DROP TABLE IF EXISTS `event_registrations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `event_registrations` (
+CREATE TABLE IF NOT EXISTS `event_registrations` (
   `ID` int NOT NULL AUTO_INCREMENT,
   `EVENT_ID` varchar(80) NOT NULL,
   `USER_ID` varchar(50) DEFAULT NULL,
@@ -134,10 +131,9 @@ UNLOCK TABLES;
 -- Table structure for table `users`
 --
 
-DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `ID` int NOT NULL AUTO_INCREMENT,
   `USERNAME` varchar(50) NOT NULL,
   `EMAIL` varchar(191) DEFAULT NULL,
@@ -174,5 +170,6 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-08-31 12:33:03
+
 
 
