@@ -22,7 +22,7 @@ catch (RuntimeException $e) {
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$user_id = $auth_payload['username'] ?? '';
+$user_id = $auth_payload['USER_NAME'] ?? '';
 
 if (!$user_id) {
     http_response_code(400);
@@ -52,12 +52,12 @@ $check_in_funnel = [
 
 // 2. Fetch Demographics
 $demo_sql = "
-    SELECT COALESCE(u.DEPT, 'External/Unknown') AS department, COUNT(er.ID) as count
+    SELECT COALESCE(u.DISCIPLINE, 'External/Unknown') AS department, COUNT(er.ID) as count
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
-    LEFT JOIN users u ON er.USER_ID = u.USERNAME
+    LEFT JOIN users u ON er.USER_ID = u.USER_NAME
     WHERE em.PROPOSER_ID = ?
-    GROUP BY u.DEPT
+    GROUP BY u.DISCIPLINE
     ORDER BY count DESC
 ";
 $demo_stmt = $conn->prepare($demo_sql);
@@ -118,4 +118,5 @@ echo json_encode([
     ]
 ]);
 ?>
+
 

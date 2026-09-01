@@ -59,11 +59,22 @@ try {
 }
 
 /*
- * Fetching the exact columns from our new Enterprise Schema
+ * Fetching columns from the Enterprise users table.
+ * Key mapping:
+ *   USER_NAME   → application username / login identifier
+ *   DESIGNATION → determines internal role via get_role_from_designation()
+ *   DISCIPLINE  → department (e.g. CSE, ECE, CSE-AIML)
+ *   FACULTY     → faculty (e.g. FET, GMIT)
+ *   SCHOOL      → school (e.g. SCST, SE)
+ *   device_token → FCM push notification token
  */
-$sql = 'SELECT ID, USERNAME, EMAIL, PASSWORD, NAME, ROLE, DEPT, FACULTY, SCHOOL
+require_once __DIR__ . '/config/role_helper.php';
+
+$sql = 'SELECT ID, USER_NAME, NAME, PASSWORD, DESIGNATION, USER_GROUP,
+               DISCIPLINE, FACULTY, SCHOOL, device_token
          FROM   users
-         WHERE  USERNAME = ? OR EMAIL = ?
+         WHERE  USER_NAME = ?
+           AND  STATUS = \'ACTIVE\'
          LIMIT  1';
 
 $stmt = $conn->prepare($sql);
@@ -76,7 +87,7 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param('ss', $username, $username);
+$stmt->bind_param('s', $username);
 
 if (!$stmt->execute()) {
     error_log('login.php – execute failed: ' . $stmt->error);
@@ -111,15 +122,21 @@ if (!password_verify($password, $dbPass) && $password !== $dbPass) {
     exit;
 }
 
-// ---------- Success — return safe user data ------------------------------
+// ---------- Success — map enterprise columns → app data -----------------
+$derivedRole = get_role_from_designation(
+    $user['DESIGNATION'] ?? '',
+    $user['USER_GROUP'] ?? ''
+);
+
 $userData = [
-    'id' => (int) ($user['ID'] ?? $user['id']),
-    'username' => $user['USERNAME'] ?? $user['username'],
-    'name' => $user['NAME'] ?? $user['full_name'] ?? $user['name'],
-    'role' => $user['ROLE'] ?? $user['role'] ?? $user['system_role'],
-    'department_name' => $user['DEPT'] ?? $user['department'] ?? '',
-    'faculty_name' => $user['FACULTY'] ?? $user['faculty_name'] ?? 'N/A',
-    'school_name' => $user['SCHOOL'] ?? $user['school_name'] ?? 'N/A',
+    'id'              => (int) ($user['ID'] ?? 0),
+    'username'        => $user['USER_NAME'] ?? '',
+    'name'            => $user['NAME'] ?? '',
+    'role'            => $derivedRole,
+    'department_name' => $user['DISCIPLINE'] ?? '',
+    'faculty_name'    => $user['FACULTY'] ?? 'N/A',
+    'school_name'     => $user['SCHOOL'] ?? 'N/A',
+    'designation'     => $user['DESIGNATION'] ?? '',
 ];
 
 $token = generate_jwt($userData);

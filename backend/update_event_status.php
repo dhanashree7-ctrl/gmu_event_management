@@ -41,7 +41,7 @@ $remarks         = trim((string)($body['remarks'] ?? ''));
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$role = strtolower($auth_payload['role']);
+$DESIGNATION = strtolower($auth_payload['DESIGNATION']);
 $department_name = $auth_payload['department_name']; // Optional: override department with verified data
 
 
@@ -100,13 +100,13 @@ if ($action === 'reject') {
     if (empty($route)) $route = ['hod'];
 
     $expected_role      = $route[$next_step] ?? '';
-    $normalized_role    = strtolower(str_replace('_', '', $role));
+    $normalized_role    = strtolower(str_replace('_', '', $DESIGNATION));
     $normalized_expected = strtolower(str_replace('_', '', $expected_role));
 
     if ($normalized_role !== $normalized_expected) {
         $conn->close();
         http_response_code(403);
-        echo json_encode(['success' => false, 'message' => "Unauthorized. Step expects '{$expected_role}', you actioned as '{$role}'."]);
+        echo json_encode(['success' => false, 'message' => "Unauthorized. Step expects '{$expected_role}', you actioned as '{$DESIGNATION}'."]);
         exit;
     }
 
@@ -121,7 +121,7 @@ if ($action === 'reject') {
 
 
 // Step 2 & 3: Update event_master and append to history array
-$approver_id = $auth_payload['username'] ?? '';
+$approver_id = $auth_payload['USER_NAME'] ?? '';
 $notes       = trim($body['notes'] ?? $body['remarks'] ?? '');
 
 $workflow['current_step'] = $next_step;
@@ -164,24 +164,24 @@ if ($new_status === 'published') {
             $event_scale   = $event['event_scale'] ?? 'department';
             $proposer_dept = '';
 
-            $dept_stmt = $conn->prepare('SELECT DEPT FROM users WHERE USERNAME = ? LIMIT 1');
+            $dept_stmt = $conn->prepare('SELECT DISCIPLINE FROM users WHERE USER_NAME = ? LIMIT 1');
             if ($dept_stmt) {
                 $dept_stmt->bind_param('s', $event['proposer_username']);
                 $dept_stmt->execute();
                 if ($dept_row = $dept_stmt->get_result()->fetch_assoc()) {
-                    $proposer_dept = $dept_row['DEPT'] ?? '';
+                    $proposer_dept = $dept_row['DISCIPLINE'] ?? '';
                 }
                 $dept_stmt->close();
             }
 
             if ($event_scale === 'university' || $proposer_dept === '') {
                 $tok_stmt = $conn->prepare(
-                    "SELECT FCM_WEB_TOKEN FROM users WHERE ROLE = 'student' AND FCM_WEB_TOKEN IS NOT NULL AND FCM_WEB_TOKEN != ''"
+                    "SELECT device_token FROM users WHERE USER_GROUP = 'STUDENT' AND device_token IS NOT NULL AND device_token != ''"
                 );
                 $tok_stmt->execute();
             } else {
                 $tok_stmt = $conn->prepare(
-                    "SELECT FCM_WEB_TOKEN FROM users WHERE ROLE = 'student' AND DEPT = ? AND FCM_WEB_TOKEN IS NOT NULL AND FCM_WEB_TOKEN != ''"
+                    "SELECT device_token FROM users WHERE USER_GROUP = 'STUDENT' AND DISCIPLINE = ? AND device_token IS NOT NULL AND device_token != ''"
                 );
                 $tok_stmt->bind_param('s', $proposer_dept);
                 $tok_stmt->execute();
@@ -191,7 +191,7 @@ if ($new_status === 'published') {
             $ev_title_safe = htmlspecialchars_decode($event['event_title']);
             while ($t = $tok_res->fetch_assoc()) {
                 send_fcm_notification(
-                    $t['FCM_WEB_TOKEN'],
+                    $t['device_token'],
                     '🎉 New Event Published!',
                     "'{$ev_title_safe}' is now open for registration. Check it out!",
                     '/student-dashboard',
@@ -223,10 +223,10 @@ if ($proposer) {
         $msg = "🎉 Your proposal for '$event_title' is fully approved and published directly to the dashboard!$remark_text";
         send_fcm_to_user($conn, $proposer, "✅ Event Published", $msg, '/faculty-dashboard');
     } elseif ($new_status === 'rejected') {
-        $msg = "❌ Your proposal for '$event_title' was rejected by $role.$remark_text";
+        $msg = "❌ Your proposal for '$event_title' was rejected by $DESIGNATION.$remark_text";
         send_fcm_to_user($conn, $proposer, "❌ Proposal Rejected", $msg, '/faculty-dashboard');
     } else {
-        $msg = "✅ Your proposal '$event_title' was approved by $role and moved to the next level.$remark_text";
+        $msg = "✅ Your proposal '$event_title' was approved by $DESIGNATION and moved to the next level.$remark_text";
         send_fcm_to_user($conn, $proposer, "✅ Proposal Progressed", $msg, '/faculty-dashboard');
     }
 }
@@ -239,16 +239,30 @@ elseif ($new_status === 'pending_dean') $next_role_notif = 'dean';
 elseif ($new_status === 'pending_provc') $next_role_notif = 'pro_vc';
 elseif ($new_status === 'pending_vc')  $next_role_notif = 'vc';
 
-if ($next_role_notif) {
-    $next_stmt = $conn->prepare("SELECT USERNAME FROM users WHERE ROLE = ?");
+// Map internal next-step role to an enterprise DESIGNATION LIKE pattern
+$role_to_designation_pattern = [
+    'director' => '%DIRECTOR%',
+    'dean'     => '%DEAN%',
+    'pro_vc'   => '%VICE CHANCELLOR%',
+    'vc'       => 'VICE CHANCELLOR',
+];
+$desig_pattern = $role_to_designation_pattern[$next_role_notif] ?? '';
+
+if ($desig_pattern) {
+    // For pro_vc use NOT LIKE to exclude 'VICE CHANCELLOR' (the VC exact match)
+    if ($next_role_notif === 'pro_vc') {
+        $next_stmt = $conn->prepare("SELECT USER_NAME FROM users WHERE DESIGNATION LIKE ? AND DESIGNATION NOT LIKE 'VICE CHANCELLOR'");
+    } else {
+        $next_stmt = $conn->prepare("SELECT USER_NAME FROM users WHERE DESIGNATION LIKE ?");
+    }
     if ($next_stmt) {
-        $next_stmt->bind_param('s', $next_role_notif);
+        $next_stmt->bind_param('s', $desig_pattern);
         $next_stmt->execute();
         $next_res    = $next_stmt->get_result();
         $budget_flag = ($budget > 500000 && in_array($next_role_notif, ['pro_vc', 'vc'])) ? " 💰 High-Budget Alert!" : "";
         $msg         = "New event '$event_title' has escalated to your queue.$budget_flag";
         while ($row = $next_res->fetch_assoc()) {
-            $u = $row['USERNAME'];
+            $u = $row['USER_NAME'];
             send_fcm_to_user($conn, $u, "📋 Event Escalated for Approval", $msg, $next_link);
         }
         $next_stmt->close();
@@ -265,5 +279,7 @@ echo json_encode([
     'event_title' => $event['event_title'],
 ]);
 ?>
+
+
 
 

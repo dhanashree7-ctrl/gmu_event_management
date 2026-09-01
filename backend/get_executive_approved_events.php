@@ -22,11 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$role = trim($auth_payload['role'] ?? '');
+$DESIGNATION = trim($auth_payload['DESIGNATION'] ?? '');
 
-if ($role === '') {
+if ($DESIGNATION === '') {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Role is required in token.']);
+    echo json_encode(['success' => false, 'message' => 'DESIGNATION is required in token.']);
     exit;
 }
 
@@ -47,22 +47,22 @@ $status_map = [
     'vc'       => ["'approved'","'published'","'completed'","'pending_report'"],
 ];
 
-if (!isset($status_map[$role])) {
+if (!isset($status_map[$DESIGNATION])) {
     http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Invalid role for executive history.']);
+    echo json_encode(['success' => false, 'message' => 'Invalid DESIGNATION for executive history.']);
     exit;
 }
 
-$in_clause = implode(',', $status_map[$role]);
+$in_clause = implode(',', $status_map[$DESIGNATION]);
 
 $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
                em.CATEGORY AS category, em.BUDGET AS budget,
                em.CURRENT_STATUS AS current_status, em.SCALE AS event_scale,
                em.MAX_PARTICIPANTS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
                em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
-               u.NAME AS proposed_by, u.DEPT AS department
+               u.NAME AS proposed_by, u.DISCIPLINE AS department
         FROM event_master AS em
-        JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
+        JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
         WHERE em.CURRENT_STATUS IN ($in_clause)
         ORDER BY em.START_DATE DESC";
 
@@ -98,4 +98,5 @@ $stmt->close(); $conn->close();
 http_response_code(200);
 echo json_encode(['success' => true, 'data' => $events]);
 ?>
+
 

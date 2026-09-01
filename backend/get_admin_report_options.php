@@ -69,7 +69,7 @@ while ($row = $result->fetch_assoc()) {
 rsort($academic_years);
 
 // Fetch hierarchy (Faculty -> School -> Department)
-$hierarchy_query = "SELECT DISTINCT FACULTY, SCHOOL, DEPT FROM users WHERE DEPT IS NOT NULL AND DEPT != ''";
+$hierarchy_query = "SELECT DISTINCT FACULTY, SCHOOL, DISCIPLINE FROM users WHERE DISCIPLINE IS NOT NULL AND DISCIPLINE != ''";
 $hierarchy_result = $conn->query($hierarchy_query);
 
 $hierarchy = [];
@@ -79,7 +79,7 @@ if ($hierarchy_result) {
     while ($r = $hierarchy_result->fetch_assoc()) {
         $fac = $r['FACULTY'];
         $sch = $r['SCHOOL'];
-        $dep = $r['DEPT'];
+        $dep = $r['DISCIPLINE'];
         
         if (empty($fac) || empty($sch)) {
             continue; // Remove the Unknown Faculty / School tags entirely
@@ -118,4 +118,5 @@ echo json_encode([
 
 $conn->close();
 ?>
+
 

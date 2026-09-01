@@ -25,10 +25,10 @@ register_shutdown_function(function () {
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$studentId = $auth_payload['username'] ?? null;
+$studentId = $auth_payload['USER_NAME'] ?? null;
 
 if (!$studentId) {
-    echo json_encode(['success' => false, 'message' => 'Missing username in token.']);
+    echo json_encode(['success' => false, 'message' => 'Missing USER_NAME in token.']);
     exit;
 }
 
@@ -39,20 +39,20 @@ catch (RuntimeException $e) {
     exit;
 }
 
-// Map student_id to USERNAME
-$usn_stmt = $conn->prepare("SELECT USERNAME FROM users WHERE USERNAME = ? OR ID = ? LIMIT 1");
+// Map student_id to USER_NAME
+$usn_stmt = $conn->prepare("SELECT USER_NAME FROM users WHERE USER_NAME = ? OR ID = ? LIMIT 1");
 $usn_stmt->bind_param('ss', $studentId, $studentId);
 $usn_stmt->execute();
 $usn_row = $usn_stmt->get_result()->fetch_assoc();
 $usn_stmt->close();
-$student_usn = $usn_row['USERNAME'] ?? $studentId;
+$student_usn = $usn_row['USER_NAME'] ?? $studentId;
 
 $stmt = $conn->prepare("
     SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title,
            em.START_DATE AS event_date, em.START_TIME AS event_time,
            em.VENUE AS venue, em.CATEGORY AS category, em.ATTACHMENTS AS attachments_json,
            r.CHECK_IN_STATUS AS check_in_status, r.CHECK_IN_TIME AS check_in_time,
-           r.ROLE AS registration_role, r.EXTERNAL_DETAILS AS reg_details
+           r.DESIGNATION AS registration_role, r.EXTERNAL_DETAILS AS reg_details
     FROM event_registrations r
     JOIN event_master em ON r.EVENT_ID = em.EVENT_ID
     WHERE r.USER_ID = ?
@@ -97,4 +97,5 @@ while ($row = $result->fetch_assoc()) {
 echo json_encode(['success' => true, 'data' => $events]);
 $stmt->close(); $conn->close();
 ?>
+
 

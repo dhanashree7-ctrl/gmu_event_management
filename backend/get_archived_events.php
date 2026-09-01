@@ -44,7 +44,7 @@ $sql = "
         (SELECT COUNT(*) FROM event_registrations er WHERE er.EVENT_ID = em.EVENT_ID) AS total_participants,
         (SELECT COALESCE(AVG(JSON_EXTRACT(er2.FEEDBACK_JSON, '$.rating')), 0) FROM event_registrations er2 WHERE er2.EVENT_ID = em.EVENT_ID AND er2.FEEDBACK_JSON IS NOT NULL) AS average_rating
     FROM event_master em
-    LEFT JOIN users u ON em.PROPOSER_ID = u.USERNAME
+    LEFT JOIN users u ON em.PROPOSER_ID = u.USER_NAME
     WHERE em.CURRENT_STATUS = 'completed'
     ORDER BY em.START_DATE DESC
 ";
@@ -80,4 +80,5 @@ while ($row = $result->fetch_assoc()) {
 $conn->close();
 echo json_encode(['success' => true, 'data' => $events]);
 ?>
+
 

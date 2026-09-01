@@ -68,7 +68,7 @@ $event_date = $cap_row['START_DATE'] ?? null;
 $sql = "SELECT
             er.ID                     AS registration_id,
             er.USER_ID                AS student_uid,
-            er.ROLE                   AS registration_role,
+            er.DESIGNATION                   AS registration_role,
             er.EXTERNAL_DETAILS       AS external_details_json,
             er.CHECK_IN_STATUS        AS check_in_status,
             er.CHECK_IN_TIME          AS check_in_time,
@@ -76,14 +76,14 @@ $sql = "SELECT
             u.SEMESTER                AS semester,
             u.NAME                    AS student_name,
             u.EMAIL                   AS student_email,
-            u.USERNAME                AS usn,
-            u.DEPT                    AS department,
+            u.USER_NAME                AS usn,
+            u.DISCIPLINE                    AS department,
             er.TEAM_LEAD              AS team_lead,
             er.TEAM_MEMBERS           AS team_members
         FROM event_registrations er
-        LEFT JOIN users u ON er.USER_ID = u.USERNAME
+        LEFT JOIN users u ON er.USER_ID = u.USER_NAME
         WHERE er.EVENT_ID = ?
-        ORDER BY er.ROLE ASC, er.REGISTRATION_DATE DESC";
+        ORDER BY er.DESIGNATION ASC, er.REGISTRATION_DATE DESC";
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -107,7 +107,7 @@ while ($row = $result->fetch_assoc()) {
     
     $attendees[] = [
         'registration_id'      => (int)$row['registration_id'],
-        'username'             => $row['student_uid'],
+        'USER_NAME'             => $row['student_uid'],
         'usn'                  => $row['usn'] ?? $row['student_uid'],
         'student_name'         => $row['student_name']  ?? 'Unknown Student',
         'student_email'        => $row['student_email'] ?? 'N/A',
@@ -127,4 +127,5 @@ $stmt->close(); $conn->close();
 http_response_code(200);
 echo json_encode(['success' => true, 'data' => $attendees, 'capacities' => $capacities]);
 ?>
+
 

@@ -20,3 +20,4 @@ header('Content-Type: application/json; charset=utf-8');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
 echo json_encode(['success' => true, 'data' => [], 'message' => 'Notifications are now delivered via Firebase FCM push.']);
+

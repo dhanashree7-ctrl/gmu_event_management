@@ -43,10 +43,10 @@ $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION 
                em.BUDGET AS budget, em.CURRENT_STATUS AS current_status,
                em.MAX_PARTICIPANTS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
                em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
-               u.NAME AS proposed_by, u.DEPT AS proposer_department
+               u.NAME AS proposed_by, u.DISCIPLINE AS proposer_department
         FROM event_master AS em
-        JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
-        WHERE u.DEPT = ?
+        JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
+        WHERE u.DISCIPLINE = ?
           AND em.CURRENT_STATUS NOT IN ('pending_hod','rejected','draft')
         ORDER BY em.START_DATE DESC";
 
@@ -83,4 +83,5 @@ $stmt->close(); $conn->close();
 http_response_code(200);
 echo json_encode(['success' => true, 'data' => $events]);
 ?>
+
 

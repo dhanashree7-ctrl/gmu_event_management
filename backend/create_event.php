@@ -47,8 +47,8 @@ $budget_raw = $_POST['budget'] ?? null;
 $budget = is_numeric($budget_raw) ? (float) $budget_raw : -1;
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$proposed_by_id = $auth_payload['username'] ?? '';
-$role = strtolower($auth_payload['role'] ?? '');
+$proposed_by_id = $auth_payload['USER_NAME'] ?? '';
+$DESIGNATION = strtolower($auth_payload['DESIGNATION'] ?? '');
 
 $max_participants = isset($_POST['max_participants']) && $_POST['max_participants'] !== '' ? (int) $_POST['max_participants'] : null;
 $max_volunteers = isset($_POST['max_volunteers']) && $_POST['max_volunteers'] !== '' ? (int) $_POST['max_volunteers'] : null;
@@ -125,12 +125,12 @@ try {
 }
 
 // ---------- Fetch Proposer Context ---------------------------------------
-$dept_stmt = $conn->prepare("SELECT DEPT, FACULTY, SCHOOL FROM users WHERE USERNAME = ? LIMIT 1");
+$dept_stmt = $conn->prepare("SELECT DISCIPLINE, FACULTY, SCHOOL FROM users WHERE USER_NAME = ? LIMIT 1");
 $dept_stmt->bind_param('s', $proposed_by_id);
 $dept_stmt->execute();
 $dept_row = $dept_stmt->get_result()->fetch_assoc();
 $dept_stmt->close();
-$proposer_dept = $dept_row['DEPT'] ?? null;
+$proposer_dept = $dept_row['DISCIPLINE'] ?? null;
 $proposer_faculty = $dept_row['FACULTY'] ?? null;
 $proposer_school = $dept_row['SCHOOL'] ?? null;
 
@@ -270,13 +270,13 @@ $stmt->close();
 
 // --- Notification to HOD via Firebase FCM ---
 if ($initial_status === 'pending_hod') {
-    $hod_sql = "SELECT u2.USERNAME FROM users u1 JOIN users u2 ON u1.DEPT = u2.DEPT WHERE u1.USERNAME = ? AND u2.ROLE = 'hod' LIMIT 1";
+    $hod_sql = "SELECT u2.USER_NAME FROM users u1 JOIN users u2 ON u1.DISCIPLINE = u2.DISCIPLINE WHERE u1.USER_NAME = ? AND u2.DESIGNATION LIKE '%HOD%' LIMIT 1";
     $hod_stmt = $conn->prepare($hod_sql);
     if ($hod_stmt) {
         $hod_stmt->bind_param('s', $proposed_by_id);
         $hod_stmt->execute();
         if ($hod_row = $hod_stmt->get_result()->fetch_assoc()) {
-            $hod_username = $hod_row['USERNAME'];
+            $hod_username = $hod_row['USER_NAME'];
             $msg = "New event proposal '$event_title' requires your approval.";
             $link = "/hod-dashboard";
             require_once __DIR__ . '/fcm_helper.php';
@@ -296,4 +296,6 @@ echo json_encode([
     'status_assigned' => $initial_status,
 ]);
 ?>
+
+
 

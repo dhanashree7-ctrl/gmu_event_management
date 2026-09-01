@@ -22,20 +22,20 @@ catch (RuntimeException $e) {
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$student_id = $auth_payload['username'] ?? '';
+$student_id = $auth_payload['USER_NAME'] ?? '';
 
 if (!$student_id) {
-    echo json_encode(['success' => false, 'message' => 'Missing username in token.']);
+    echo json_encode(['success' => false, 'message' => 'Missing USER_NAME in token.']);
     exit;
 }
 
 // Ensure the student ID corresponds to a valid user/usn.
-$stmt = $conn->prepare("SELECT USERNAME FROM users WHERE USERNAME = ? OR ID = ? LIMIT 1");
+$stmt = $conn->prepare("SELECT USER_NAME FROM users WHERE USER_NAME = ? OR ID = ? LIMIT 1");
 $stmt->bind_param("ss", $student_id, $student_id);
 $stmt->execute();
 $usn = '';
 if ($row = $stmt->get_result()->fetch_assoc()) {
-    $usn = $row['USERNAME'];
+    $usn = $row['USER_NAME'];
 }
 $stmt->close();
 $usn = $usn ?: $student_id;
@@ -61,9 +61,9 @@ while ($row = $eng_res->fetch_assoc()) {
 }
 $stmt->close();
 
-// 2. Role Breakdown (Donut Chart - Group by Role)
+// 2. DESIGNATION Breakdown (Donut Chart - Group by DESIGNATION)
 $role_sql = "
-    SELECT COALESCE(ROLE, 'participant') as role_name, COUNT(ID) as count
+    SELECT COALESCE(DESIGNATION, 'participant') as role_name, COUNT(ID) as count
     FROM event_registrations
     WHERE USER_ID = ?
     GROUP BY role_name
@@ -117,4 +117,5 @@ echo json_encode([
     ]
 ]);
 ?>
+
 

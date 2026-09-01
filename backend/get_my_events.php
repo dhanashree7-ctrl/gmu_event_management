@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$username = $auth_payload['username'];
+$USER_NAME = $auth_payload['USER_NAME'];
 
 require_once __DIR__ . '/config/db.php';
 try { $conn = get_db_connection(); }
@@ -60,7 +60,7 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param('s', $username);
+$stmt->bind_param('s', $USER_NAME);
 if (!$stmt->execute()) {
     error_log('get_my_events.php – execute failed: ' . $stmt->error);
     $stmt->close(); $conn->close();
@@ -99,3 +99,4 @@ $stmt->close(); $conn->close();
 http_response_code(200);
 echo json_encode(['success' => true, 'data' => $events]);
 ?>
+

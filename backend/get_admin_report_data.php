@@ -36,9 +36,9 @@ $school        = isset($_GET['school'])     && $_GET['school']     !== '' ? $_GE
 $master_events_query = "
     SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.ATTACHMENTS AS attachments_json,
            em.START_DATE AS event_date, em.CATEGORY AS category, em.SCALE AS event_scale,
-           em.BUDGET AS budget, u.DEPT AS department
+           em.BUDGET AS budget, u.DISCIPLINE AS department
     FROM event_master em
-    LEFT JOIN users u ON u.USERNAME = em.PROPOSER_ID
+    LEFT JOIN users u ON u.USER_NAME = em.PROPOSER_ID
 ";
 $master_events_result = $conn->query($master_events_query);
 
@@ -89,10 +89,10 @@ $in_clause = implode(',', array_map(fn($id) => "'" . $conn->real_escape_string((
 $participants_query = "
     SELECT
         COALESCE(u.NAME, 'Unknown Participant') AS participant_name,
-        COALESCE(u.USERNAME, er.USER_ID) AS usn,
+        COALESCE(u.USER_NAME, er.USER_ID) AS usn,
         COALESCE(u.EMAIL, 'N/A')        AS email,
-        er.ROLE        AS role,
-        COALESCE(u.DEPT, 'N/A')   AS department,
+        er.DESIGNATION        AS DESIGNATION,
+        COALESCE(u.DISCIPLINE, 'N/A')   AS department,
         COALESCE(u.FACULTY, 'N/A') AS faculty_name,
         COALESCE(u.SCHOOL, 'N/A')  AS school_name,
         u.SEMESTER                 AS semester,
@@ -100,13 +100,13 @@ $participants_query = "
         em.EVENT_TITLE AS event_title
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
-    LEFT JOIN users u ON er.USER_ID = u.USERNAME
+    LEFT JOIN users u ON er.USER_ID = u.USER_NAME
     WHERE er.EVENT_ID IN ($in_clause)
 ";
 
 if ($department !== 'all') {
     $dept_array = array_map(fn($i) => "'" . $conn->real_escape_string(trim($i)) . "'", explode(',', $department));
-    $participants_query .= " AND u.DEPT IN (" . implode(',', $dept_array) . ")";
+    $participants_query .= " AND u.DISCIPLINE IN (" . implode(',', $dept_array) . ")";
 }
 if ($faculty !== 'all') {
     $fac_array = array_map(fn($i) => "'" . $conn->real_escape_string(trim($i)) . "'", explode(',', $faculty));
@@ -124,11 +124,11 @@ $dept_breakdown = [];
 $sem_breakdown  = [];
 
 while ($row = $participants_result->fetch_assoc()) {
-    $dept = $row['department'];
-    if (!$dept) {
-        $dept = (strpos($row['usn'] ?? '', 'EXT') === 0) ? 'External' : 'Unknown';
+    $DISCIPLINE = $row['department'];
+    if (!$DISCIPLINE) {
+        $DISCIPLINE = (strpos($row['usn'] ?? '', 'EXT') === 0) ? 'External' : 'Unknown';
     }
-    $dept_breakdown[$dept] = ($dept_breakdown[$dept] ?? 0) + 1;
+    $dept_breakdown[$DISCIPLINE] = ($dept_breakdown[$DISCIPLINE] ?? 0) + 1;
 
     $sem = $row['semester'];
     if ($sem) {
@@ -153,4 +153,5 @@ echo json_encode([
 
 $conn->close();
 ?>
+
 

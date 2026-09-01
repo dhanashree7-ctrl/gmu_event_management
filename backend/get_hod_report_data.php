@@ -34,8 +34,8 @@ if (!$department) {
 $output_sql = "
     SELECT DATE_FORMAT(em.START_DATE, '%Y-%m') AS month, COUNT(em.EVENT_ID) AS count
     FROM event_master em
-    JOIN users u ON em.PROPOSER_ID = u.USERNAME
-    WHERE u.DEPT = ? AND em.START_DATE IS NOT NULL
+    JOIN users u ON em.PROPOSER_ID = u.USER_NAME
+    WHERE u.DISCIPLINE = ? AND em.START_DATE IS NOT NULL
     GROUP BY month
     ORDER BY month ASC
 ";
@@ -58,8 +58,8 @@ $engagement_sql = "
     SELECT DATE_FORMAT(em.START_DATE, '%Y-%m') AS month, COUNT(er.ID) AS count
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
-    JOIN users u ON er.USER_ID = u.USERNAME
-    WHERE u.DEPT = ? AND em.START_DATE IS NOT NULL
+    JOIN users u ON er.USER_ID = u.USER_NAME
+    WHERE u.DISCIPLINE = ? AND em.START_DATE IS NOT NULL
     GROUP BY month
     ORDER BY month ASC
 ";
@@ -82,10 +82,10 @@ $leaderboard_sql = "
     SELECT u.NAME AS faculty_name, COUNT(DISTINCT em.EVENT_ID) AS total_events, 
            AVG(JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating')) AS average_rating
     FROM users u
-    LEFT JOIN event_master em ON em.PROPOSER_ID = u.USERNAME
+    LEFT JOIN event_master em ON em.PROPOSER_ID = u.USER_NAME
     LEFT JOIN event_registrations er ON er.EVENT_ID = em.EVENT_ID AND er.FEEDBACK_JSON IS NOT NULL
-    WHERE u.DEPT = ? AND (u.ROLE = 'faculty' OR u.ROLE = 'hod')
-    GROUP BY u.USERNAME
+    WHERE u.DISCIPLINE = ? AND (u.(DESIGNATION LIKE '%PROFESSOR%' OR DESIGNATION IN ('FACULTY','LECTURER','INSTRUCTOR') OR USER_GROUP = 'FACULTY') OR u.DESIGNATION LIKE '%HOD%')
+    GROUP BY u.USER_NAME
     HAVING total_events > 0
     ORDER BY total_events DESC, average_rating DESC
 ";
@@ -115,4 +115,6 @@ echo json_encode([
     ]
 ]);
 ?>
+
+
 

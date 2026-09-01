@@ -3,7 +3,7 @@
  * backend/update_settings.php
  * ---------------------------------------------------------------
  * Handles password updates from the Settings tab.
- * Accepts: username, current_password, new_password
+ * Accepts: USER_NAME, current_password, new_password
  */
 
 declare(strict_types=1);
@@ -45,13 +45,13 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($body)) {
     exit;
 }
 
-$username = trim($body['username'] ?? '');
+$USER_NAME = trim($body['USER_NAME'] ?? '');
 $current_password = trim($body['current_password'] ?? '');
 $new_password = trim($body['new_password'] ?? '');
 
-if ($username === '' || $current_password === '' || $new_password === '') {
+if ($USER_NAME === '' || $current_password === '' || $new_password === '') {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Username, current password, and new password are required.']);
+    echo json_encode(['success' => false, 'message' => 'USER_NAME, current password, and new password are required.']);
     exit;
 }
 
@@ -66,14 +66,14 @@ try {
 }
 
 // Check current password
-$sql = 'SELECT id, password FROM users WHERE username = ? LIMIT 1';
+$sql = 'SELECT id, password FROM users WHERE USER_NAME = ? LIMIT 1';
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
     echo json_encode(['success' => false, 'message' => 'Internal server error (prepare).']);
     exit;
 }
 
-$stmt->bind_param('s', $username);
+$stmt->bind_param('s', $USER_NAME);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
@@ -108,4 +108,5 @@ if ($update_stmt->execute()) {
 $update_stmt->close();
 $conn->close();
 ?>
+
 

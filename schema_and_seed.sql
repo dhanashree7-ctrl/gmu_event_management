@@ -128,37 +128,30 @@ INSERT INTO `event_registrations` VALUES (1,'3','gmcs01',NULL,'participant','202
 UNLOCK TABLES;
 
 --
--- Table structure for table `users`
+-- IMPORTANT: ENTERPRISE USERS TABLE
+-- ─────────────────────────────────────────────────────────────────────────────
+-- The 'users' table is NOT defined here. It is managed by the university's
+-- central enterprise system and must be imported separately.
 --
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE IF NOT EXISTS `users` (
-  `ID` int NOT NULL AUTO_INCREMENT,
-  `USERNAME` varchar(50) NOT NULL,
-  `EMAIL` varchar(191) DEFAULT NULL,
-  `PASSWORD` varchar(255) NOT NULL,
-  `NAME` varchar(100) NOT NULL,
-  `SEMESTER` varchar(50) DEFAULT NULL,
-  `ROLE` varchar(50) NOT NULL,
-  `DEPT` varchar(100) DEFAULT NULL,
-  `FACULTY` varchar(100) DEFAULT NULL,
-  `SCHOOL` varchar(200) DEFAULT NULL,
-  `FCM_WEB_TOKEN` varchar(500) DEFAULT NULL COMMENT 'Firebase Cloud Messaging web push token',
-  PRIMARY KEY (`ID`),
-  UNIQUE KEY `USERNAME` (`USERNAME`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
+-- Deploy the enterprise users table first:
+--   mysql -u root -p <db_name> < users.sql
 --
--- Dumping data for table `users`
+-- Then import this file:
+--   mysql -u root -p <db_name> < schema_and_seed.sql
 --
+-- Key enterprise columns used by this application:
+--   USER_NAME    → login identifier (e.g. U23E01CS018, cshod01)
+--   PASSWORD     → bcrypt-hashed password
+--   NAME         → full name
+--   DESIGNATION  → determines role (HOD, PROFESSOR, DIRECTOR, STUDENT, etc.)
+--   USER_GROUP   → secondary group (STUDENT, FACULTY, ACCOUNTS, etc.)
+--   DISCIPLINE   → department (e.g. CSE, ECE, CSE-AIML)
+--   FACULTY      → faculty name (e.g. FET, GMIT)
+--   SCHOOL       → school (e.g. SCST, SE)
+--   device_token → Firebase Cloud Messaging push token
+--   STATUS       → ACTIVE / CLOSED
+-- ─────────────────────────────────────────────────────────────────────────────
 
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'gmcs01','gmcs01@gmu.ac.in','pass123','Aarav Sharma','3rd','student','CSE','FET','SCST','cQy34AjtFIeyvirtKt5ijV:APA91bHeWWkIGLgwWKq3Uks9UPwG3MvIHHXy_f5xMAGqkUO2UQqlNQfM84-1T3wLoIO60pqtz9mgsKd4qbyCw1PZo3ixoEbrJxTWqYwf6O49fUcv58UP7DM'),(2,'csfac01','csfac01@gmu.ac.in','pass123','Prof. Alice CSE',NULL,'faculty','CSE','FET','SCST','cPzudrx0Qald-9w0U4wIWj:APA91bEndr69TVbtorSolrKHkLW44zs3txsk6fEBGaCplOoFQcSjg9UBreNpZEJgDNPMtWzeHYUgTpYHBaLc0T-TFrVFtReI7KAOVSEMIffkOg_KSE3SPo0'),(3,'cshod01','cshod01@gmu.ac.in','pass123','Dr. HOD CSE',NULL,'hod','CSE','FET','SCST','cPzudrx0Qald-9w0U4wIWj:APA91bEndr69TVbtorSolrKHkLW44zs3txsk6fEBGaCplOoFQcSjg9UBreNpZEJgDNPMtWzeHYUgTpYHBaLc0T-TFrVFtReI7KAOVSEMIffkOg_KSE3SPo0'),(4,'aihod01','aihod01@gmu.ac.in','pass123','Dr. HOD AIML',NULL,'hod','AIML','FET','SCST',NULL),(5,'director_scst','director_scst@gmu.ac.in','pass123','Director SCST',NULL,'director','CSE','FET','SCST','cPzudrx0Qald-9w0U4wIWj:APA91bEndr69TVbtorSolrKHkLW44zs3txsk6fEBGaCplOoFQcSjg9UBreNpZEJgDNPMtWzeHYUgTpYHBaLc0T-TFrVFtReI7KAOVSEMIffkOg_KSE3SPo0'),(6,'director_sa','director_sa@gmu.ac.in','pass123','Director Student Affairs',NULL,'student_affairs','Student Affairs','Administration','Administration',NULL),(7,'dean_fet','dean_fet@gmu.ac.in','pass123','Dean FET',NULL,'dean','Administration','FET','SCST',NULL),(8,'pro_vc','pro_vc@gmu.ac.in','pass123','Pro Vice Chancellor',NULL,'provc','Administration','FET','SCST',NULL),(9,'vc','vc@gmu.ac.in','pass123','Vice Chancellor',NULL,'vc','Administration','FET','SCST',NULL),(10,'vol01','vol01@gmu.ac.in','pass123','Volunteer CSE',NULL,'volunteer','CSE','FET','SCST',NULL),(11,'events_admin','events_admin@gmu.ac.in','pass123','Events Admin',NULL,'events_admin','Events Management','Administration','Administration',NULL);
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

@@ -26,7 +26,7 @@ $fac_sql = "
            COALESCE(u.FACULTY, 'Other') AS faculty_name, 
            COUNT(em.EVENT_ID) as event_count 
     FROM event_master em 
-    JOIN users u ON em.PROPOSER_ID = u.USERNAME 
+    JOIN users u ON em.PROPOSER_ID = u.USER_NAME 
     GROUP BY u.SCHOOL, u.FACULTY
 ";
 $fac_res = $conn->query($fac_sql);
@@ -122,4 +122,5 @@ echo json_encode([
     ]
 ]);
 ?>
+
 

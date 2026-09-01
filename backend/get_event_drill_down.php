@@ -36,9 +36,9 @@ if (!$event_id) {
 
 // 1. Fetch Master Event from event_master
 $stmt = $conn->prepare("
-    SELECT em.*, u.NAME AS proposed_by_name, u.DEPT AS proposer_dept 
+    SELECT em.*, u.NAME AS proposed_by_name, u.DISCIPLINE AS proposer_dept 
     FROM event_master em 
-    LEFT JOIN users u ON em.PROPOSER_ID = u.USERNAME 
+    LEFT JOIN users u ON em.PROPOSER_ID = u.USER_NAME 
     WHERE em.EVENT_ID = ?
 ");
 $stmt->bind_param("s", $event_id);
@@ -65,10 +65,10 @@ $master_event['report_file_path'] = $attachments['report'] ?? null;
 
 // 2. Fetch Participants from event_registrations joined with users
 $stmt2 = $conn->prepare("
-    SELECT r.ID, r.USER_ID, r.ROLE, r.FEEDBACK_JSON, r.EXTERNAL_DETAILS,
-           u.NAME AS STUDENT_NAME, u.USERNAME AS USN, u.DEPT, u.SCHOOL, u.FACULTY
+    SELECT r.ID, r.USER_ID, r.DESIGNATION, r.FEEDBACK_JSON, r.EXTERNAL_DETAILS,
+           u.NAME AS STUDENT_NAME, u.USER_NAME AS USN, u.DISCIPLINE, u.SCHOOL, u.FACULTY
     FROM event_registrations r
-    LEFT JOIN users u ON r.USER_ID = u.USERNAME
+    LEFT JOIN users u ON r.USER_ID = u.USER_NAME
     WHERE r.EVENT_ID = ?
 ");
 $stmt2->bind_param("s", $event_id);
@@ -100,9 +100,9 @@ if (isset($attachments['details'])) {
 
 while ($row = $participants_result->fetch_assoc()) {
     $total_participants++;
-    $dept = $row['DEPT'];
-    if (!empty($dept) && $dept !== 'Unknown Department') {
-        $department_breakdown[$dept] = ($department_breakdown[$dept] ?? 0) + 1;
+    $DISCIPLINE = $row['DISCIPLINE'];
+    if (!empty($DISCIPLINE) && $DISCIPLINE !== 'Unknown Department') {
+        $department_breakdown[$DISCIPLINE] = ($department_breakdown[$DISCIPLINE] ?? 0) + 1;
     }
 
     $feedback = !empty($row['FEEDBACK_JSON']) ? json_decode($row['FEEDBACK_JSON'], true) : [];
@@ -149,10 +149,10 @@ while ($row = $participants_result->fetch_assoc()) {
     $participants[] = [
         'name'       => $row['STUDENT_NAME'] ?? $row['USN'],
         'usn'        => $row['USN'],
-        'role'       => $row['ROLE'],
+        'DESIGNATION'       => $row['DESIGNATION'],
         'faculty'    => $row['FACULTY'],
         'school'     => $row['SCHOOL'],
-        'department' => $row['DEPT'],
+        'department' => $row['DISCIPLINE'],
         'college'    => $college,
         'sub_events' => $joined_sub_events,
     ];
@@ -184,4 +184,5 @@ echo json_encode([
 
 $conn->close();
 ?>
+
 

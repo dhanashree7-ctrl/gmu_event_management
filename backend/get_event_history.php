@@ -36,7 +36,7 @@ $event_sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.CATEGO
                      em.BUDGET AS budget, u.NAME AS proposed_by,
                      em.APPROVAL_WORKFLOW AS approval_workflow_json, em.ATTACHMENTS AS details_json
               FROM event_master em
-              JOIN users u ON em.PROPOSER_ID = u.USERNAME
+              JOIN users u ON em.PROPOSER_ID = u.USER_NAME
               WHERE em.EVENT_ID = ? LIMIT 1";
 
 $event_stmt = $conn->prepare($event_sql);
@@ -64,10 +64,10 @@ $history = [];
 if (!empty($raw_history)) {
     $userIds = array_map(fn($item) => "'" . $conn->real_escape_string($item['user_id']) . "'", $raw_history);
     $in_clause = implode(',', $userIds);
-    $users_res = $conn->query("SELECT USERNAME, NAME, ROLE FROM users WHERE USERNAME IN ($in_clause)");
+    $users_res = $conn->query("SELECT USER_NAME, NAME, DESIGNATION FROM users WHERE USER_NAME IN ($in_clause)");
     $usersMap  = [];
     if ($users_res) {
-        while ($u = $users_res->fetch_assoc()) $usersMap[$u['USERNAME']] = $u;
+        while ($u = $users_res->fetch_assoc()) $usersMap[$u['USER_NAME']] = $u;
     }
     foreach ($raw_history as $h) {
         $uid       = $h['user_id'];
@@ -76,7 +76,7 @@ if (!empty($raw_history)) {
             'notes'         => $h['notes'] ?? '',
             'created_at'    => $h['created_at'],
             'approver_name' => $usersMap[$uid]['NAME']    ?? 'Unknown',
-            'role_name'     => $usersMap[$uid]['ROLE']  ?? 'Unknown',
+            'role_name'     => $usersMap[$uid]['DESIGNATION']  ?? 'Unknown',
         ];
     }
 }
@@ -84,4 +84,5 @@ $conn->close();
 
 echo json_encode(['success' => true, 'event' => $event_data, 'data' => $history]);
 ?>
+
 

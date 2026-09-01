@@ -69,26 +69,26 @@ try {
 
     // 5 Hardcoded Proposers
     $proposers = [
-        ['name' => 'Alice Sharma', 'email' => 'alice@proposer.com', 'dept' => 'CSE', 'faculty' => 'Faculty of Engineering & Technology (FET)', 'school' => 'School of Computer Science and Technology (SCST)', 'emp' => 'PRO001'],
-        ['name' => 'Bob Patel', 'email' => 'bob@proposer.com', 'dept' => 'AIML', 'faculty' => 'Faculty of Engineering & Technology (FET)', 'school' => 'School of Computer Science and Technology (SCST)', 'emp' => 'PRO002'],
-        ['name' => 'Charlie Singh', 'email' => 'charlie@proposer.com', 'dept' => 'Mech', 'faculty' => 'Faculty of Engineering & Technology (FET)', 'school' => 'School of Engineering (SE)', 'emp' => 'PRO003'],
-        ['name' => 'Diana Rao', 'email' => 'diana@proposer.com', 'dept' => 'Civil', 'faculty' => 'Faculty of Engineering & Technology (FET)', 'school' => 'School of Engineering (SE)', 'emp' => 'PRO004'],
-        ['name' => 'Evan Desai', 'email' => 'evan@proposer.com', 'dept' => 'ECE', 'faculty' => 'Faculty of Engineering & Technology (FET)', 'school' => 'School of Engineering (SE)', 'emp' => 'PRO005'],
+        ['name' => 'Alice Sharma', 'email' => 'alice@proposer.com', 'DISCIPLINE' => 'CSE', 'faculty' => 'Faculty of Engineering & Technology (FET)', 'school' => 'School of Computer Science and Technology (SCST)', 'emp' => 'PRO001'],
+        ['name' => 'Bob Patel', 'email' => 'bob@proposer.com', 'DISCIPLINE' => 'AIML', 'faculty' => 'Faculty of Engineering & Technology (FET)', 'school' => 'School of Computer Science and Technology (SCST)', 'emp' => 'PRO002'],
+        ['name' => 'Charlie Singh', 'email' => 'charlie@proposer.com', 'DISCIPLINE' => 'Mech', 'faculty' => 'Faculty of Engineering & Technology (FET)', 'school' => 'School of Engineering (SE)', 'emp' => 'PRO003'],
+        ['name' => 'Diana Rao', 'email' => 'diana@proposer.com', 'DISCIPLINE' => 'Civil', 'faculty' => 'Faculty of Engineering & Technology (FET)', 'school' => 'School of Engineering (SE)', 'emp' => 'PRO004'],
+        ['name' => 'Evan Desai', 'email' => 'evan@proposer.com', 'DISCIPLINE' => 'ECE', 'faculty' => 'Faculty of Engineering & Technology (FET)', 'school' => 'School of Engineering (SE)', 'emp' => 'PRO005'],
     ];
 
     $roleFaculty = 'faculty';
     foreach ($proposers as $p) {
-        $stmtUser->bind_param("ssssssss", $p['name'], $p['email'], $defaultPassword, $roleFaculty, $p['dept'], $p['faculty'], $p['school'], $p['emp']);
+        $stmtUser->bind_param("ssssssss", $p['name'], $p['email'], $defaultPassword, $roleFaculty, $p['DISCIPLINE'], $p['faculty'], $p['school'], $p['emp']);
         $stmtUser->execute();
         $generatedUsers[] = [
             'id' => $stmtUser->insert_id,
             'name' => $p['name'],
             'email' => $p['email'],
-            'role' => $roleFaculty,
+            'DESIGNATION' => $roleFaculty,
             'usn' => null,
             'usn_or_emp_id' => $p['emp'],
             'semester' => null,
-            'department' => $p['dept']
+            'department' => $p['DISCIPLINE']
         ];
     }
 
@@ -106,9 +106,9 @@ try {
                     $name = getRandomName($firstNames, $lastNames);
                     $usn = 'GMU' . date('y') . strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $branch), 0, 2)) . sprintf("%03d", $usnCounter++);
                     $email = strtolower($usn) . '@gmu.ac.in';
-                    $role = 'student';
+                    $DESIGNATION = 'student';
                     
-                    $stmtUser->bind_param("ssssssss", $name, $email, $defaultPassword, $role, $branch, $faculty, $school, $usn);
+                    $stmtUser->bind_param("ssssssss", $name, $email, $defaultPassword, $DESIGNATION, $branch, $faculty, $school, $usn);
                     $stmtUser->execute();
                     $userId = $stmtUser->insert_id;
                     
@@ -116,7 +116,7 @@ try {
                         'id' => $userId,
                         'name' => $name,
                         'email' => $email,
-                        'role' => $role,
+                        'DESIGNATION' => $DESIGNATION,
                         'usn' => $usn,
                         'usn_or_emp_id' => $usn,
                         'semester' => rand(1, 8),
@@ -129,10 +129,10 @@ try {
                 for ($i = 0; $i < $numFaculty; $i++) {
                     $name = getRandomName($firstNames, $lastNames);
                     $email = strtolower(str_replace(' ', '.', $name)) . $staffCounter++ . '@gmu.ac.in';
-                    $role = 'faculty';
+                    $DESIGNATION = 'faculty';
                     $empId = 'EMP' . date('y') . sprintf("%04d", $staffCounter);
                     
-                    $stmtUser->bind_param("ssssssss", $name, $email, $defaultPassword, $role, $branch, $faculty, $school, $empId);
+                    $stmtUser->bind_param("ssssssss", $name, $email, $defaultPassword, $DESIGNATION, $branch, $faculty, $school, $empId);
                     $stmtUser->execute();
                     $userId = $stmtUser->insert_id;
                     
@@ -140,7 +140,7 @@ try {
                         'id' => $userId,
                         'name' => $name,
                         'email' => $email,
-                        'role' => $role,
+                        'DESIGNATION' => $DESIGNATION,
                         'usn' => null,
                         'usn_or_emp_id' => $empId,
                         'semester' => null,
@@ -164,7 +164,7 @@ try {
     
     // We use the actual table name based on what we found in get_admin_report_data.php
     $stmtMasterEvent = $conn->prepare("INSERT INTO event_registrations (event_title, event_date, report_file_path, IS_ADMIN_POST) VALUES (?, ?, 'uploads/reports/dummy_report.pdf', 1)");
-    $stmtRegistration = $conn->prepare("INSERT INTO event_registrations (EVENT_ID, STUDENT_ID, STUDENT_NAME, USN, EMAIL, ROLE, SEMESTER, event_title, IS_ADMIN_POST, FEEDBACK_RATING, FEEDBACK_COMMENTS, details_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)");
+    $stmtRegistration = $conn->prepare("INSERT INTO event_registrations (EVENT_ID, STUDENT_ID, STUDENT_NAME, USN, EMAIL, DESIGNATION, SEMESTER, event_title, IS_ADMIN_POST, FEEDBACK_RATING, FEEDBACK_COMMENTS, details_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)");
     
     foreach ($masterEvents as $event) {
         $stmtMasterEvent->bind_param("ss", $event['title'], $event['date']);
@@ -223,4 +223,5 @@ try {
     if (isset($conn)) $conn->close();
 }
 ?>
+
 

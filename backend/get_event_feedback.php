@@ -69,7 +69,7 @@ $comments_sql = "
         er.REGISTRATION_DATE AS created_at,
         u.NAME AS student_name
     FROM event_registrations er
-    LEFT JOIN users u ON er.USER_ID = u.USERNAME
+    LEFT JOIN users u ON er.USER_ID = u.USER_NAME
     WHERE er.EVENT_ID = ? AND er.FEEDBACK_JSON IS NOT NULL
     ORDER BY er.REGISTRATION_DATE DESC
 ";
@@ -94,4 +94,5 @@ echo json_encode([
     ],
 ]);
 ?>
+
 

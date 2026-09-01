@@ -76,7 +76,7 @@ $stmt->bind_param("sssssss",
 
 if ($stmt->execute()) {
     // Fetch event details for student notifications
-    $eq = $conn->prepare("SELECT em.EVENT_TITLE AS event_title, em.SCALE AS event_scale, u.DEPT AS proposer_dept, u.USERNAME AS proposer_uid FROM event_master em LEFT JOIN users u ON em.PROPOSER_ID = u.USERNAME WHERE em.EVENT_ID = ?");
+    $eq = $conn->prepare("SELECT em.EVENT_TITLE AS event_title, em.SCALE AS event_scale, u.DISCIPLINE AS proposer_dept, u.USER_NAME AS proposer_uid FROM event_master em LEFT JOIN users u ON em.PROPOSER_ID = u.USER_NAME WHERE em.EVENT_ID = ?");
     $eq->bind_param("s", $event_id);
     $eq->execute();
     $event = $eq->get_result()->fetch_assoc();
@@ -86,10 +86,10 @@ if ($stmt->execute()) {
         $deadline_text = $registration_deadline ? " Register by " . date('d M h:i A', strtotime($registration_deadline)) . "." : "";
         $student_msg   = "🎉 New event published: {$event['event_title']}. Check it out!$deadline_text";
 
-        $student_sql = "SELECT USERNAME FROM users WHERE ROLE = 'student'";
+        $student_sql = "SELECT USER_NAME FROM users WHERE USER_GROUP = 'STUDENT'";
         if ($event['event_scale'] === 'department' && !empty($event['proposer_dept'])) {
             $dept_esc = $conn->real_escape_string($event['proposer_dept']);
-            $student_sql .= " AND DEPT = '$dept_esc'";
+            $student_sql .= " AND DISCIPLINE = '$dept_esc'";
         }
         $get_students = $conn->prepare($student_sql);
         $get_students->execute();
@@ -99,8 +99,8 @@ if ($stmt->execute()) {
         if ($student_res) {
             require_once __DIR__ . '/fcm_helper.php';
             while ($student = $student_res->fetch_assoc()) {
-                if ($student['USERNAME'] !== $event['proposer_uid']) {
-                    $uid = $student['USERNAME'];
+                if ($student['USER_NAME'] !== $event['proposer_uid']) {
+                    $uid = $student['USER_NAME'];
                     send_fcm_to_user($conn, $uid, "🎉 New Event Published!", $student_msg, "/student-dashboard");
                 }
             }
@@ -114,4 +114,6 @@ if ($stmt->execute()) {
 
 $stmt->close(); $conn->close();
 ?>
+
+
 

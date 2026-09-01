@@ -1,7 +1,7 @@
 <?php
 /**
  * backend/get_pending_events.php
- * Returns all pending events from event_master based on the approver's role.
+ * Returns all pending events from event_master based on the approver's DESIGNATION.
  */
 
 declare(strict_types=1);
@@ -23,16 +23,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
 
-$role       = strtolower(trim($auth_payload['role'] ?? ''));
+$DESIGNATION       = strtolower(trim($auth_payload['DESIGNATION'] ?? ''));
 $department = trim($auth_payload['department_name'] ?? '');
 
-if ($role === '') {
+if ($DESIGNATION === '') {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Role is required in token.']);
+    echo json_encode(['success' => false, 'message' => 'DESIGNATION is required in token.']);
     exit;
 }
 
-// Map role → target status
+// Map DESIGNATION → target status
 $status_map = [
     'hod'      => 'pending_hod',
     'director' => 'pending_director',
@@ -41,12 +41,12 @@ $status_map = [
     'pro_vc'   => 'pending_provc',
     'vc'       => 'pending_vc',
 ];
-if (!isset($status_map[$role])) {
+if (!isset($status_map[$DESIGNATION])) {
     http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized role for approvals.']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized DESIGNATION for approvals.']);
     exit;
 }
-$target_status = $status_map[$role];
+$target_status = $status_map[$DESIGNATION];
 
 require_once __DIR__ . '/config/db.php';
 try { $conn = get_db_connection(); }
@@ -56,7 +56,7 @@ catch (RuntimeException $e) {
     exit;
 }
 
-if ($role === 'hod') {
+if ($DESIGNATION === 'hod') {
     if ($department === '') {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Department name is required for HODs.']);
@@ -67,10 +67,10 @@ if ($role === 'hod') {
                    em.ATTACHMENTS AS attachments_json,
                    em.MAX_PARTICIPANTS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
                    em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
-                   u.NAME AS proposed_by, u.DEPT AS proposer_department, u.ROLE AS proposer_role
+                   u.NAME AS proposed_by, u.DISCIPLINE AS proposer_department, u.DESIGNATION AS proposer_role
             FROM event_master AS em
-            JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
-            WHERE em.CURRENT_STATUS = ? AND u.DEPT = ?
+            JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
+            WHERE em.CURRENT_STATUS = ? AND u.DISCIPLINE = ?
             ORDER BY em.EVENT_ID ASC";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('ss', $target_status, $department);
@@ -80,9 +80,9 @@ if ($role === 'hod') {
                    em.ATTACHMENTS AS attachments_json,
                    em.MAX_PARTICIPANTS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
                    em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
-                   u.NAME AS proposed_by, u.DEPT AS department, u.ROLE AS proposer_role
+                   u.NAME AS proposed_by, u.DISCIPLINE AS department, u.DESIGNATION AS proposer_role
             FROM event_master AS em
-            JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
+            JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
             WHERE em.CURRENT_STATUS = ?
             ORDER BY em.EVENT_ID ASC";
     $stmt = $conn->prepare($sql);
@@ -127,3 +127,4 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close(); $conn->close();
 echo json_encode(['success' => true, 'data' => $events]);
 ?>
+

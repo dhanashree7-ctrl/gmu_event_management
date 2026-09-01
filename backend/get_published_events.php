@@ -2,7 +2,7 @@
 /**
  * backend/get_published_events.php
  * Returns all published events from event_master for the student events browser.
- * Includes registration status, capacity remaining, and role for the calling student.
+ * Includes registration status, capacity remaining, and DESIGNATION for the calling student.
  */
 
 
@@ -33,17 +33,17 @@ catch (RuntimeException $e) {
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
 
-$student_id         = $auth_payload['username'] ?? '';
+$student_id         = $auth_payload['USER_NAME'] ?? '';
 $student_department = '';
 $student_usn        = '';
 
 if ($student_id) {
-    $stmt = $conn->prepare("SELECT USERNAME, DEPT FROM users WHERE USERNAME = ? OR ID = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT USER_NAME, DISCIPLINE FROM users WHERE USER_NAME = ? OR ID = ? LIMIT 1");
     $stmt->bind_param("ss", $student_id, $student_id);
     $stmt->execute();
     if ($row = $stmt->get_result()->fetch_assoc()) {
-        $student_department = $row['DEPT'];
-        $student_usn        = $row['USERNAME'];
+        $student_department = $row['DISCIPLINE'];
+        $student_usn        = $row['USER_NAME'];
     }
     $stmt->close();
 }
@@ -57,17 +57,17 @@ $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION 
                em.VENUE AS venue, em.REGISTRATION_DEADLINE AS registration_deadline,
                em.MAX_PARTICIPANTS AS max_participants,
                em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
-               u.NAME AS proposed_by, u.DEPT AS proposer_dept,
+               u.NAME AS proposed_by, u.DISCIPLINE AS proposer_dept,
                IF(r.ID IS NOT NULL, 1, 0) AS is_registered,
-               r.QR_CODE AS qr_token, r.CHECK_IN_STATUS AS check_in_status, r.ROLE AS my_role
+               r.QR_CODE AS qr_token, r.CHECK_IN_STATUS AS check_in_status, r.DESIGNATION AS my_role
         FROM event_master AS em
-        JOIN users AS u ON u.USERNAME = em.PROPOSER_ID
+        JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
         LEFT JOIN event_registrations AS r ON r.EVENT_ID = em.EVENT_ID AND r.USER_ID = ?
         WHERE em.CURRENT_STATUS IN ('published', 'approved')";
 
 if ($student_department) {
     $dept_escaped = $conn->real_escape_string($student_department);
-    $sql .= " AND (em.SCALE = 'university' OR u.DEPT = '$dept_escaped')";
+    $sql .= " AND (em.SCALE = 'university' OR u.DISCIPLINE = '$dept_escaped')";
 }
 $sql .= " ORDER BY em.START_DATE ASC, em.START_TIME ASC";
 
@@ -81,15 +81,15 @@ if ($result === false) {
     exit;
 }
 
-// Build counts lookup: event_id => [role => count]
-$count_sql    = "SELECT EVENT_ID, ROLE, COUNT(*) AS cnt FROM event_registrations GROUP BY EVENT_ID, ROLE";
+// Build counts lookup: event_id => [DESIGNATION => count]
+$count_sql    = "SELECT EVENT_ID, DESIGNATION, COUNT(*) AS cnt FROM event_registrations GROUP BY EVENT_ID, DESIGNATION";
 $count_result = $conn->query($count_sql);
 $counts       = [];
 if ($count_result) {
     while ($crow = $count_result->fetch_assoc()) {
         $eid  = (int)$crow['EVENT_ID'];
-        $role = $crow['ROLE'];
-        $counts[$eid][$role] = (int)$crow['cnt'];
+        $DESIGNATION = $crow['DESIGNATION'];
+        $counts[$eid][$DESIGNATION] = (int)$crow['cnt'];
     }
 }
 
@@ -141,3 +141,4 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close(); $conn->close();
 echo json_encode(['success' => true, 'data' => $events]);
 ?>
+

@@ -33,10 +33,10 @@ require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
 
 $event_id   = $body['event_id'] ?? null;
-$student_id = trim((string)($auth_payload['username'] ?? ''));
+$student_id = trim((string)($auth_payload['USER_NAME'] ?? ''));
 
 $allowed_roles = ['participant', 'volunteer', 'coordinator'];
-$reg_role = strtolower(trim((string)($body['role'] ?? 'participant')));
+$reg_role = strtolower(trim((string)($body['DESIGNATION'] ?? 'participant')));
 if (!in_array($reg_role, $allowed_roles, true)) $reg_role = 'participant';
 
 $selected_sub_events  = $body['selected_sub_events'] ?? [];
@@ -103,7 +103,7 @@ if ($event_data['registration_deadline']) {
 // ── Capacity check ────────────────────────────────────────────────────────────
 $max_for_role = $reg_role === 'participant' ? $event_data['max_participants'] : null;
 if ($max_for_role !== null) {
-    $cap_stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM event_registrations WHERE EVENT_ID = ? AND ROLE = ?");
+    $cap_stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM event_registrations WHERE EVENT_ID = ? AND DESIGNATION = ?");
     $cap_stmt->bind_param('ss', $event_id, $reg_role);
     $cap_stmt->execute();
     $cap_row = $cap_stmt->get_result()->fetch_assoc();
@@ -116,12 +116,12 @@ if ($max_for_role !== null) {
 }
 
 // ── Fetch student details ──────────────────────────────────────────────────────
-$stu_stmt = $conn->prepare("SELECT USERNAME FROM users WHERE USERNAME = ? OR ID = ? LIMIT 1");
+$stu_stmt = $conn->prepare("SELECT USER_NAME FROM users WHERE USER_NAME = ? OR ID = ? LIMIT 1");
 $stu_stmt->bind_param('ss', $student_id, $student_id);
 $stu_stmt->execute();
 $stu_row = $stu_stmt->get_result()->fetch_assoc();
 $stu_stmt->close();
-$student_usn = $stu_row['USERNAME'] ?? $student_id;
+$student_usn = $stu_row['USER_NAME'] ?? $student_id;
 
 // ── Generate QR token ─────────────────────────────────────────────────────────
 $qr_token = 'EVT-' . $event_id . '-STU-' . $student_id . '-' . uniqid();
@@ -148,7 +148,7 @@ $details_json = !empty($details_data) ? json_encode($details_data) : null;
 // ── Insert lean transaction into event_registrations ──────────────────────────
 $reg_stmt = $conn->prepare("
     INSERT INTO event_registrations (
-        USER_ID, EVENT_ID, ROLE, REGISTRATION_DATE,
+        USER_ID, EVENT_ID, DESIGNATION, REGISTRATION_DATE,
         QR_CODE, CHECK_IN_STATUS, EXTERNAL_DETAILS,
         TEAM_LEAD, TEAM_MEMBERS
     ) VALUES (
@@ -205,7 +205,7 @@ if ($count_stmt) {
     $count_stmt->close();
     $total_reg = (int)$count_row['total_reg'];
     if (in_array($total_reg, [1, 25, 50, 100, 200])) {
-        $evt_stmt = $conn->prepare("SELECT em.EVENT_TITLE AS event_title, u.USERNAME AS proposer_id FROM event_master em JOIN users u ON em.PROPOSER_ID = u.USERNAME WHERE em.EVENT_ID = ?");
+        $evt_stmt = $conn->prepare("SELECT em.EVENT_TITLE AS event_title, u.USER_NAME AS proposer_id FROM event_master em JOIN users u ON em.PROPOSER_ID = u.USER_NAME WHERE em.EVENT_ID = ?");
         if ($evt_stmt) {
             $evt_stmt->bind_param('s', $event_id);
             $evt_stmt->execute();
@@ -231,7 +231,8 @@ echo json_encode([
     'success'  => true,
     'message'  => "Successfully registered as $role_label for the event.",
     'qr_token' => $qr_token,
-    'role'     => $reg_role,
+    'DESIGNATION'     => $reg_role,
 ]);
 ?>
+
 

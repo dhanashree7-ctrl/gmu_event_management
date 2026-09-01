@@ -76,9 +76,9 @@ $stmtDeadline = $conn->prepare($sqlDeadline);
 if ($stmtDeadline) {
     $stmtDeadline->execute();
     $resDeadline = $stmtDeadline->get_result();
-    $studStmt    = $conn->query("SELECT USERNAME FROM users WHERE ROLE = 'student'");
+    $studStmt    = $conn->query("SELECT USER_NAME FROM users WHERE USER_GROUP = 'STUDENT'");
     $students    = [];
-    while ($s = $studStmt->fetch_assoc()) $students[] = $s['USERNAME'];
+    while ($s = $studStmt->fetch_assoc()) $students[] = $s['USER_NAME'];
     while ($row = $resDeadline->fetch_assoc()) {
         $deadline = new DateTime($row['REGISTRATION_DEADLINE'], new DateTimeZone('Asia/Kolkata'));
         $diffMins = ($deadline->getTimestamp() - $now->getTimestamp()) / 60;
@@ -120,4 +120,6 @@ if ($stmtPast) {
 $conn->close();
 echo "Reminders sent successfully.\n";
 ?>
+
+
 

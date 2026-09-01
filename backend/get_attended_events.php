@@ -25,11 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$student_id = trim($auth_payload['username'] ?? '');
+$student_id = trim($auth_payload['USER_NAME'] ?? '');
 
 if ($student_id === '') {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Missing username in token.']);
+    echo json_encode(['success' => false, 'message' => 'Missing USER_NAME in token.']);
     exit;
 }
 
@@ -42,12 +42,12 @@ catch (RuntimeException $e) {
 }
 
 // Look up the student's USN
-$usn_stmt = $conn->prepare("SELECT USERNAME FROM users WHERE USERNAME = ? OR ID = ? LIMIT 1");
+$usn_stmt = $conn->prepare("SELECT USER_NAME FROM users WHERE USER_NAME = ? OR ID = ? LIMIT 1");
 $usn_stmt->bind_param('ss', $student_id, $student_id);
 $usn_stmt->execute();
 $usn_row = $usn_stmt->get_result()->fetch_assoc();
 $usn_stmt->close();
-$student_usn = $usn_row['USERNAME'] ?? $student_id;
+$student_usn = $usn_row['USER_NAME'] ?? $student_id;
 
 $sql = "
     SELECT
@@ -91,4 +91,5 @@ while ($row = $result->fetch_assoc()) {
 $stmt->close(); $conn->close();
 echo json_encode(['success' => true, 'data' => $events]);
 ?>
+
 

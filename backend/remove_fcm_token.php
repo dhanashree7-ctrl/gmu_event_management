@@ -27,9 +27,9 @@ require_once __DIR__ . '/auth_middleware.php';
 
 try {
     $auth_payload = require_auth();
-    $username = trim((string)($auth_payload['username'] ?? ''));
-    if ($username === '') {
-        throw new Exception("Missing username");
+    $USER_NAME = trim((string)($auth_payload['USER_NAME'] ?? ''));
+    if ($USER_NAME === '') {
+        throw new Exception("Missing USER_NAME");
     }
 } catch (Throwable $t) {
     http_response_code(401);
@@ -45,14 +45,15 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$stmt = $conn->prepare('UPDATE users SET FCM_WEB_TOKEN = NULL WHERE USERNAME = ?');
+$stmt = $conn->prepare('UPDATE users SET device_token = NULL WHERE USER_NAME = ?');
 if ($stmt) {
-    $stmt->bind_param('s', $username);
+    $stmt->bind_param('s', $USER_NAME);
     $stmt->execute();
     $stmt->close();
 }
 $conn->close();
 
 echo json_encode(['success' => true, 'message' => 'Token removed']);
+
 
 

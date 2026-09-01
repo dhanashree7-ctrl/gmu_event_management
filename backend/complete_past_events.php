@@ -18,3 +18,4 @@ echo "Successfully marked $affected past events as 'pending_report'.\n";
 $conn->close();
 ?>
 
+

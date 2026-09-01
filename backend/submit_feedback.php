@@ -35,7 +35,7 @@ require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
 
 $event_id   = isset($body['event_id'])   ? (string)$body['event_id']  : '';
-$student_id = trim($auth_payload['username'] ?? '');
+$student_id = trim($auth_payload['USER_NAME'] ?? '');
 $rating     = isset($body['rating'])     ? (int)$body['rating']    : 0;
 $comments   = trim($body['comments']     ?? '');
 
@@ -54,12 +54,12 @@ catch (RuntimeException $e) {
 }
 
 // 1. Resolve student USN first
-$usn_stmt = $conn->prepare("SELECT USERNAME FROM users WHERE USERNAME = ? OR ID = ? LIMIT 1");
+$usn_stmt = $conn->prepare("SELECT USER_NAME FROM users WHERE USER_NAME = ? OR ID = ? LIMIT 1");
 $usn_stmt->bind_param('ss', $student_id, $student_id);
 $usn_stmt->execute();
 $usn_row     = $usn_stmt->get_result()->fetch_assoc();
 $usn_stmt->close();
-$student_usn = $usn_row['USERNAME'] ?? $student_id;
+$student_usn = $usn_row['USER_NAME'] ?? $student_id;
 
 // 2. Verify: event is completed (via event_master) + student was checked in (via event_registrations)
 $check_sql = "
@@ -116,4 +116,5 @@ if ($update_stmt->execute() && $update_stmt->affected_rows > 0) {
     echo json_encode(['success' => false, 'message' => 'Failed to save feedback. Registration may not exist.']);
 }
 ?>
+
 

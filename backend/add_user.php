@@ -50,7 +50,7 @@ if ($full_name === '' || $usn_or_emp_id === '' || $email === '' || $password ===
 $allowed_roles = ['student','faculty','hod','director','dean','pro_vc','vc','admin','events_admin'];
 if (!in_array($system_role, $allowed_roles)) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Invalid system role selected.']);
+    echo json_encode(['success' => false, 'message' => 'Invalid system DESIGNATION selected.']);
     exit;
 }
 
@@ -64,7 +64,7 @@ try {
 }
 
 // Check if user exists
-$check_stmt = $conn->prepare("SELECT id FROM users WHERE USERNAME = ? OR EMAIL = ?");
+$check_stmt = $conn->prepare("SELECT id FROM users WHERE USER_NAME = ? OR EMAIL = ?");
 $check_stmt->bind_param('ss', $usn_or_emp_id, $email);
 $check_stmt->execute();
 if ($check_stmt->get_result()->num_rows > 0) {
@@ -78,7 +78,7 @@ $check_stmt->close();
 $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
 $ins_stmt = $conn->prepare("
-    INSERT INTO users (USERNAME, NAME, EMAIL, PASSWORD, ROLE, DEPT) 
+    INSERT INTO users (USER_NAME, NAME, EMAIL, PASSWORD, DESIGNATION, DISCIPLINE) 
     VALUES (?, ?, ?, ?, ?, ?)
 ");
 $ins_stmt->bind_param('ssssss', $usn_or_emp_id, $full_name, $email, $hashed_password, $system_role, $department);
@@ -92,4 +92,5 @@ if ($ins_stmt->execute()) {
 $ins_stmt->close();
 $conn->close();
 ?>
+
 

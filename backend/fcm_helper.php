@@ -146,27 +146,28 @@ function send_fcm_notification(string $device_token, string $title, string $body
 }
 
 /**
- * Sends an FCM push notification to a user by USERNAME.
+ * Sends an FCM push notification to a user by USER_NAME.
  *
  * @param mysqli $conn
- * @param string $username
+ * @param string $USER_NAME
  * @param string $title
  * @param string $body
  * @param string $link
  * @return bool
  */
-function send_fcm_to_user(mysqli $conn, string $username, string $title, string $body, string $link = '/'): bool {
-    $stmt = $conn->prepare("SELECT FCM_WEB_TOKEN FROM users WHERE USERNAME = ? AND FCM_WEB_TOKEN IS NOT NULL AND FCM_WEB_TOKEN != '' LIMIT 1");
+function send_fcm_to_user(mysqli $conn, string $USER_NAME, string $title, string $body, string $link = '/'): bool {
+    $stmt = $conn->prepare("SELECT device_token FROM users WHERE USER_NAME = ? AND device_token IS NOT NULL AND device_token != '' LIMIT 1");
     if (!$stmt) return false;
-    $stmt->bind_param('s', $username);
+    $stmt->bind_param('s', $USER_NAME);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
-    if (!empty($row['FCM_WEB_TOKEN'])) {
-        return send_fcm_notification($row['FCM_WEB_TOKEN'], $title, $body, $link, $username);
+    if (!empty($row['device_token'])) {
+        return send_fcm_notification($row['device_token'], $title, $body, $link, $USER_NAME);
     }
     return false;
 }
+
 
 

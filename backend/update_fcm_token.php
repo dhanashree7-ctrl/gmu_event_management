@@ -5,11 +5,11 @@
  * [FIREBASE MIGRATION — PHASE 3]
  * Receives a Firebase Cloud Messaging (FCM) web push token from the
  * React frontend and persists it against the authenticated user's row
- * in the `users` table (FCM_WEB_TOKEN column).
+ * in the `users` table (device_token column).
  *
  * Method : POST
- * Auth   : Bearer token or username in payload
- * Body   : { "fcm_token": "<FCM_REGISTRATION_TOKEN>", "username": "<OPTIONAL_USERNAME>" }
+ * Auth   : Bearer token or USER_NAME in payload
+ * Body   : { "fcm_token": "<FCM_REGISTRATION_TOKEN>", "USER_NAME": "<OPTIONAL_USERNAME>" }
  * ─────────────────────────────────────────────────────────────────
  */
 
@@ -29,19 +29,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ── Auth / Username Resolution ───────────────────────────────────
+// ── Auth / USER_NAME Resolution ───────────────────────────────────
 require_once __DIR__ . '/auth_middleware.php';
 
-$username = '';
+$USER_NAME = '';
 $headers = getallheaders();
 $auth_header = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 
 if (!empty($auth_header)) {
     try {
         $auth_payload = require_auth();
-        $username = trim((string)($auth_payload['username'] ?? ''));
+        $USER_NAME = trim((string)($auth_payload['USER_NAME'] ?? ''));
     } catch (Throwable $t) {
-        // Fallback to body username if token verification throws
+        // Fallback to body USER_NAME if token verification throws
     }
 }
 
@@ -55,13 +55,13 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($body)) {
     exit;
 }
 
-if ($username === '' && !empty($body['username'])) {
-    $username = trim((string)$body['username']);
+if ($USER_NAME === '' && !empty($body['USER_NAME'])) {
+    $USER_NAME = trim((string)$body['USER_NAME']);
 }
 
-if ($username === '') {
+if ($USER_NAME === '') {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized. Invalid session or missing username.']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Invalid session or missing USER_NAME.']);
     exit;
 }
 
@@ -89,7 +89,7 @@ catch (RuntimeException $e) {
 }
 
 // 2. Assign the token to the current user
-$stmt = $conn->prepare('UPDATE users SET FCM_WEB_TOKEN = ? WHERE USERNAME = ?');
+$stmt = $conn->prepare('UPDATE users SET device_token = ? WHERE USER_NAME = ?');
 if (!$stmt) {
     $conn->close();
     http_response_code(500);
@@ -97,10 +97,10 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param('ss', $fcm_token, $username);
+$stmt->bind_param('ss', $fcm_token, $USER_NAME);
 
 if (!$stmt->execute()) {
-    error_log("update_fcm_token.php – execute failed for user '$username': " . $stmt->error);
+    error_log("update_fcm_token.php – execute failed for user '$USER_NAME': " . $stmt->error);
     $stmt->close(); $conn->close();
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Failed to update FCM token.']);
@@ -119,5 +119,6 @@ echo json_encode([
         : 'FCM token unchanged (already up to date).',
 ]);
 ?>
+
 
 
