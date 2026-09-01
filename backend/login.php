@@ -70,7 +70,7 @@ try {
  */
 require_once __DIR__ . '/config/role_helper.php';
 
-$sql = 'SELECT ID, USER_NAME, NAME, PASSWORD, DESIGNATION, USER_GROUP,
+$sql = 'SELECT SL_NO, ID as ROLL_NO, USER_NAME, NAME, PASSWORD, DESIGNATION, USER_GROUP,
                DISCIPLINE, FACULTY, SCHOOL, device_token
          FROM   users
          WHERE  USER_NAME = ?
@@ -129,7 +129,8 @@ $derivedRole = get_role_from_designation(
 );
 
 $userData = [
-    'id'              => (int) ($user['ID'] ?? 0),
+    'id'              => (int) ($user['SL_NO'] ?? 0),
+    'roll_no'         => $user['ROLL_NO'] ?? '',
     'username'        => $user['USER_NAME'] ?? '',
     'name'            => $user['NAME'] ?? '',
     'role'            => $derivedRole,

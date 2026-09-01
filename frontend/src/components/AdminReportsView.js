@@ -66,10 +66,10 @@ export default function AdminReportsView({ user }) {
       Event: p.event_title,
       'Participant Name': p.participant_name,
       USN: p.usn,
-      Email: p.email,
+      Programme: p.programme,
       Role: p.role,
       School: p.school_name,
-      Semester: p.semester,
+      Discipline: p.department,
       Department: p.department
     })));
     const wb = XLSX.utils.book_new();
@@ -96,7 +96,7 @@ export default function AdminReportsView({ user }) {
     
     const tableColumn = ["Event", "Name", "USN", "Role", "School", "Sem", "Dept"];
     const tableRows = filteredData.map(p => [
-      p.event_title, p.participant_name, p.usn, p.role, p.school_name, p.semester, p.department
+      p.event_title, p.participant_name, p.usn, p.role, p.school_name, p.programme, p.department
     ]);
 
     const roleCounts = filteredData.reduce((acc, p) => {
@@ -216,7 +216,7 @@ export default function AdminReportsView({ user }) {
   const { metrics, participants, events_info } = reportData;
 
   const uniqueDepts = metrics?.department_breakdown ? Object.keys(metrics.department_breakdown).length : 0;
-  const topSem = metrics?.semester_breakdown ? Object.keys(metrics.semester_breakdown).sort((a,b) => metrics.semester_breakdown[b] - metrics.semester_breakdown[a])[0] : 'N/A';
+  const topProg = metrics?.programme_breakdown ? Object.keys(metrics.programme_breakdown).sort((a,b) => metrics.programme_breakdown[b] - metrics.programme_breakdown[a])[0] : 'N/A';
 
   const availableFaculties = options.hierarchy ? Object.keys(options.hierarchy) : [];
   let availableSchools = [];
@@ -405,8 +405,8 @@ export default function AdminReportsView({ user }) {
               <div style={styles.metricLabel}>Unique Departments</div>
             </div>
             <div style={styles.metricCard}>
-              <div style={styles.metricValue}>{topSem || '-'}</div>
-              <div style={styles.metricLabel}>Top Semester</div>
+              <div style={styles.metricValue}>{topProg || '-'}</div>
+              <div style={styles.metricLabel}>Top Programme</div>
             </div>
           </div>
           
@@ -477,7 +477,7 @@ export default function AdminReportsView({ user }) {
                         <td style={styles.td}>{p.role}</td>
                         <td style={styles.td}>{p.school_name || 'N/A'}</td>
                         <td style={styles.td}>{p.department}</td>
-                        <td style={styles.td}>{p.semester || '-'}</td>
+                        <td style={styles.td}>{p.programme || '-'}</td>
                       </tr>
                     ))
                   )}
@@ -515,3 +515,4 @@ const styles = {
   td: { padding: '1rem', color: '#555' },
   clickableEvent: { color: theme.colors.primary || '#1976d2', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }
 };
+

@@ -73,11 +73,10 @@ $sql = "SELECT
             er.CHECK_IN_STATUS        AS check_in_status,
             er.CHECK_IN_TIME          AS check_in_time,
             er.REGISTRATION_DATE      AS registered_at,
-            u.SEMESTER                AS semester,
             u.NAME                    AS student_name,
-            u.EMAIL                   AS student_email,
-            u.USER_NAME                AS usn,
-            u.DISCIPLINE                    AS department,
+            u.USER_NAME               AS usn,
+            u.DISCIPLINE              AS discipline,
+            u.PROGRAMME               AS programme,
             er.TEAM_LEAD              AS team_lead,
             er.TEAM_MEMBERS           AS team_members
         FROM event_registrations er
@@ -107,10 +106,11 @@ while ($row = $result->fetch_assoc()) {
     
     $attendees[] = [
         'registration_id'      => (int)$row['registration_id'],
-        'USER_NAME'             => $row['student_uid'],
-        'usn'                  => $row['usn'] ?? $row['student_uid'],
-        'student_name'         => $row['student_name']  ?? 'Unknown Student',
-        'student_email'        => $row['student_email'] ?? 'N/A',
+        'USER_NAME'            => $row['student_uid'],
+        'usn'                  => $row['usn'] ?? 'N/A',
+        'student_name'         => $row['student_name'] ?? 'Unknown User',
+        'discipline'           => $row['discipline'] ?? 'N/A',
+        'programme'            => $row['programme'] ?? 'N/A',
         'registration_role'    => $row['registration_role']    ?? 'participant',
 
         'topics_of_interest'   => 'None',
@@ -118,8 +118,6 @@ while ($row = $result->fetch_assoc()) {
         'check_in_time'        => $row['check_in_time'],
         'registered_at'        => $row['registered_at'],
         'event_date'           => $event_date,
-        'department'           => $row['department'],
-        'semester'             => $row['semester'],
     ];
 }
 

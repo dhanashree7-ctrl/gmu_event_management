@@ -486,9 +486,9 @@ export default function PreLoginPage() {
           <div style={styles.loginCard}>
             <div style={styles.loginCardIcon}><ShieldCheck size={48} color="#D4AF37" /></div>
             <h2 style={styles.loginCardTitle}>Ready to get started?</h2>
-            <p style={styles.loginCardDesc}>
-              Sign in with your institutional email to access your personalised dashboard.
-            </p>
+              <p style={{ color: '#ecf0f1', fontSize: '1.05rem', lineHeight: '1.6', marginBottom: '25px', opacity: 0.9 }}>
+                Sign in with your institutional ID to access your personalised dashboard.
+              </p>
             <button
               style={styles.loginCardBtn}
               onClick={() => navigate('/login')}

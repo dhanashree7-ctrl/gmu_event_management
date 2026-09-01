@@ -257,7 +257,6 @@ function ManageUsersView() {
   const [formData, setFormData] = React.useState({
     full_name: '',
     usn_or_emp_id: '',
-    email: '',
     password: '',
     system_role: 'student',
     department: ''
@@ -292,7 +291,7 @@ function ManageUsersView() {
       const data = await res.json();
       if (data.success) {
         setStatus({ type: 'success', message: data.message });
-        setFormData({ full_name: '', usn_or_emp_id: '', email: '', password: '', system_role: 'student', department: '' });
+        setFormData({ full_name: '', usn_or_emp_id: '', password: '', system_role: 'student', department: '' });
       } else {
         setStatus({ type: 'error', message: data.message });
       }
@@ -325,8 +324,7 @@ function ManageUsersView() {
             <input name="usn_or_emp_id" value={formData.usn_or_emp_id} onChange={handleChange} style={styles.formInput} required />
           </div>
           <div style={styles.formGroup}>
-            <label style={styles.formLabel}>Email</label>
-            <input name="email" type="email" value={formData.email} onChange={handleChange} style={styles.formInput} required />
+
           </div>
           <div style={styles.formGroup}>
             <label style={styles.formLabel}>Password</label>

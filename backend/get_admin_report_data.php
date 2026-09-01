@@ -89,13 +89,10 @@ $in_clause = implode(',', array_map(fn($id) => "'" . $conn->real_escape_string((
 $participants_query = "
     SELECT
         COALESCE(u.NAME, 'Unknown Participant') AS participant_name,
-        COALESCE(u.USER_NAME, er.USER_ID) AS usn,
-        COALESCE(u.EMAIL, 'N/A')        AS email,
-        er.DESIGNATION        AS DESIGNATION,
-        COALESCE(u.DISCIPLINE, 'N/A')   AS department,
-        COALESCE(u.FACULTY, 'N/A') AS faculty_name,
-        COALESCE(u.SCHOOL, 'N/A')  AS school_name,
-        u.SEMESTER                 AS semester,
+        u.USER_NAME      AS usn,
+        COALESCE(u.DISCIPLINE, 'N/A') AS department,
+        u.PROGRAMME      AS programme,
+        er.ROLE          AS role,
         er.EVENT_ID    AS event_id,
         em.EVENT_TITLE AS event_title
     FROM event_registrations er
@@ -121,7 +118,7 @@ $participants_result = $conn->query($participants_query);
 
 $participants  = [];
 $dept_breakdown = [];
-$sem_breakdown  = [];
+$prog_breakdown  = [];
 
 while ($row = $participants_result->fetch_assoc()) {
     $DISCIPLINE = $row['department'];
@@ -130,10 +127,8 @@ while ($row = $participants_result->fetch_assoc()) {
     }
     $dept_breakdown[$DISCIPLINE] = ($dept_breakdown[$DISCIPLINE] ?? 0) + 1;
 
-    $sem = $row['semester'];
-    if ($sem) {
-        $sem_breakdown[$sem] = ($sem_breakdown[$sem] ?? 0) + 1;
-    }
+    $prog = $row['programme'] ?: 'N/A';
+    $prog_breakdown[$prog] = ($prog_breakdown[$prog] ?? 0) + 1;
 
     $participants[] = $row;
 }
@@ -144,7 +139,7 @@ echo json_encode([
         'metrics' => [
             'total_participants'  => count($participants),
             'department_breakdown' => $dept_breakdown,
-            'semester_breakdown'   => $sem_breakdown,
+            'programme_breakdown'   => $prog_breakdown,
         ],
         'participants' => $participants,
         'events_info'  => $events_info,
@@ -152,6 +147,4 @@ echo json_encode([
 ]);
 
 $conn->close();
-?>
-
 

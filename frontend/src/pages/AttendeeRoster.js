@@ -112,7 +112,7 @@ export default function AttendeeRoster({ eventId }) {
               <tr>
                 <th style={styles.th}>Student Name</th>
                 <th style={styles.th}>Role</th>
-                <th style={styles.th}>Semester</th>
+                <th style={styles.th}>Programme</th>
                 <th style={styles.th}>Attendance Status</th>
               </tr>
             </thead>
@@ -122,7 +122,7 @@ export default function AttendeeRoster({ eventId }) {
                   <td style={styles.td}>
                     <div style={styles.studentInfo}>
                       <span style={styles.studentName}>{attendee.student_name}</span>
-                      <span style={styles.studentEmail}>{attendee.usn || attendee.username}</span>
+                      <span style={styles.usn}>{attendee.usn}</span>
                       {attendee.team_lead && (
                          <div style={{ marginTop: '6px', fontSize: '0.75rem', color: '#555', background: '#f5f5f5', padding: '4px 6px', borderRadius: '4px', display: 'inline-block' }}>
                            <strong style={{ color: '#2c3e50' }}>Team Lead:</strong> {attendee.team_lead === attendee.usn ? 'Self (Lead)' : attendee.team_lead}
@@ -151,7 +151,7 @@ export default function AttendeeRoster({ eventId }) {
                       );
                     })()}
                   </td>
-                  <td style={styles.td}>{attendee.semester || "N/A"}</td>
+                  <td style={styles.td}>{attendee.programme || "N/A"}</td>
                   <td style={styles.td}>
                     {(() => {
                       const checkedIn = attendee.check_in_status === 'checked_in';

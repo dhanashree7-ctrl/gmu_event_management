@@ -35,12 +35,12 @@ $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
 $full_name = trim($input['full_name'] ?? '');
 $usn_or_emp_id = trim($input['usn_or_emp_id'] ?? '');
-$email = trim($input['email'] ?? '');
+
 $password = trim($input['password'] ?? '');
 $system_role = trim($input['system_role'] ?? '');
 $department = trim($input['department'] ?? '');
 
-if ($full_name === '' || $usn_or_emp_id === '' || $email === '' || $password === '' || $system_role === '') {
+if ($full_name === '' || $usn_or_emp_id === '' || $password === '' || $system_role === '') {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Please fill in all required fields.']);
     exit;
@@ -64,11 +64,11 @@ try {
 }
 
 // Check if user exists
-$check_stmt = $conn->prepare("SELECT id FROM users WHERE USER_NAME = ? OR EMAIL = ?");
-$check_stmt->bind_param('ss', $usn_or_emp_id, $email);
+$check_stmt = $conn->prepare("SELECT ID FROM users WHERE USER_NAME = ?");
+$check_stmt->bind_param('s', $usn_or_emp_id);
 $check_stmt->execute();
 if ($check_stmt->get_result()->num_rows > 0) {
-    echo json_encode(['success' => false, 'message' => 'A user with this USN/Emp ID or Email already exists.']);
+    echo json_encode(['success' => false, 'message' => 'A user with this USN/Emp ID already exists.']);
     $check_stmt->close();
     $conn->close();
     exit;
@@ -78,10 +78,10 @@ $check_stmt->close();
 $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
 $ins_stmt = $conn->prepare("
-    INSERT INTO users (USER_NAME, NAME, EMAIL, PASSWORD, DESIGNATION, DISCIPLINE) 
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO users (USER_NAME, NAME, PASSWORD, DESIGNATION, DISCIPLINE) 
+    VALUES (?, ?, ?, ?, ?)
 ");
-$ins_stmt->bind_param('ssssss', $usn_or_emp_id, $full_name, $email, $hashed_password, $system_role, $department);
+$ins_stmt->bind_param('sssss', $usn_or_emp_id, $full_name, $hashed_password, $system_role, $department);
 
 if ($ins_stmt->execute()) {
     echo json_encode(['success' => true, 'message' => 'User created successfully!']);
