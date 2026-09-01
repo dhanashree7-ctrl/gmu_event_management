@@ -36,7 +36,11 @@ export default function UserProfileDropdown({ user, onOpenSettings }) {
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
       >
         <div style={styles.topBarAvatar}>
-          {user.name?.charAt(0).toUpperCase()}
+          {user.photo ? (
+            <img src={user.photo} alt={user.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+          ) : (
+            user.name?.charAt(0)?.toUpperCase() || '?'
+          )}
         </div>
         <div style={styles.topBarUserInfo}>
           <div style={styles.topBarUserName}>{user.name}</div>

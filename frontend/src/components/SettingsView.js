@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import theme from '../theme';
 import { API_BASE } from '../config/api';
-import { Lock, User, CheckCircle, XCircle, Mail, Building2, GraduationCap, Shield, Bell, Palette } from 'lucide-react';
+import { Lock, User, CheckCircle, XCircle, Mail, Building2, GraduationCap, Shield, Bell, Palette, Phone } from 'lucide-react';
 
 const s = (...styles) => Object.assign({}, ...styles.filter(Boolean));
 
@@ -107,6 +107,7 @@ export default function SettingsView({ user, onBack }) {
   const profileFields = [
     { icon: User, label: 'Full Name', value: user?.name },
     { icon: Mail, label: 'Username / ID', value: user?.username },
+    { icon: Phone, label: 'Mobile Number', value: user?.mobile_no || 'Not Provided' },
     { icon: GraduationCap, label: 'Role', value: user?.role?.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join(' ') },
     { icon: Building2, label: 'Department', value: user?.department_name },
     { icon: Building2, label: 'School', value: user?.school_name },
@@ -117,7 +118,13 @@ export default function SettingsView({ user, onBack }) {
       {/* ── Left Tab Panel ── */}
       <aside className="gmu-settings-sidebar" style={st.tabPanelBase}>
         <div style={st.panelHeader}>
-          <div style={st.panelAvatar}><User size={28} color="#FDD06F" /></div>
+          <div style={st.panelAvatar}>
+            {user?.photo ? (
+              <img src={user.photo} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+              <User size={28} color="#FDD06F" />
+            )}
+          </div>
           <div>
             <p style={st.panelName}>{user?.name?.split(' ')[0] || 'User'}</p>
             <p style={st.panelRole}>{user?.role?.replace('_', ' ')}</p>
@@ -148,7 +155,13 @@ export default function SettingsView({ user, onBack }) {
             <p style={st.sectionSub}>Your personal and academic details from the university system.</p>
             <div style={st.profileCard}>
               <div style={st.profileBanner}>
-                <div style={st.profileAvatarLg}><User size={38} color="#FDD06F" /></div>
+                <div style={st.profileAvatarLg}>
+                  {user?.photo ? (
+                    <img src={user.photo} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  ) : (
+                    <User size={38} color="#FDD06F" />
+                  )}
+                </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: '#fff' }}>{user?.name || 'N/A'}</h3>
                   <p style={{ margin: '3px 0 0', fontSize: '0.82rem', color: 'rgba(253,208,111,0.8)' }}>@{user?.username}</p>

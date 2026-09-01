@@ -33,12 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
-$full_name = trim($input['full_name'] ?? '');
-$usn_or_emp_id = trim($input['usn_or_emp_id'] ?? '');
+$full_name = substr(trim($input['full_name'] ?? ''), 0, 100);
+$usn_or_emp_id = substr(trim($input['usn_or_emp_id'] ?? ''), 0, 50);
 
 $password = trim($input['password'] ?? '');
-$system_role = trim($input['system_role'] ?? '');
-$department = trim($input['department'] ?? '');
+$system_role = substr(trim($input['system_role'] ?? ''), 0, 50);
+$department = substr(trim($input['department'] ?? ''), 0, 100);
 
 if ($full_name === '' || $usn_or_emp_id === '' || $password === '' || $system_role === '') {
     http_response_code(400);

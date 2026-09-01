@@ -71,7 +71,7 @@ try {
 require_once __DIR__ . '/config/role_helper.php';
 
 $sql = 'SELECT SL_NO, ID as ROLL_NO, USER_NAME, NAME, PASSWORD, DESIGNATION, USER_GROUP,
-               DISCIPLINE, FACULTY, SCHOOL, device_token
+               DISCIPLINE, FACULTY, SCHOOL, device_token, PHOTO, MOBILE_NO
          FROM   users
          WHERE  USER_NAME = ?
            AND  STATUS = \'ACTIVE\'
@@ -114,9 +114,9 @@ if ($user === null) {
     exit;
 }
 
-// Check password (supports both hashed and plaintext for sandbox/testing)
+// Check password (strictly enforces bcrypt)
 $dbPass = $user['PASSWORD'] ?? $user['password'] ?? '';
-if (!password_verify($password, $dbPass) && $password !== $dbPass) {
+if (!password_verify($password, $dbPass)) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => $genericError]);
     exit;
@@ -138,6 +138,9 @@ $userData = [
     'faculty_name'    => $user['FACULTY'] ?? 'N/A',
     'school_name'     => $user['SCHOOL'] ?? 'N/A',
     'designation'     => $user['DESIGNATION'] ?? '',
+    'user_group'      => $user['USER_GROUP'] ?? '',
+    'photo'           => $user['PHOTO'] ?? null,
+    'mobile_no'       => $user['MOBILE_NO'] ?? null,
 ];
 
 $token = generate_jwt($userData);
