@@ -8,16 +8,25 @@ This guide details how to deploy the decoupled React (Frontend) and PHP (Backend
 - **MySQL** (v8.0+)
 - A web server (Apache/Nginx) pointing to the `backend` folder
 
-## 1. Database Setup
-A complete unified schema and seed script is provided in `schema_and_seed.sql`.
+## 1. Comprehensive Documentation
+Before diving into deployment, please review our comprehensive guides located in the `Guides/` directory:
+- **[User Guide](Guides/User_Guide.md):** Detailed breakdown of role-based dashboards, approval hierarchies, gamification metrics, and a list of **Testing Accounts**.
+- **[Developer Guide](Guides/Developer_Guide.md):** Architectural overview, JWT/Enterprise role normalization, Firebase integration, and advanced database workflows.
+
+## 2. Database Setup
+A complete unified schema and seed script is provided in `database/schema_and_seed.sql`.
 
 1. Create a new database on your MySQL server (e.g., `GMU_Events_Test`).
 2. Import the provided SQL script:
    ```bash
-   mysql -u root -p GMU_Events_Test < schema_and_seed.sql
+   mysql -u root -p GMU_Events_Test < database/schema_and_seed.sql
+   ```
+3. *(Optional)* **Realistic Data Seeding:** The `schema_and_seed.sql` file comes pre-loaded with 10 pristine, highly detailed events to demonstrate every platform feature (sub-events, external students, etc.). If you ever need to wipe the database and regenerate this realistic data, run the custom PHP seeder script:
+   ```bash
+   php backend/seed_realistic.php
    ```
 
-## 2. Backend Configuration
+## 3. Backend Configuration
 The backend has been configured to be completely portable using relative paths and environment variables.
 
 1. Navigate to the `backend` directory.
@@ -31,9 +40,9 @@ The backend has been configured to be completely portable using relative paths a
    ```
 3. Host the `backend` folder on your web server (e.g., Apache `htdocs` or Nginx `www`). Ensure your web server is configured to serve PHP files.
 
-*Note: CORS headers are centrally managed in `backend/config/cors.php`. They default to allowing `*` or the requesting origin for testing purposes. Error logging is also centralized in `backend/config/db.php`.*
+*Note: CORS headers are centrally managed in `backend/config/cors.php`. Error logging is centralized in `backend/config/db.php`.*
 
-## 3. Frontend Configuration & Build
+## 4. Frontend Configuration & Build
 The React frontend is environment-aware and requires the backend API URL to be set before building.
 
 1. Navigate to the `frontend` directory.

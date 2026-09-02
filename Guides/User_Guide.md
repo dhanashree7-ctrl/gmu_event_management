@@ -61,3 +61,20 @@ The platform utilizes Firebase Cloud Messaging (FCM) to deliver instant updates.
 - **Bell Icon:** Located in the top right corner of the navigation bar, the bell icon serves as the notification hub.
 - **Instant Updates:** Approvers receive notifications the moment a faculty member submits a proposal. Faculty receive immediate alerts when their event advances up the chain (e.g. from HOD to Dean). Students are notified when a new mega-event goes live.
 - **Browser Integration:** Because the system uses FCM, these notifications can trigger standard browser-level push notifications, ensuring users are alerted even if they are in another browser tab.
+
+## 4. Testing Accounts
+
+To thoroughly test the platform's features and end-to-end approval workflows, you can use the following mock accounts. 
+
+**Note: The universal password for all test accounts is 	est1234.**
+
+| Role / Dashboard | Username | Description |
+|------------------|----------|-------------|
+| **Faculty / Proposer** | csfac01 | Use this to create new event proposals and manage rosters. |
+| **HOD (Level 1 Approver)** | cshod01 | Approves Department scale events, and routes higher scales to the Dean. |
+| **Dean (Level 2 Approver)** | dean.fet@gmu.ac.in | Approves Academic scale events, and routes University scales to the Pro-VC. |
+| **Pro-VC (Level 3 Approver)**| pro-vc@gmu.ac.in | Approves University scale events, and routes to the VC. |
+| **VC (Level 4 Approver)** |  c@gmu.ac.in | Final executive sign-off for University scale events. |
+| **Student** | `U23E01CS018` | Use this to register for events, form teams, and submit feedback. (CSE Student) |
+| **Student (Alternative)** | `U23E01CS036` | An alternative student account for testing multi-user check-ins. (CSE Student) |
+| **Student Affairs / Admin** | events_admin | View all global events and analytical drill-downs. |
