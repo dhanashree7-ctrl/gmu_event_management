@@ -59,7 +59,7 @@ $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION 
                em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
                u.NAME AS proposed_by, u.DISCIPLINE AS proposer_dept,
                IF(r.ID IS NOT NULL, 1, 0) AS is_registered,
-               r.QR_CODE AS qr_token, r.CHECK_IN_STATUS AS check_in_status, r.DESIGNATION AS my_role
+               r.QR_CODE AS qr_token, r.CHECK_IN_STATUS AS check_in_status, r.ROLE AS my_role
         FROM event_master AS em
         JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
         LEFT JOIN event_registrations AS r ON r.EVENT_ID = em.EVENT_ID AND r.USER_ID = ?
@@ -82,14 +82,14 @@ if ($result === false) {
 }
 
 // Build counts lookup: event_id => [DESIGNATION => count]
-$count_sql    = "SELECT EVENT_ID, DESIGNATION, COUNT(*) AS cnt FROM event_registrations GROUP BY EVENT_ID, DESIGNATION";
+$count_sql    = "SELECT EVENT_ID, ROLE, COUNT(*) AS cnt FROM event_registrations GROUP BY EVENT_ID, ROLE";
 $count_result = $conn->query($count_sql);
 $counts       = [];
 if ($count_result) {
     while ($crow = $count_result->fetch_assoc()) {
         $eid  = (int)$crow['EVENT_ID'];
-        $DESIGNATION = $crow['DESIGNATION'];
-        $counts[$eid][$DESIGNATION] = (int)$crow['cnt'];
+        $role = $crow['ROLE'];
+        $counts[$eid][$role] = (int)$crow['cnt'];
     }
 }
 

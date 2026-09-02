@@ -41,7 +41,7 @@ $remarks         = trim((string)($body['remarks'] ?? ''));
 
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
-$DESIGNATION = strtolower($auth_payload['designation']);
+$DESIGNATION = strtolower($auth_payload['role'] ?? '');
 $department_name = $auth_payload['department_name']; // Optional: override department with verified data
 
 

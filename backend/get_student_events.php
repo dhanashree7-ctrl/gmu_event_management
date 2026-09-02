@@ -52,7 +52,7 @@ $stmt = $conn->prepare("
            em.START_DATE AS event_date, em.START_TIME AS event_time,
            em.VENUE AS venue, em.CATEGORY AS category, em.ATTACHMENTS AS attachments_json,
            r.CHECK_IN_STATUS AS check_in_status, r.CHECK_IN_TIME AS check_in_time,
-           r.DESIGNATION AS registration_role, r.EXTERNAL_DETAILS AS reg_details
+           r.ROLE AS registration_role, r.EXTERNAL_DETAILS AS reg_details
     FROM event_registrations r
     JOIN event_master em ON r.EVENT_ID = em.EVENT_ID
     WHERE r.USER_ID = ?

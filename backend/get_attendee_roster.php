@@ -68,7 +68,7 @@ $event_date = $cap_row['START_DATE'] ?? null;
 $sql = "SELECT
             er.ID                     AS registration_id,
             er.USER_ID                AS student_uid,
-            er.DESIGNATION                   AS registration_role,
+            er.ROLE                   AS registration_role,
             er.EXTERNAL_DETAILS       AS external_details_json,
             er.CHECK_IN_STATUS        AS check_in_status,
             er.CHECK_IN_TIME          AS check_in_time,
@@ -82,7 +82,7 @@ $sql = "SELECT
         FROM event_registrations er
         LEFT JOIN users u ON er.USER_ID = u.USER_NAME
         WHERE er.EVENT_ID = ?
-        ORDER BY er.DESIGNATION ASC, er.REGISTRATION_DATE DESC";
+        ORDER BY er.ROLE ASC, er.REGISTRATION_DATE DESC";
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {

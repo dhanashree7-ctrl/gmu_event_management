@@ -103,7 +103,7 @@ if ($event_data['registration_deadline']) {
 // ── Capacity check ────────────────────────────────────────────────────────────
 $max_for_role = $reg_role === 'participant' ? $event_data['max_participants'] : null;
 if ($max_for_role !== null) {
-    $cap_stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM event_registrations WHERE EVENT_ID = ? AND DESIGNATION = ?");
+    $cap_stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM event_registrations WHERE EVENT_ID = ? AND ROLE = ?");
     $cap_stmt->bind_param('ss', $event_id, $reg_role);
     $cap_stmt->execute();
     $cap_row = $cap_stmt->get_result()->fetch_assoc();
@@ -148,7 +148,7 @@ $details_json = !empty($details_data) ? json_encode($details_data) : null;
 // ── Insert lean transaction into event_registrations ──────────────────────────
 $reg_stmt = $conn->prepare("
     INSERT INTO event_registrations (
-        USER_ID, EVENT_ID, DESIGNATION, REGISTRATION_DATE,
+        USER_ID, EVENT_ID, ROLE, REGISTRATION_DATE,
         QR_CODE, CHECK_IN_STATUS, EXTERNAL_DETAILS,
         TEAM_LEAD, TEAM_MEMBERS
     ) VALUES (

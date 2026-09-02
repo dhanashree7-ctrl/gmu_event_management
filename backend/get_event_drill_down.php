@@ -65,7 +65,7 @@ $master_event['report_file_path'] = $attachments['report'] ?? null;
 
 // 2. Fetch Participants from event_registrations joined with users
 $stmt2 = $conn->prepare("
-    SELECT r.ID, r.USER_ID, r.DESIGNATION, r.FEEDBACK_JSON, r.EXTERNAL_DETAILS,
+    SELECT r.ID, r.USER_ID, r.ROLE, r.FEEDBACK_JSON, r.EXTERNAL_DETAILS,
            u.NAME AS STUDENT_NAME, u.USER_NAME AS USN, u.DISCIPLINE, u.SCHOOL, u.FACULTY
     FROM event_registrations r
     LEFT JOIN users u ON r.USER_ID = u.USER_NAME
@@ -149,7 +149,7 @@ while ($row = $participants_result->fetch_assoc()) {
     $participants[] = [
         'name'       => $row['STUDENT_NAME'] ?? $row['USN'],
         'usn'        => $row['USN'],
-        'DESIGNATION'       => $row['DESIGNATION'],
+        'role'       => $row['ROLE'],
         'faculty'    => $row['FACULTY'],
         'school'     => $row['SCHOOL'],
         'department' => $row['DISCIPLINE'],

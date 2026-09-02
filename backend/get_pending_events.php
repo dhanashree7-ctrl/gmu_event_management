@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once __DIR__ . '/auth_middleware.php';
 $auth_payload = require_auth();
 
-$DESIGNATION       = strtolower(trim($auth_payload['designation'] ?? ''));
+$DESIGNATION       = strtolower(trim($auth_payload['role'] ?? ''));
 $department = trim($auth_payload['department_name'] ?? '');
 
 if ($DESIGNATION === '') {

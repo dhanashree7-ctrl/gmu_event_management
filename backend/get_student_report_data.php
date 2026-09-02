@@ -63,7 +63,7 @@ $stmt->close();
 
 // 2. DESIGNATION Breakdown (Donut Chart - Group by DESIGNATION)
 $role_sql = "
-    SELECT COALESCE(DESIGNATION, 'participant') as role_name, COUNT(ID) as count
+    SELECT COALESCE(ROLE, 'participant') as role_name, COUNT(ID) as count
     FROM event_registrations
     WHERE USER_ID = ?
     GROUP BY role_name
