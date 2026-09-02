@@ -45,7 +45,21 @@ The database (`GMU_Events_Test`) is highly normalized but incorporates modern JS
 
 ---
 
-## 4. Firebase FCM Integration
+## 4. Enterprise Integration & Security
+
+### Role Normalization & JWT
+When the system interfaces with the university's enterprise `users` table, it encounters raw, unstructured job titles (e.g., "Director - School of Computer Science & Technology"). 
+- **Normalization:** The `role_helper.php` intercepts these raw `DESIGNATION` strings during login and maps them to clean internal roles (e.g., `director`, `hod`, `dean`, `vc`).
+- **JWT Authorization:** Only the clean, normalized internal role is baked into the JWT. The backend API endpoints (`get_pending_events.php`, `update_event_status.php`) strictly use this JWT role for authorization checks, ensuring robust security and preventing SQL-level string mismatches.
+
+### Realistic Data Seeding
+For testing purposes, the repository includes a custom algorithm script: `backend/seed_realistic.php`.
+- **Function:** Running this script automatically wipes all test events and populates the database with exactly 10 extremely realistic events. 
+- **Coverage:** The script programmatically guarantees that all edge-case features are seeded, including external cross-college participants, team leads for mega-events, dynamic dates, JSON feedback payloads, and dummy file attachments (brochures/reports).
+
+---
+
+## 5. Firebase FCM Integration
 The platform utilizes Firebase Cloud Messaging to push real-time updates (e.g., approval status changes, mega-event launches) directly to the user's browser, even if they are in another tab.
 
 ### Frontend Implementation
