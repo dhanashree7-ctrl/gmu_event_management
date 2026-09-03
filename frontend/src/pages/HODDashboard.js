@@ -132,7 +132,7 @@ export default function HODDashboard() {
   const fetchMyEvents = async () => {
     setMyEventsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/get_my_events.php?user_id=${user.id}`);
+      const res = await fetch(`${API_BASE}/get_my_events.php?user_id=${user.username}`);
       const json = await res.json();
       if (json.success) {
         setMyEvents(json.data || []);
@@ -221,7 +221,7 @@ export default function HODDashboard() {
           event_id: eventId,
           action: action,
           role: user.role,
-          user_id: user.id,
+          user_id: user.username,
           department_name: user.department_name,
           remarks: remarksText,
           notes: remarksText
@@ -272,7 +272,7 @@ export default function HODDashboard() {
       fd.append('budget', formData.budget);
       if (formData.rewards) fd.append('rewards', formData.rewards);
       fd.append('immediate_approval', formData.immediate_approval);
-      fd.append('proposed_by_id', user.id);
+      fd.append('proposed_by_id', user.username);
       fd.append('role', user.role);
       fd.append('brochure', formData.brochureFile);
       if (formData.max_participants) fd.append('max_participants', formData.max_participants);

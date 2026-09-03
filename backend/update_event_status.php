@@ -176,12 +176,12 @@ if ($new_status === 'published') {
 
             if ($event_scale === 'university' || $proposer_dept === '') {
                 $tok_stmt = $conn->prepare(
-                    "SELECT n.FCM_WEB_TOKEN as device_token FROM users u JOIN notifications n ON u.USER_NAME = n.USER_ID WHERE u.USER_GROUP = 'STUDENT'"
+                    "SELECT n.FCM_WEB_TOKEN as device_token FROM users u JOIN notifications n ON LOWER(TRIM(u.USER_NAME)) = LOWER(TRIM(n.USER_ID)) WHERE u.USER_GROUP = 'STUDENT'"
                 );
                 $tok_stmt->execute();
             } else {
                 $tok_stmt = $conn->prepare(
-                    "SELECT n.FCM_WEB_TOKEN as device_token FROM users u JOIN notifications n ON u.USER_NAME = n.USER_ID WHERE u.USER_GROUP = 'STUDENT' AND u.DISCIPLINE = ?"
+                    "SELECT n.FCM_WEB_TOKEN as device_token FROM users u JOIN notifications n ON LOWER(TRIM(u.USER_NAME)) = LOWER(TRIM(n.USER_ID)) WHERE u.USER_GROUP = 'STUDENT' AND u.DISCIPLINE = ?"
                 );
                 $tok_stmt->bind_param('s', $proposer_dept);
                 $tok_stmt->execute();

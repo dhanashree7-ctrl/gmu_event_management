@@ -4,10 +4,10 @@
  * Global authentication state for the GM University Event System.
  *
  * Provides:
- *  - user        : the logged-in user object ({ id, name, role_name, department_name })
+ *  - user        : the logged-in user object ({ id, username, name, role, department_name, faculty_name, school_name, designation, user_group })
  *                  or null if not logged in.
- *  - login(data) : persist user to state + localStorage
- *  - logout()    : clear state + localStorage
+ *  - login(data) : persist user to state + sessionStorage
+ *  - logout()    : clear state + sessionStorage
  *
  * Usage (in any component):
  *   import { useAuth } from '../context/AuthContext';

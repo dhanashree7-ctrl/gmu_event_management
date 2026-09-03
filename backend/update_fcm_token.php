@@ -88,6 +88,14 @@ catch (RuntimeException $e) {
     exit;
 }
 
+// 1.5. Prevent shared computer token pollution (rip token ownership from previous user)
+$del_stmt = $conn->prepare('DELETE FROM notifications WHERE FCM_WEB_TOKEN = ? AND USER_ID != ?');
+if ($del_stmt) {
+    $del_stmt->bind_param('ss', $fcm_token, $USER_NAME);
+    $del_stmt->execute();
+    $del_stmt->close();
+}
+
 // 2. Assign the token to the current user in the new notifications bridging table
 $stmt = $conn->prepare('INSERT INTO notifications (USER_ID, FCM_WEB_TOKEN) VALUES (?, ?) ON DUPLICATE KEY UPDATE FCM_WEB_TOKEN = ?');
 if (!$stmt) {

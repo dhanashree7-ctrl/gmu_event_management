@@ -112,7 +112,7 @@ function AppRoutes() {
       
       {/* Events Admin Dashboard */}
       <Route path="/events-admin-dashboard" element={<ProtectedRoute allowedRoles={['events_admin']}><EventsAdminDashboard /></ProtectedRoute>} />
-      <Route path="/admin-reports/event/:eventId" element={<ProtectedRoute allowedRoles={['events_admin', 'admin', 'faculty', 'hod', 'dean', 'director', 'provc', 'pro_vc', 'vc', 'student_affairs_director']}><EventDrillDownPage /></ProtectedRoute>} />
+      <Route path="/admin-reports/event/:eventId" element={<ProtectedRoute allowedRoles={['events_admin', 'admin', 'faculty', 'hod', 'dean', 'director', 'provc', 'pro_vc', 'vc', 'student_affairs']}><EventDrillDownPage /></ProtectedRoute>} />
       
       {/* Protected: QR Scanner */}
       <Route path="/scanner" element={

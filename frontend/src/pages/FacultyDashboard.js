@@ -254,7 +254,7 @@ export default function FacultyDashboard() {
 
     const formData = new FormData();
     formData.append('event_id', reportEventId);
-    formData.append('faculty_id', user.id);
+    formData.append('faculty_id', user.username);
     formData.append('report_summary', reportSummary);
     if (reportFile) {
       formData.append('report_file', reportFile);
@@ -300,7 +300,7 @@ export default function FacultyDashboard() {
     const fetchMyEvents = async () => {
       setFetchLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/get_my_events.php?user_id=${user.id}`);
+        const res = await fetch(`${API_BASE}/get_my_events.php?user_id=${user.username}`);
         const json = await res.json();
 
         if (json.success && Array.isArray(json.data)) {
@@ -455,7 +455,7 @@ export default function FacultyDashboard() {
       formData.append('event_mode', form.event_mode);
       formData.append('budget', form.budget);
       formData.append('immediate_approval', form.immediate_approval);
-      formData.append('proposed_by_id', user.id);
+      formData.append('proposed_by_id', user.username);
       formData.append('role', user.role);
       formData.append('brochure', form.brochureFile);
       if (form.max_participants) formData.append('max_participants', form.max_participants);

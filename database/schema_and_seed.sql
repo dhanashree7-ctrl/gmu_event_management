@@ -1,4 +1,4 @@
-﻿-- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
 -- Host: localhost    Database: GMU_Events01
 -- ------------------------------------------------------
@@ -136,6 +136,6 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   `FCM_WEB_TOKEN` varchar(500) NOT NULL,
   `UPDATED_AT` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`ID`),
-  UNIQUE KEY `USER_ID_UNIQUE` (`USER_ID`)
+  UNIQUE KEY `USER_TOKEN_UNIQUE` (`USER_ID`, `FCM_WEB_TOKEN`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

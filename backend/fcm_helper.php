@@ -139,6 +139,28 @@ function send_fcm_notification(string $device_token, string $title, string $body
 
     if ($http_code !== 200) {
         error_log("[FCM] Send failed (HTTP $http_code): $response");
+        
+        $resp_data = json_decode((string)$response, true);
+        if (isset($resp_data['error']['details'][0]['errorCode'])) {
+            $errCode = $resp_data['error']['details'][0]['errorCode'];
+            if ($errCode === 'UNREGISTERED' || $errCode === 'INVALID_ARGUMENT') {
+                require_once __DIR__ . '/config/db.php';
+                try {
+                    $db = get_db_connection();
+                    $del_stmt = $db->prepare('DELETE FROM notifications WHERE FCM_WEB_TOKEN = ?');
+                    if ($del_stmt) {
+                        $del_stmt->bind_param('s', $device_token);
+                        $del_stmt->execute();
+                        $del_stmt->close();
+                    }
+                    $db->close();
+                    error_log("[FCM] Auto-cleaned stale token from database.");
+                } catch (Throwable $e) {
+                    error_log("[FCM] Cleanup failed: " . $e->getMessage());
+                }
+            }
+        }
+        
         return false;
     }
 
@@ -156,17 +178,23 @@ function send_fcm_notification(string $device_token, string $title, string $body
  * @return bool
  */
 function send_fcm_to_user(mysqli $conn, string $USER_NAME, string $title, string $body, string $link = '/'): bool {
-    $stmt = $conn->prepare("SELECT device_token FROM users WHERE USER_NAME = ? AND device_token IS NOT NULL AND device_token != '' LIMIT 1");
+    $stmt = $conn->prepare("SELECT FCM_WEB_TOKEN FROM notifications WHERE USER_ID = ?");
     if (!$stmt) return false;
+    
     $stmt->bind_param('s', $USER_NAME);
     $stmt->execute();
-    $row = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-
-    if (!empty($row['device_token'])) {
-        return send_fcm_notification($row['device_token'], $title, $body, $link, $USER_NAME);
+    $res = $stmt->get_result();
+    
+    $success = false;
+    while ($row = $res->fetch_assoc()) {
+        if (!empty($row['FCM_WEB_TOKEN'])) {
+            $sent = send_fcm_notification($row['FCM_WEB_TOKEN'], $title, $body, $link, $USER_NAME);
+            if ($sent) $success = true; // Returns true if at least one device received it
+        }
     }
-    return false;
+    
+    $stmt->close();
+    return $success;
 }
 
 
