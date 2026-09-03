@@ -88,8 +88,8 @@ catch (RuntimeException $e) {
     exit;
 }
 
-// 2. Assign the token to the current user
-$stmt = $conn->prepare('UPDATE users SET device_token = ? WHERE USER_NAME = ?');
+// 2. Assign the token to the current user in the new notifications bridging table
+$stmt = $conn->prepare('INSERT INTO notifications (USER_ID, FCM_WEB_TOKEN) VALUES (?, ?) ON DUPLICATE KEY UPDATE FCM_WEB_TOKEN = ?');
 if (!$stmt) {
     $conn->close();
     http_response_code(500);
@@ -97,7 +97,7 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param('ss', $fcm_token, $USER_NAME);
+$stmt->bind_param('sss', $USER_NAME, $fcm_token, $fcm_token);
 
 if (!$stmt->execute()) {
     error_log("update_fcm_token.php – execute failed for user '$USER_NAME': " . $stmt->error);

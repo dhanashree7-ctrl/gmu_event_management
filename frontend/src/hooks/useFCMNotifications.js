@@ -37,7 +37,7 @@ async function registerTokenWithBackend(token, username) {
     const res = await fetch(`${API_BASE}/update_fcm_token.php`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ fcm_token: token, username }),
+      body: JSON.stringify({ fcm_token: token, USER_NAME: username }),
     });
 
     const json = await res.json();

@@ -45,7 +45,7 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$stmt = $conn->prepare('UPDATE users SET device_token = NULL WHERE USER_NAME = ?');
+$stmt = $conn->prepare('DELETE FROM notifications WHERE USER_ID = ?');
 if ($stmt) {
     $stmt->bind_param('s', $USER_NAME);
     $stmt->execute();
