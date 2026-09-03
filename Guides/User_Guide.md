@@ -9,11 +9,15 @@ The platform guarantees a seamless experience across devices, ensuring that facu
 
 ## 2. Role-Based Dashboards & Workflows
 
-### The Event Approval Hierarchy
-When a Faculty member proposes an event, the system automatically routes it through a strict approval chain based on the event's **Scale**. The event is not visible to students until the final executive in the chain approves it.
+### The Dynamic Event Approval Hierarchy
+When a Faculty member or Warden proposes an event, the system automatically routes it through a strict approval chain based on the event's **Scale** and the user's **Discipline**. The event is not visible to students until the final executive in the chain approves it.
+
 - **Department Scale:** Faculty Proposal → HOD Approval → Published
-- **Academic Scale:** Faculty Proposal → HOD Approval → Dean Approval → Published
-- **University Scale:** Faculty Proposal → HOD Approval → Dean Approval → Pro-VC Approval → VC Approval → Published
+- **Academic Scale:** Faculty Proposal → HOD Approval → Director Approval → Published
+- **University/Mega Scale:** Faculty Proposal → HOD Approval → Director Approval → Registrar Approval → VC Sign-off → Published
+- **Hostel Events:** Warden Proposal → Chief Warden Approval → Published
+
+*Note: The system dynamically routes the proposal to the exact HOD or Director who matches the proposing user's Discipline, eliminating manual routing errors.*
 
 ---
 
@@ -25,22 +29,22 @@ The Student Dashboard is a gamified, mobile-responsive hub for campus engagement
 - **Feedback:** Upon attending an event, students can submit structured feedback directly through the dashboard.
 - **Engagement Profile:** Monitor your reliability score, registration history, and visual charts of your campus involvement.
 
-### Faculty / Organiser Dashboard
-The Faculty Dashboard empowers staff to create, manage, and report on events without administrative friction.
+### Faculty / Warden / Organiser Dashboard
+The organizing dashboard empowers staff to create, manage, and report on events without administrative friction.
 - **Propose Events:** Submit comprehensive event proposals. You can propose standalone events or "Mega Events" that contain multiple distinct "Sub-Events" (e.g., a multi-day cultural festival).
 - **Resource Management:** Upload supporting documents, event brochures, and budgets during the proposal phase.
 - **My Events & Roster:** Track the live approval status of your proposals. Once approved, view the real-time "Attendee Roster" to see exactly who has registered (including external college participants).
 - **Post-Event Completion:** After an event concludes, organizers must complete a post-event report, uploading gallery images and documentation to officially mark the event as `completed` for the archives.
 
-### Approvers (HOD, Dean, Pro-VC, VC)
+### Approvers (HOD, Director, Registrar, VC)
 Approvers have access to streamlined dashboards focused on oversight and rapid decision-making across their specific jurisdiction.
 - **Action Center:** A dedicated inbox for pending event proposals awaiting their specific level of approval in the hierarchy. Approvers can review the event details, budget, and downloaded brochures.
 - **One-Click Decisions:** Instantly approve, reject, or request revisions for proposals. 
 - **Approved By Me:** An archive tab that maintains a historical timeline of all events the approver has signed off on.
-- **Dynamic Role Mapping:** The system automatically normalizes complex enterprise designations (e.g., "Director - School of Computer Science & Technology") into clean internal roles, ensuring proposals route to the exact right person without failure.
+- **Dynamic Role Mapping:** The system automatically normalizes complex enterprise designations based on your `USER_GROUP` and `DISCIPLINE` into clean internal roles, ensuring proposals route to the exact right person without failure.
 
 ### Events Admin / Student Affairs
-The Events Admin dashboard provides a macro-view of the entire university's event ecosystem.
+The Student Affairs and Events Admin dashboard provides a macro-view of the entire university's event ecosystem.
 - **System-Wide Monitoring:** View all events across all departments, regardless of approval status.
 - **Drill-Down Analytics:** Access deep analytics on event performance, student engagement, external college participation, and departmental activity using interactive visual charts.
 - **Event Timeline:** View the complete chronological history of an event's approvals, registrations, and feedback.
@@ -56,25 +60,27 @@ Every user dashboard features a standardized **Event Calendar** widget.
 - **Interactive UI:** Users can navigate month-by-month. Days with events feature dynamic, clickable event tags. Clicking an event tag immediately opens a detailed view of the event's timeline and logistics.
 - **Responsive Design:** The calendar is designed using fluid Flexbox grids, ensuring that event tags remain readable and accessible whether viewed on a widescreen monitor or a mobile phone.
 
-### Real-Time Bell Notifications
+### Real-Time Push Notifications
 The platform utilizes Firebase Cloud Messaging (FCM) to deliver instant updates.
 - **Bell Icon:** Located in the top right corner of the navigation bar, the bell icon serves as the notification hub.
-- **Instant Updates:** Approvers receive notifications the moment a faculty member submits a proposal. Faculty receive immediate alerts when their event advances up the chain (e.g. from HOD to Dean). Students are notified when a new mega-event goes live.
-- **Browser Integration:** Because the system uses FCM, these notifications can trigger standard browser-level push notifications, ensuring users are alerted even if they are in another browser tab.
+- **Instant Updates:** Approvers receive notifications the moment a faculty member submits a proposal. Faculty receive immediate alerts when their event advances up the chain (e.g., from HOD to Director). Students are notified when a new mega-event goes live.
+- **Browser Integration:** Because the system securely maps FCM tokens to your Enterprise ID, these notifications can trigger standard browser-level push notifications, ensuring you are alerted even if you are in another browser tab.
+
+---
 
 ## 4. Testing Accounts
 
 To thoroughly test the platform's features and end-to-end approval workflows, you can use the following mock accounts. 
 
-**Note: The universal password for all test accounts is 	est1234.**
+**Note: The universal password for all test accounts is `test1234`.**
 
-| Role / Dashboard | Username | Description |
-|------------------|----------|-------------|
-| **Faculty / Proposer** | csfac01 | Use this to create new event proposals and manage rosters. |
-| **HOD (Level 1 Approver)** | cshod01 | Approves Department scale events, and routes higher scales to the Dean. |
-| **Dean (Level 2 Approver)** | dean.fet@gmu.ac.in | Approves Academic scale events, and routes University scales to the Pro-VC. |
-| **Pro-VC (Level 3 Approver)**| pro-vc@gmu.ac.in | Approves University scale events, and routes to the VC. |
-| **VC (Level 4 Approver)** |  c@gmu.ac.in | Final executive sign-off for University scale events. |
+| Enterprise `USER_GROUP` | Username | Description |
+|-------------------------|----------|-------------|
+| **Faculty / Proposer**  | csfac01  | Use this to create new event proposals and manage rosters. |
+| **HOD (Level 1 Approver)** | cshod01 | Approves Department scale events, and routes higher scales to the Director. |
+| **Director (Level 2 Approver)** | dean.fet@gmu.ac.in | Approves Academic scale events, and routes University scales to the Registrar. |
+| **Registrar (Level 3 Approver)**| pro-vc@gmu.ac.in | Approves University scale events, and routes to the VC. |
+| **VC (Level 4 Approver)** |  vc@gmu.ac.in | Final executive sign-off for University scale events. |
+| **Warden** | warden@gmit | Proposes hostel-specific events. |
 | **Student** | `U23E01CS018` | Use this to register for events, form teams, and submit feedback. (CSE Student) |
-| **Student (Alternative)** | `U23E01CS036` | An alternative student account for testing multi-user check-ins. (CSE Student) |
 | **Student Affairs / Admin** | events_admin | View all global events and analytical drill-downs. |

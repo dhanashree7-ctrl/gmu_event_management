@@ -13,15 +13,22 @@ Before diving into deployment, please review our comprehensive guides located in
 - **[User Guide](Guides/User_Guide.md):** Detailed breakdown of role-based dashboards, approval hierarchies, gamification metrics, and a list of **Testing Accounts**.
 - **[Developer Guide](Guides/Developer_Guide.md):** Architectural overview, JWT/Enterprise role normalization, Firebase integration, and advanced database workflows.
 
-## 2. Database Setup
+## 2. Deployment & Database Setup
 A complete unified schema and seed script is provided in `database/schema_and_seed.sql`.
+
+> **⚠️ CRITICAL ENTERPRISE DEPENDENCY: The `users` Table**
+> The `users` table is treated as a strict **Read-Only** enterprise dependency. `SL_NO` is the internal integer Primary Key, while `ID` acts as the string-based USN/Roll Number. The application derives route protection and logic from the `USER_GROUP` and `DISCIPLINE` columns. We **do not** write or mutate data in this table directly.
+
+To securely extend the read-only user data (e.g., for Push Notifications), the database setup script will generate application-specific tables, including a dedicated bridging table:
 
 1. Create a new database on your MySQL server (e.g., `GMU_Events_Test`).
 2. Import the provided SQL script:
    ```bash
    mysql -u root -p GMU_Events_Test < database/schema_and_seed.sql
    ```
-3. *(Optional)* **Realistic Data Seeding:** The `schema_and_seed.sql` file comes pre-loaded with 10 pristine, highly detailed events to demonstrate every platform feature (sub-events, external students, etc.). If you ever need to wipe the database and regenerate this realistic data, run the custom PHP seeder script:
+   *This script generates the required internal tables: `event_master`, `event_registrations`, `approval_hierarchy`, and the crucial `notifications` table (which bridges the `users` table with Firebase FCM tokens without altering enterprise data).*
+
+3. *(Optional)* **Realistic Data Seeding:** The `schema_and_seed.sql` file comes pre-loaded with pristine, highly detailed events to demonstrate platform features. If you ever need to wipe the database and regenerate this realistic data, run the custom PHP seeder script:
    ```bash
    php backend/seed_realistic.php
    ```

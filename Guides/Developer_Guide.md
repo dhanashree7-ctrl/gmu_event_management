@@ -1,11 +1,11 @@
 # GMU Event Management System - Developer Guide
 
 ## 1. Architecture Overview
-This application utilizes a completely decoupled, modern web stack designed for robust separation of concerns, scalability, and ease of deployment.
+This application utilizes a completely decoupled, modern web stack designed for robust separation of concerns, scalability, and ease of integration with existing enterprise systems.
 
 - **Frontend (Client):** Built with **React.js**. It functions as an independent Single Page Application (SPA). All state routing is handled client-side via React Router. The frontend communicates with the server exclusively via asynchronous `fetch` calls.
 - **Backend (REST API):** Built with raw **PHP (v8.1+)**. Instead of serving HTML views, the PHP backend acts purely as a stateless RESTful API, returning JSON payloads.
-- **Database:** **MySQL (v8.0+)**. The relational schema is optimized for complex approval hierarchies, while strategically utilizing JSON columns for flexible data schemas (like dynamic forms or varying sub-event logistics).
+- **Database:** **MySQL (v8.0+)**. The relational schema is optimized for complex approval hierarchies, while strategically utilizing JSON columns for flexible data schemas. The architecture is designed to respect read-only enterprise dependencies.
 
 ---
 
@@ -32,16 +32,23 @@ DB_NAME=GMU_Events_Test
 
 ---
 
-## 3. Database Schema Highlights
-The database (`GMU_Events_Test`) is highly normalized but incorporates modern JSON data types to handle edge cases without table bloat.
+## 3. Database Schema & Enterprise Constraints
+The database (`GMU_Events_Test`) is highly normalized and strictly enforces enterprise architectural patterns, particularly concerning the `users` table.
 
+### The Enterprise User Constraint
+The `users` table is treated as a **Read-Only Enterprise Dependency**. 
+- **`SL_NO` vs. `ID`:** The table uses `SL_NO` (an internal auto-incrementing integer) as its Primary Key. However, our application logic and foreign keys (e.g., in `event_registrations` or `event_master`) strictly rely on the string-based `ID` (which represents the user's USN or Employee Roll Number) or `USER_NAME`.
+- **Immutability:** The application is explicitly prohibited from writing to or altering the schema of the `users` table, ensuring seamless synchronization with central university IT systems.
+
+### Role & Department Routing
+To maintain the read-only constraint, the system derives authorization and workflow logic from existing enterprise fields:
+- **`USER_GROUP` & `DISCIPLINE`:** Instead of dedicated `role` or `dept` columns, React route protection, conditional UI rendering, and HOD approval logic rely entirely on mapping the `USER_GROUP` (e.g., WARDEN, FACULTY, STUDENT) and `DISCIPLINE` (e.g., CSE, ECE) fields. 
+
+### Modern Data Storage
 - **JSON Columns:** 
   - `attachments_json` (in `event_master`): Stores an array of file paths for dynamic document uploads without requiring a separate `attachments` join table.
   - `feedback_json` (in `event_registrations`): Stores flexible key-value pairs for student post-event feedback.
-- **Hierarchical Approvals:** The `approval_hierarchy` and `approval_rules` tables dictate the flow of events from Faculty -> HOD -> Executive.
-- **Firebase Token Columns:** 
-  - `fcm_web_token` (in `users`): Stores the unique browser fingerprint required to send targeted push notifications.
-  - `notification_sent` (in `event_master`): A boolean flag used to prevent duplicate broadcast notifications from being fired by concurrent admin actions.
+- **Hierarchical Approvals:** The `approval_hierarchy` and `approval_rules` tables dynamically dictate the flow of events based on the proposer's `DISCIPLINE` (e.g., Faculty -> HOD -> Executive).
 
 ---
 
@@ -49,39 +56,37 @@ The database (`GMU_Events_Test`) is highly normalized but incorporates modern JS
 
 ### Role Normalization & JWT
 When the system interfaces with the university's enterprise `users` table, it encounters raw, unstructured job titles (e.g., "Director - School of Computer Science & Technology"). 
-- **Normalization:** The `role_helper.php` intercepts these raw `DESIGNATION` strings during login and maps them to clean internal roles (e.g., `director`, `hod`, `dean`, `vc`).
-- **JWT Authorization:** Only the clean, normalized internal role is baked into the JWT. The backend API endpoints (`get_pending_events.php`, `update_event_status.php`) strictly use this JWT role for authorization checks, ensuring robust security and preventing SQL-level string mismatches.
+- **Normalization:** The `role_helper.php` intercepts these raw `DESIGNATION` and `USER_GROUP` strings during login and maps them to clean internal roles (e.g., `director`, `hod`, `dean`, `vc`).
+- **JWT Authorization:** Only the clean, normalized internal role is baked into the JWT. The backend API endpoints strictly use this JWT role for authorization checks, ensuring robust security and preventing SQL-level string mismatches.
 
 ### Realistic Data Seeding
-For testing purposes, the repository includes a custom algorithm script: `backend/seed_realistic.php`.
-- **Function:** Running this script automatically wipes all test events and populates the database with exactly 10 extremely realistic events. 
-- **Coverage:** The script programmatically guarantees that all edge-case features are seeded, including external cross-college participants, team leads for mega-events, dynamic dates, JSON feedback payloads, and dummy file attachments (brochures/reports).
+For testing purposes, the repository includes a custom algorithm script: `backend/seed_realistic.php`. Running this script wipes all test events and populates the database with exactly 10 extremely realistic events to guarantee all edge-case features (external cross-college participants, team leads, JSON payloads) are seeded.
 
 ---
 
-## 5. Firebase FCM Integration
-The platform utilizes Firebase Cloud Messaging to push real-time updates (e.g., approval status changes, mega-event launches) directly to the user's browser, even if they are in another tab.
+## 5. Firebase FCM & The Token Bridging Architecture
+The platform utilizes Firebase Cloud Messaging (FCM) to push real-time updates directly to the user's browser.
+
+### The Token Bridging Architecture
+Because the `users` table is strictly read-only, we cannot modify its schema to store dynamically generated Firebase web tokens.
+- **The `notifications` Table:** To solve this securely, we utilize a dedicated bridging table named `notifications` (containing `id`, `user_id`, and `fcm_web_token`). This table manages the 1-to-many relationship between enterprise users and their authorized browser instances.
+- **Backend `JOIN`s:** When a critical state changes (e.g., an HOD approves an event), the PHP script (`update_event_status.php`) performs a `JOIN` between the read-only `users` table and our `notifications` table to extract the target's `fcm_web_token` and dispatch the push payload via `fcm_helper.php`.
 
 ### Frontend Implementation
-The React app uses the Firebase Web SDK (`firebase-messaging-sw.js` service worker) to request notification permissions from the browser. Upon granting permission, Firebase generates an FCM token, which the frontend securely POSTs to `update_fcm_token.php`.
-
-### Backend Implementation
-The PHP backend acts as the broadcaster. When a critical state changes (e.g., an HOD approves an event via `update_event_status.php`), the script queries the `users` table for the target's `fcm_web_token`. It then uses `fcm_helper.php` to securely negotiate with the Firebase Admin REST API (using the Service Account Key) to push the payload to the browser. 
-*Locking:* The backend strictly uses the `notification_sent` flag in transactions to prevent duplicate push broadcasts during rapid concurrent approvals.
+The React app uses the Firebase Web SDK (`firebase-messaging-sw.js` service worker) to request notification permissions. Upon granting permission, Firebase generates an FCM token, which the frontend securely POSTs to `update_fcm_token.php`, populating the `notifications` bridging table.
 
 ---
 
-## 5. Deployment Steps
-To deploy the application to a test server (e.g., Apache or Nginx):
+## 6. Deployment Steps
+To deploy the application to a test server:
 
 ### Step 1: Host the Backend API
-1. Place the entire `backend` directory into your web server's document root (e.g., `/var/www/html/backend`).
+1. Place the entire `backend` directory into your web server's document root.
 2. Ensure the `backend/.env` is configured correctly.
 3. Ensure the web user (e.g., `www-data`) has write permissions to `backend/uploads/` and `backend/error.log`.
-4. *Note:* CORS is globally handled by `backend/config/cors.php`. Ensure your web server is not aggressively blocking `OPTIONS` preflight requests.
 
 ### Step 2: Build the Frontend
-On your local machine or build server, configure the frontend to point to your newly hosted backend, then build the static bundle:
+On your local machine or build server, configure the frontend to point to your newly hosted backend:
 ```bash
 cd frontend
 # Ensure REACT_APP_API_URL is set in .env
@@ -90,8 +95,6 @@ npm run build
 ```
 
 ### Step 3: Host the Frontend
-1. The `npm run build` command generates a `build/` directory containing purely static files (HTML, JS, CSS).
-2. Copy the contents of `frontend/build/` to the root of your web server (e.g., `/var/www/html/`).
-3. **CRITICAL:** Because React uses client-side routing, you must configure your web server to route all `404` requests back to `index.html`. 
-   - *Apache:* Use an `.htaccess` file with `FallbackResource /index.html`.
-   - *Nginx:* Use `try_files $uri $uri/ /index.html;`.
+1. The `npm run build` command generates a `build/` directory containing purely static files.
+2. Copy the contents of `frontend/build/` to the root of your web server.
+3. **CRITICAL:** Because React uses client-side routing, you must configure your web server to route all `404` requests back to `index.html` (e.g., `FallbackResource /index.html` in Apache).
