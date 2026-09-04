@@ -71,9 +71,9 @@ try {
 require_once __DIR__ . '/config/role_helper.php';
 
 $sql = 'SELECT SL_NO, ID as ROLL_NO, USER_NAME, NAME, PASSWORD, DESIGNATION, USER_GROUP,
-               DISCIPLINE, FACULTY, SCHOOL, device_token, PHOTO, MOBILE_NO
+               DISCIPLINE, FACULTY, SCHOOL, PHOTO, MOBILE_NO
          FROM   users
-         WHERE  USER_NAME = ?
+         WHERE  (USER_NAME = ? OR ID = ?)
            AND  STATUS = \'ACTIVE\'
          LIMIT  1';
 
@@ -87,7 +87,7 @@ if (!$stmt) {
     exit;
 }
 
-$stmt->bind_param('s', $username);
+$stmt->bind_param('ss', $username, $username);
 
 if (!$stmt->execute()) {
     error_log('login.php – execute failed: ' . $stmt->error);

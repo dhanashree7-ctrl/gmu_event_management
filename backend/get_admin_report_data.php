@@ -89,12 +89,12 @@ $in_clause = implode(',', array_map(fn($id) => "'" . $conn->real_escape_string((
 $participants_query = "
     SELECT
         COALESCE(u.NAME, 'Unknown Participant') AS participant_name,
-        u.USER_NAME      AS usn,
+        u.ID             AS usn,
         COALESCE(u.DISCIPLINE, 'N/A') AS department,
-        u.PROGRAMME      AS programme,
+        u.SCHOOL         AS school_name,
         er.ROLE          AS role,
-        er.EVENT_ID    AS event_id,
-        em.EVENT_TITLE AS event_title
+        er.EVENT_ID      AS event_id,
+        em.EVENT_TITLE   AS event_title
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
     LEFT JOIN users u ON er.USER_ID = u.USER_NAME
@@ -118,7 +118,6 @@ $participants_result = $conn->query($participants_query);
 
 $participants  = [];
 $dept_breakdown = [];
-$prog_breakdown  = [];
 
 while ($row = $participants_result->fetch_assoc()) {
     $DISCIPLINE = $row['department'];
@@ -126,10 +125,6 @@ while ($row = $participants_result->fetch_assoc()) {
         $DISCIPLINE = (strpos($row['usn'] ?? '', 'EXT') === 0) ? 'External' : 'Unknown';
     }
     $dept_breakdown[$DISCIPLINE] = ($dept_breakdown[$DISCIPLINE] ?? 0) + 1;
-
-    $prog = $row['programme'] ?: 'N/A';
-    $prog_breakdown[$prog] = ($prog_breakdown[$prog] ?? 0) + 1;
-
     $participants[] = $row;
 }
 
@@ -139,7 +134,6 @@ echo json_encode([
         'metrics' => [
             'total_participants'  => count($participants),
             'department_breakdown' => $dept_breakdown,
-            'programme_breakdown'   => $prog_breakdown,
         ],
         'participants' => $participants,
         'events_info'  => $events_info,

@@ -74,9 +74,9 @@ $sql = "SELECT
             er.CHECK_IN_TIME          AS check_in_time,
             er.REGISTRATION_DATE      AS registered_at,
             u.NAME                    AS student_name,
-            u.USER_NAME               AS usn,
+            u.ID                      AS usn,
             u.DISCIPLINE              AS discipline,
-            u.PROGRAMME               AS programme,
+            u.SCHOOL                  AS school_name,
             er.TEAM_LEAD              AS team_lead,
             er.TEAM_MEMBERS           AS team_members
         FROM event_registrations er
@@ -110,7 +110,8 @@ while ($row = $result->fetch_assoc()) {
         'usn'                  => $row['usn'] ?? 'N/A',
         'student_name'         => $row['student_name'] ?? 'Unknown User',
         'discipline'           => $row['discipline'] ?? 'N/A',
-        'programme'            => $row['programme'] ?? 'N/A',
+        'school_name'          => $row['school_name'] ?? 'N/A',
+        'programme'            => 'N/A', // Legacy variable safe-fallback
         'registration_role'    => $row['registration_role']    ?? 'participant',
 
         'topics_of_interest'   => 'None',
