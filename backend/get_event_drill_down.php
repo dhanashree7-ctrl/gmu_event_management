@@ -58,6 +58,10 @@ $master_event['category']     = $master_event['CATEGORY'];
 $master_event['event_scale']  = $master_event['SCALE'];
 $master_event['current_status'] = $master_event['CURRENT_STATUS'];
 $master_event['budget']       = $master_event['BUDGET'];
+
+$start = $master_event['START_DATE'] ?? '';
+$end = $master_event['END_DATE'] ?? '';
+$master_event['event_date']   = ($start === $end || empty($end)) ? $start : "$start to $end";
 $attachments = !empty($master_event['ATTACHMENTS']) ? json_decode($master_event['ATTACHMENTS'], true) : [];
 $master_event['details_json'] = $master_event['ATTACHMENTS']; // using attachments for details if needed
 $master_event['brochure_file_path'] = $attachments['brochure'] ?? null;
