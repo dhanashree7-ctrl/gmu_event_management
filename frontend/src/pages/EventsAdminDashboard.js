@@ -24,7 +24,6 @@ const NAV_ITEMS = [
   { icon: '', label: 'Dashboard', active: true },
   { icon: '', label: 'Current Routings', active: false },
   { icon: '️', label: 'Configure Routing', active: false },
-  { icon: '', label: 'Manage Users', active: false },
   { icon: '', label: 'Reports & Analytics', active: false },
   { icon: '️', label: 'Archive', active: false },
 ];
@@ -253,101 +252,6 @@ function ConfigureRoutingView({ rules, setRules, selectedScaleId, setSelectedSca
   );
 }
 
-function ManageUsersView() {
-  const [formData, setFormData] = React.useState({
-    full_name: '',
-    usn_or_emp_id: '',
-    password: '',
-    system_role: 'student',
-    department: ''
-  });
-  const [status, setStatus] = React.useState(null);
-
-  const roles = [
-    { value: 'student', label: 'Student' },
-    { value: 'faculty', label: 'Faculty' },
-    { value: 'hod', label: 'HOD' },
-    { value: 'director', label: 'Director' },
-    { value: 'dean', label: 'Dean' },
-    { value: 'pro_vc', label: 'Pro-VC' },
-    { value: 'vc', label: 'VC' },
-    { value: 'admin', label: 'Admin' },
-    { value: 'events_admin', label: 'Events Admin' }
-  ];
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setStatus({ type: 'loading', message: 'Creating user...' });
-    try {
-      const res = await fetch(`${API_BASE}/add_user.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      const data = await res.json();
-      if (data.success) {
-        setStatus({ type: 'success', message: data.message });
-        setFormData({ full_name: '', usn_or_emp_id: '', password: '', system_role: 'student', department: '' });
-      } else {
-        setStatus({ type: 'error', message: data.message });
-      }
-    } catch (err) {
-      setStatus({ type: 'error', message: 'Network error. Please try again.' });
-    }
-  };
-
-  return (
-    <div style={styles.viewContainer}>
-      <div style={styles.topBar}>
-        <div>
-          <h2 style={{ margin: 0, color: theme.colors.maroon }}>Manage Users</h2>
-          <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>Manually add new users to the system.</p>
-        </div>
-      </div>
-      <div style={styles.formCard}>
-        {status && (
-          <div style={{ ...styles.statusMsg, backgroundColor: status.type === 'error' ? '#ffebee' : status.type === 'success' ? '#e8f5e9' : '#e3f2fd', color: status.type === 'error' ? '#c62828' : status.type === 'success' ? '#2e7d32' : '#1565c0' }}>
-            {status.message}
-          </div>
-        )}
-        <form onSubmit={handleSubmit} style={styles.userForm}>
-          <div style={styles.formGroup}>
-            <label style={styles.formLabel}>Full Name</label>
-            <input name="full_name" value={formData.full_name} onChange={handleChange} style={styles.formInput} required />
-          </div>
-          <div style={styles.formGroup}>
-            <label style={styles.formLabel}>USN / Employee ID</label>
-            <input name="usn_or_emp_id" value={formData.usn_or_emp_id} onChange={handleChange} style={styles.formInput} required />
-          </div>
-          <div style={styles.formGroup}>
-
-          </div>
-          <div style={styles.formGroup}>
-            <label style={styles.formLabel}>Password</label>
-            <input name="password" type="password" value={formData.password} onChange={handleChange} style={styles.formInput} required />
-          </div>
-          <div style={styles.formGroup}>
-            <label style={styles.formLabel}>System Role</label>
-            <select name="system_role" value={formData.system_role} onChange={handleChange} style={styles.formInput}>
-              {roles.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-            </select>
-          </div>
-          <div style={styles.formGroup}>
-            <label style={styles.formLabel}>Department (Optional)</label>
-            <input name="department" value={formData.department} onChange={handleChange} style={styles.formInput} placeholder="e.g. AIML, CS" />
-          </div>
-          <div style={{ gridColumn: '1 / -1', marginTop: '1rem', textAlign: 'right' }}>
-            <button type="submit" style={styles.submitBtn}>Add User</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
@@ -438,7 +342,6 @@ export default function EventsAdminDashboard() {
             </div>
           )}
           {activeNav === 'Current Routings' && <CurrentRoutingsView rules={rules} />}
-          {activeNav === 'Manage Users' && <ManageUsersView />}
           {activeNav === 'Reports & Analytics' && <AdminReportsView user={user} />}
           {activeNav === 'Archive' && <EventArchive user={user} />}
           {activeNav === 'Settings' && <SettingsView user={user} />}
