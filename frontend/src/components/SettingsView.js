@@ -57,6 +57,7 @@ const TABS = [
 ];
 
 export default function SettingsView({ user, onBack }) {
+  const [imgError, setImgError] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -119,8 +120,13 @@ export default function SettingsView({ user, onBack }) {
       <aside className="gmu-settings-sidebar" style={st.tabPanelBase}>
         <div style={st.panelHeader}>
           <div style={st.panelAvatar}>
-            {user?.photo ? (
-              <img src={user.photo} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+            {!imgError && user?.photo ? (
+              <img
+                src={user.photo}
+                alt="Avatar"
+                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                onError={() => setImgError(true)}
+              />
             ) : (
               <User size={28} color="#FDD06F" />
             )}
@@ -156,8 +162,13 @@ export default function SettingsView({ user, onBack }) {
             <div style={st.profileCard}>
               <div style={st.profileBanner}>
                 <div style={st.profileAvatarLg}>
-                  {user?.photo ? (
-                    <img src={user.photo} alt="Avatar" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                  {!imgError && user?.photo ? (
+                    <img
+                      src={user.photo}
+                      alt="Avatar"
+                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                      onError={() => setImgError(true)}
+                    />
                   ) : (
                     <User size={38} color="#FDD06F" />
                   )}

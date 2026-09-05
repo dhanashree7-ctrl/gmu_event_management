@@ -141,8 +141,11 @@ if ($reg_role === 'participant') {
     }
 }
 
+$team_name = trim((string)($body['team_name'] ?? ''));
+
 $details_data = [];
 if (!empty($selected_sub_events)) $details_data['registered_sub_events'] = $selected_sub_events;
+if (!empty($team_name)) $details_data['team_name'] = $team_name;
 $details_json = !empty($details_data) ? json_encode($details_data) : null;
 
 // ── Insert lean transaction into event_registrations ──────────────────────────

@@ -481,26 +481,28 @@ export default function ExecutiveDashboard() {
           {/* My Proposals Content */}
           {activeNav === 'Events' && (
             <div style={styles.contentCard}>
-              <div style={styles.tabContainer}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', borderBottom: '1px solid #eaeaea', paddingBottom: '1rem' }}>
+                <div>
+                  <h2 style={{ ...styles.sectionTitle, margin: 0 }}>
+                    {activeTab === 'proposeNew' ? 'Propose New Event' : 'My Proposals'}
+                  </h2>
+                  <p style={{ ...styles.sectionSub, margin: '4px 0 0 0' }}>
+                    {activeTab === 'proposeNew' 
+                      ? 'Complete the form below. Your request will be routed directly to the next level.' 
+                      : 'Track the status of events you have personally proposed.'}
+                  </p>
+                </div>
                 <button 
-                  style={s(styles.tabBtn, activeTab === 'proposalsList' ? styles.tabActive : styles.tabInactive)}
-                  onClick={() => setActiveTab('proposalsList')}
+                  onClick={() => setActiveTab(activeTab === 'proposeNew' ? 'proposalsList' : 'proposeNew')}
+                  style={{ padding: '0.6rem 1.2rem', backgroundColor: theme.colors.maroon, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
                 >
-                  View Proposals
-                </button>
-                <button 
-                  style={s(styles.tabBtn, activeTab === 'proposeNew' ? styles.tabActive : styles.tabInactive)}
-                  onClick={() => setActiveTab('proposeNew')}
-                >
-                  Propose New Event
+                  {activeTab === 'proposeNew' ? '← Back' : '+ New Proposal'}
                 </button>
               </div>
 
               <div style={{ paddingTop: '1.5rem' }}>
                 {activeTab === 'proposalsList' && (
                   <div>
-                    <h2 style={styles.sectionTitle}>My Proposals</h2>
-              <p style={styles.sectionSub}>Track the status of events you have personally proposed.</p>
               {myEventsLoading ? (
                 <p>Loading...</p>
               ) : myEvents.length === 0 ? (
@@ -577,8 +579,6 @@ export default function ExecutiveDashboard() {
                 
                 {activeTab === 'proposeNew' && (
                   <div>
-                    <h2 style={styles.sectionTitle}>Propose New Event</h2>
-                    <p style={styles.sectionSub}>Complete the form below. Your request will be routed directly to the next level.</p>
                     {proposeMessage && (
                       <div style={proposeMessage.type === 'success' ? styles.successBox : styles.errorBox}>
                         {proposeMessage.text}

@@ -174,7 +174,7 @@ const styles = {
   todayCell: {
     background: '#fffbf0',
     borderColor: theme.colors.gold,
-    boxShadow: 'inset 0 0 0 1px #FDD06F'
+    borderTopWidth: '3px',
   },
   dayNumber: {
     fontWeight: '700',

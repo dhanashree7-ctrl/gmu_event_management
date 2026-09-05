@@ -567,22 +567,6 @@ export default function FacultyDashboard() {
                 barName="Total Items"
               />
             </div>
-            {systemEvents.length > 0 && (
-              <div style={{ background: '#fff', borderRadius: theme.radii.xl, padding: '1.25rem 1.5rem', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', border: '1px solid #f0ebe1' }}>
-                <h3 style={{ fontSize: '0.95rem', color: theme.colors.maroon, fontWeight: 700, marginBottom: '0.75rem', marginTop: 0 }}>Department Distribution</h3>
-                <DashboardMetrics
-                  data={Object.entries(
-                    systemEvents.reduce((acc, ev) => {
-                      const cat = ev.category || 'Other';
-                      acc[cat] = (acc[cat] || 0) + 1;
-                      return acc;
-                    }, {})
-                  ).map(([name, count]) => ({ name, count }))}
-                  type="category"
-                  chartType="pie"
-                />
-              </div>
-            )}
           </div>
         )}
 

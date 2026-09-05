@@ -119,14 +119,24 @@ export default function StudentEventDetails() {
     );
   }
 
-  const isGroupEvent = event.participation_type === 'group' || (event.max_team_size && event.max_team_size > 1);
-  const regDaysLeft = daysUntil(event.registration_deadline);
   const subEvents = event.details?.sub_events_logistics || event.details?.sub_events || [];
   const isFestival = !!event.details?.is_festival;
+  const isGroupSubEventSelected = subEvents.some(s => form.selectedSubEvents.includes(s.name) && s.participation_type === 'group');
+  // For festivals: only show group form when a group sub-event is selected
+  // For standalone events: check participation_type or max_team_size
+  const isGroupEvent = isFestival
+    ? isGroupSubEventSelected
+    : (event.participation_type === 'group' || (event.max_team_size && event.max_team_size > 1));
+  let activeMaxTeamSize = event.max_team_size || 2;
+  if (isFestival && isGroupSubEventSelected) {
+    const groupSub = subEvents.find(s => form.selectedSubEvents.includes(s.name) && s.participation_type === 'group');
+    if (groupSub && groupSub.max_team_size) activeMaxTeamSize = Number(groupSub.max_team_size);
+  }
+  const regDaysLeft = daysUntil(event.registration_deadline);
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: '#F5F0EB', fontFamily: theme.fonts.sans }}>
+    <div style={{ minHeight: '100vh', background: '#F2EDE8', fontFamily: theme.fonts.sans, overflowX: 'hidden' }}>
       {/* ── Navbar ── */}
       <div style={{ background: '#fff', borderBottom: '1px solid #EAEAEA', padding: '0.85rem 2rem', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
         <button
@@ -140,7 +150,7 @@ export default function StudentEventDetails() {
       {/* ── Hero Banner ── */}
       <div style={{
         width: '100%',
-        height: '300px',
+        height: '260px',
         background: event.brochure_file_path
           ? `url(${API_BASE}/${event.brochure_file_path}) center/cover`
           : `linear-gradient(135deg, ${theme.colors.maroon} 0%, #701a1e 60%, #8B2225 100%)`,
@@ -173,10 +183,10 @@ export default function StudentEventDetails() {
       </div>
 
       {/* ── Main Content ── */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem', display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <div style={{ padding: '1.25rem 1.5rem 3rem', display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
 
         {/* ── Left Column ── */}
-        <div style={{ flex: '1 1 60%', minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
           {/* About */}
           <div style={card}>
@@ -200,8 +210,8 @@ export default function StudentEventDetails() {
               <LogisticItem label="Mode" value={event.event_mode === 'online' ? '🌐 Online' : '📍 Offline'} />
               <LogisticItem label="Coordinator" value={event.coordinator_name || 'N/A'} />
               <LogisticItem label="Coordinator Phone" value={event.coordinator_number || 'N/A'} />
-              {isGroupEvent && (
-                <LogisticItem label="Max Team Size" value={event.max_team_size ? `${event.max_team_size} members` : 'N/A'} />
+              {(event.max_team_size && event.max_team_size > 1) && (
+                <LogisticItem label="Max Team Size" value={`${event.max_team_size} members`} />
               )}
             </div>
 
@@ -278,7 +288,7 @@ export default function StudentEventDetails() {
         </div>
 
         {/* ── Right Column — Registration Card ── */}
-        <div style={{ flex: '1 1 30%', minWidth: '280px' }}>
+        <div style={{ width: '320px', flexShrink: 0 }}>
           <div style={{ ...card, position: 'sticky', top: '5rem' }}>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{ fontSize: '2rem', fontWeight: 900, color: '#2E7D32' }}>Free</div>
@@ -368,43 +378,69 @@ export default function StudentEventDetails() {
                       <input
                         type="checkbox"
                         checked={form.is_team_lead}
-                        onChange={(e) => setForm({ ...form, is_team_lead: e.target.checked })}
+                        onChange={(e) => setForm({ ...form, is_team_lead: e.target.checked, team_lead_name: '', team_members: [] })}
                         style={{ width: '15px', height: '15px', accentColor: theme.colors.maroon }}
                       />
                       I am the Team Lead
                     </label>
                     {!form.is_team_lead ? (
-                      <div>
-                        <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Team Lead's Name / USN</label>
-                        <input
-                          type="text"
-                          style={textInput}
-                          value={form.team_lead_name}
-                          onChange={(e) => setForm({ ...form, team_lead_name: e.target.value })}
-                          required
-                          placeholder="Enter team lead's USN or name"
-                        />
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Team Name</label>
+                          <input
+                            type="text"
+                            style={textInput}
+                            value={form.team_name}
+                            onChange={(e) => setForm({ ...form, team_name: e.target.value })}
+                            required
+                            placeholder="e.g. Code Ninjas"
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Team Lead's Name / USN</label>
+                          <input
+                            type="text"
+                            style={textInput}
+                            value={form.team_lead_name}
+                            onChange={(e) => setForm({ ...form, team_lead_name: e.target.value })}
+                            required
+                            placeholder="Enter team lead's USN or name"
+                          />
+                        </div>
                       </div>
                     ) : (
-                      <div>
-                        <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '6px' }}>
-                          Add Team Members (Max {(event.max_team_size || 2) - 1})
-                        </label>
-                        {Array.from({ length: Math.min(form.team_members.length + 1, (event.max_team_size || 2) - 1) }).map((_, idx) => (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>Team Name</label>
                           <input
-                            key={idx}
                             type="text"
-                            style={{ ...textInput, marginBottom: '6px' }}
-                            placeholder={`Member ${idx + 1} USN / Name`}
-                            value={form.team_members[idx] || ''}
-                            onChange={(e) => {
-                              const newMembers = [...form.team_members];
-                              newMembers[idx] = e.target.value;
-                              if (e.target.value === '') newMembers.splice(idx, 1);
-                              setForm({ ...form, team_members: newMembers });
-                            }}
+                            style={{ ...textInput, marginBottom: '2px' }}
+                            value={form.team_name}
+                            onChange={(e) => setForm({ ...form, team_name: e.target.value })}
+                            required
+                            placeholder="e.g. Code Ninjas"
                           />
-                        ))}
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.8rem', color: '#666', display: 'block', marginBottom: '4px' }}>
+                            Add Team Members <span style={{ color: '#888' }}>(Max {activeMaxTeamSize - 1})</span>
+                          </label>
+                          {Array.from({ length: Math.min(form.team_members.length + 1, activeMaxTeamSize - 1) }).map((_, idx) => (
+                            <input
+                              key={idx}
+                              type="text"
+                              style={{ ...textInput, marginBottom: '6px' }}
+                              placeholder={`Member ${idx + 1} USN / Name`}
+                              value={form.team_members[idx] || ''}
+                              onChange={(e) => {
+                                const newMembers = [...form.team_members];
+                                newMembers[idx] = e.target.value;
+                                if (e.target.value === '') newMembers.splice(idx, 1);
+                                setForm({ ...form, team_members: newMembers });
+                              }}
+                            />
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -462,11 +498,11 @@ function LogisticItem({ label, value }) {
 
 // ── Inline styles ─────────────────────────────────────────────────────────────
 const card = {
-  background: '#fff',
-  borderRadius: '16px',
-  padding: '1.75rem',
-  boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-  border: '1px solid #EEE9E2',
+  background: '#FBF8F5',
+  borderRadius: '14px',
+  padding: '1.25rem 1.5rem',
+  boxShadow: 'none',
+  border: '1px solid #DDD5CA',
 };
 
 const fieldLabel = {

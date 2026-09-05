@@ -131,7 +131,7 @@ export default function StudentEvents() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [form, setForm] = useState({ reg_role: "participant", selectedSubEvents: [], is_team_lead: true, team_lead_name: "", team_members: [] });
+  const [form, setForm] = useState({ reg_role: "participant", selectedSubEvents: [], is_team_lead: true, team_lead_name: "", team_name: "", team_members: [] });
   const [registering, setRegistering] = useState(false);
   
   // Ticket State
@@ -201,7 +201,7 @@ export default function StudentEvents() {
 
   const openRegistration = (evt = selectedEvent) => {
     setSelectedEvent(evt);
-    setForm({ reg_role: "participant", selectedSubEvents: [], is_team_lead: true, team_lead_name: "", team_members: [] });
+    setForm({ reg_role: "participant", selectedSubEvents: [], is_team_lead: true, team_lead_name: "", team_name: "", team_members: [] });
     setTicketData(null);
     setShowDetails(false);
     setShowModal(true);
@@ -255,6 +255,7 @@ export default function StudentEvents() {
           selected_sub_events: form.selectedSubEvents,
           is_team_lead: form.is_team_lead,
           team_lead: form.team_lead_name,
+          team_name: form.team_name,
           team_members: form.team_members
         }),
       });
@@ -918,6 +919,17 @@ export default function StudentEvents() {
                         </div>
                       ) : (
                         <div>
+                          <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ fontSize: '0.8rem', color: '#555', marginBottom: '4px', display: 'block' }}>Team Name:</label>
+                            <input
+                              type="text"
+                              style={styles.input}
+                              value={form.team_name}
+                              onChange={(e) => setForm({ ...form, team_name: e.target.value })}
+                              placeholder="e.g. Code Ninjas"
+                              required
+                            />
+                          </div>
                           <label style={{ fontSize: '0.8rem', color: '#555', marginBottom: '8px', display: 'block' }}>
                             Add Team Members (Max {selectedEvent.max_team_size - 1}):
                           </label>

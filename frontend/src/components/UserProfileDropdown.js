@@ -11,6 +11,8 @@ export default function UserProfileDropdown({ user, onOpenSettings }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  const [imgError, setImgError] = useState(false);
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -36,8 +38,13 @@ export default function UserProfileDropdown({ user, onOpenSettings }) {
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
       >
         <div style={styles.topBarAvatar}>
-          {user.photo ? (
-            <img src={user.photo} alt={user.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+          {!imgError && user.photo ? (
+            <img
+              src={user.photo}
+              alt={user.name}
+              style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+              onError={() => setImgError(true)}
+            />
           ) : (
             user.name?.charAt(0)?.toUpperCase() || '?'
           )}

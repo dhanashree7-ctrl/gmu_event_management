@@ -460,7 +460,7 @@ export default function HODDashboard() {
                           onMouseEnter={(e) => { e.currentTarget.style.background = '#CEEAD6'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.background = '#E6F4EA'; e.currentTarget.style.transform = 'translateY(0)'; }}
                         >
-                          Approve
+                          ✓ Approve
                         </button>
                         <button
                           style={styles.rejectBtn}
@@ -468,7 +468,7 @@ export default function HODDashboard() {
                           onMouseEnter={(e) => { e.currentTarget.style.background = '#FAD2CF'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.background = '#FCE8E6'; e.currentTarget.style.transform = 'translateY(0)'; }}
                         >
-                          Reject
+                          ✕ Reject
                         </button>
                       </span>
                     </div>
@@ -1155,7 +1155,7 @@ export default function HODDashboard() {
               borderBottom: '1px solid rgba(0,0,0,0.1)'
             }}>
               <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>
-                {remarksModal.action === 'approve' ? ' Approve Event' : ' Reject Event'}
+                {remarksModal.action === 'approve' ? '✓ Approve Event' : '✕ Reject Event'}
               </h3>
               <button
                 onClick={() => setRemarksModal({ open: false, eventId: null, action: null, scale: null, proposer_role: null })}

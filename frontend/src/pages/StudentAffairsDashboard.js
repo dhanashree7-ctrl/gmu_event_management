@@ -491,7 +491,7 @@ export default function StudentAffairsDashboard() {
           pending: prev.pending + 1,
         }));
         setForm(EMPTY_FORM);
-        setActiveNav('My Events');
+        setActiveNav('Events');
         setToast({ type: 'success', message: 'Event request submitted successfully! 🎉' });
       } else {
         setToast({ type: 'error', message: json.message || 'Submission failed. Please try again.' });
@@ -581,6 +581,15 @@ export default function StudentAffairsDashboard() {
 
             {/* Card header accent */}
             <div style={styles.formCardAccent} />
+
+            <div style={{ marginBottom: '1rem' }}>
+              <button 
+                onClick={() => setActiveNav('Events')}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: theme.colors.maroon, fontWeight: 600, padding: 0 }}
+              >
+                ← Back to Proposals
+              </button>
+            </div>
 
             <div style={styles.formCardHeader}>
               <div>
@@ -975,7 +984,20 @@ export default function StudentAffairsDashboard() {
         {/* ── Recent Submissions ────────────────────────── */}
         {activeNav === 'Events' && (
           <div style={styles.recentCard}>
-            <h3 style={styles.recentTitle}>📋 My Recent Submissions</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', borderBottom: '1px solid #eaeaea', paddingBottom: '1rem' }}>
+              <div>
+                <h3 style={{ ...styles.recentTitle, margin: 0 }}>📋 My Proposals</h3>
+                <p style={{ ...styles.sectionSub, margin: '4px 0 0 0', color: '#666', fontSize: '0.9rem' }}>
+                  Track the status of events you have personally proposed.
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveNav('New Request')}
+                style={{ padding: '0.6rem 1.2rem', backgroundColor: theme.colors.maroon, color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                + New Proposal
+              </button>
+            </div>
 
             {fetchLoading ? (
               /* Loading spinner while API call is in-flight */
