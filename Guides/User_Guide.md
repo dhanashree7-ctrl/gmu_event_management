@@ -29,7 +29,7 @@ The Student Dashboard is a gamified, mobile-responsive hub for campus engagement
 - **Feedback:** Upon attending an event, students can submit structured feedback directly through the dashboard.
 - **Engagement Profile:** Monitor your reliability score, registration history, and visual charts of your campus involvement.
 
-### Faculty / Warden / Organiser Dashboard
+### Faculty / Organiser Dashboard
 The organizing dashboard empowers staff to create, manage, and report on events without administrative friction.
 - **Propose Events:** Submit comprehensive event proposals. You can propose standalone events or "Mega Events" that contain multiple distinct "Sub-Events" (e.g., a multi-day cultural festival).
 - **Resource Management:** Upload supporting documents, event brochures, and budgets during the proposal phase.
