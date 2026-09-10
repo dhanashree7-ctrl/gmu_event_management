@@ -1,0 +1,59 @@
+<?php
+/**
+ * config/db.php.example
+ * ---------------------------------------------------------------
+ * Template configuration file for database connection.
+ * Copy this file to `db.php` and update the credentials below
+ * or set them in your `.env` file.
+ * ---------------------------------------------------------------
+ */
+
+// Load .env if exists
+$env_path = __DIR__ . '/../.env';
+if (file_exists($env_path)) {
+    $lines = file($env_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        list($name, $value) = explode('=', $line, 2);
+        putenv(trim($name) . '=' . trim($value));
+    }
+}
+
+// Graceful Error Handling
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+ini_set('error_log', __DIR__ . '/../error.log');
+
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_PORT', (int) (getenv('DB_PORT') ?: 3306));
+define('DB_USER', getenv('DB_USER') ?: 'root');
+define('DB_PASS', getenv('DB_PASS') ?: 'YOUR_DATABASE_PASSWORD');
+define('DB_NAME', getenv('DB_NAME') ?: 'YOUR_DATABASE_NAME');
+define('DB_CHARSET', 'utf8mb4');
+
+// --------------- Connection factory ---------------------------
+/**
+ * Returns a live MySQLi connection.
+ * Throws a RuntimeException on failure (never leaks credentials).
+ *
+ * @return mysqli
+ * @throws RuntimeException
+ */
+function get_db_connection(): mysqli
+{
+    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+
+    if ($conn->connect_errno) {
+        // Log full error server-side; send generic message to client.
+        error_log('DB connect error [' . $conn->connect_errno . ']: ' . $conn->connect_error);
+        throw new RuntimeException('Database connection failed. Please try again later.');
+    }
+
+    // Enforce UTF-8 for all queries in this session.
+    if (!$conn->set_charset(DB_CHARSET)) {
+        error_log('DB charset error: ' . $conn->error);
+        throw new RuntimeException('Database configuration error.');
+    }
+
+    return $conn;
+}
