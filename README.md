@@ -34,31 +34,39 @@ To securely extend the read-only user data (e.g., for Push Notifications), the d
    ```
 
 ## 3. Backend Configuration
-The backend has been configured to be completely portable using relative paths and environment variables.
+The backend is completely portable using relative paths and template environment files.
 
-1. Navigate to the `backend` directory.
-2. Open the `.env` file and configure your database credentials:
-   ```env
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASS=your_secure_password_here
-   DB_NAME=GMU_Events_Test
+1. Navigate to `backend/config/`.
+2. Copy the template database file to create your active `db.php`:
+   ```bash
+   cp backend/config/db.php.example backend/config/db.php
    ```
-3. Host the `backend` folder on your web server (e.g., Apache `htdocs` or Nginx `www`). Ensure your web server is configured to serve PHP files.
+3. Open `backend/config/db.php` (or `backend/.env`) and configure your server's database credentials:
+   ```php
+   define('DB_HOST', 'localhost');
+   define('DB_USER', 'root');
+   define('DB_PASS', 'your_secure_password_here');
+   define('DB_NAME', 'GMU_Events_Test');
+   ```
+4. *(Optional for Notifications)* Copy `backend/config/firebase-service-account.json.example` to `backend/config/firebase-service-account.json` and insert your Firebase admin key credentials.
+5. Host the `backend` folder on your web server (e.g., Apache `htdocs` or Nginx `www`). Ensure `backend/uploads/` directory exists with write permissions (`chmod 775` or `777`).
 
-*Note: CORS headers are centrally managed in `backend/config/cors.php`. Error logging is centralized in `backend/config/db.php`.*
+*Note: CORS headers are centrally managed in `backend/config/cors.php`. Database logging and connections are managed in `backend/config/db.php`.*
 
 ## 4. Frontend Configuration & Build
 The React frontend is environment-aware and requires the backend API URL to be set before building.
 
 1. Navigate to the `frontend` directory.
-2. Open the `.env` file and set the `REACT_APP_API_URL` to point to your hosted backend:
+2. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+3. Open `.env` and set `REACT_APP_API_URL` to point to your hosted backend:
    ```env
    # Example: http://192.168.1.100/backend
    REACT_APP_API_URL=http://your-test-server-ip-or-domain/backend
    ```
-3. Install dependencies and build the application:
+4. Install dependencies and build the application:
    ```bash
    npm install
    npm run build

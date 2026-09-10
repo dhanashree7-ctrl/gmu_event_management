@@ -13,15 +13,15 @@ This application utilizes a completely decoupled, modern web stack designed for 
 The codebase relies on environment variables (`.env` files) to ensure zero hardcoded paths or credentials exist in the source code.
 
 ### React Frontend `.env`
-Located at `frontend/.env`. This file controls the base URL that the React application uses to communicate with the PHP backend.
+Located at `frontend/.env`. Copy from `frontend/.env.example` before building. This file controls the base URL that the React application uses to communicate with the PHP backend.
 ```env
 # Point this to the domain/IP where the PHP backend is hosted
 REACT_APP_API_URL=http://your-test-server-ip-or-domain/backend
 ```
 *Note: Because React runs in the browser, these variables are baked into the static files during the build process. You must set this file **before** running `npm run build`.*
 
-### PHP Backend `.env`
-Located at `backend/.env`. This file secures the database connection. The backend uses a custom `.env` parser inside `backend/config/db.php` to load these values dynamically on every request.
+### PHP Backend Configuration & `.env`
+Database connection details are defined in `backend/config/db.php` (copied from `backend/config/db.php.example`). The backend also supports an optional `backend/.env` file.
 ```env
 DB_HOST=localhost
 DB_PORT=3306
@@ -29,6 +29,7 @@ DB_USER=root
 DB_PASS=your_secure_password_here
 DB_NAME=GMU_Events_Test
 ```
+*(Firebase Admin push credentials should similarly be set by copying `backend/config/firebase-service-account.json.example` to `backend/config/firebase-service-account.json`)*
 
 ---
 
