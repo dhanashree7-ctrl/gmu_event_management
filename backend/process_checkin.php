@@ -42,7 +42,7 @@ if (!$qr_token) {
 $stmt = $conn->prepare("
     SELECT er.ID, er.CHECK_IN_STATUS, er.EVENT_ID, er.USER_ID,
            u.NAME AS STUDENT_NAME,
-           em.EVENT_TITLE AS event_title, em.START_DATE AS event_date, em.START_TIME AS event_time
+           em.EVENT AS event_title, em.START_DATE AS event_date, em.START_TIME AS event_time
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
     LEFT JOIN users u ON er.USER_ID = u.USER_NAME

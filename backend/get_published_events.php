@@ -50,24 +50,24 @@ if ($student_id) {
 $student_usn = $student_usn ?: $student_id;
 
 // Main query: event_master LEFT JOIN event_registrations for student's own registration status
-$sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
-               em.CATEGORY AS category, em.SCALE AS event_scale,
+$sql = "SELECT em.EVENT_ID AS id, em.EVENT AS event_title, em.DESCRIPTION AS description,
+               em.CATEGORY AS category, em.TYPE AS event_scale,
                em.MODE AS event_mode, em.BUDGET AS budget, em.ATTACHMENTS AS attachments_json,
                em.START_DATE AS event_date, em.START_TIME AS event_time,
                em.VENUE AS venue, em.REGISTRATION_DEADLINE AS registration_deadline,
-               em.MAX_PARTICIPANTS AS max_participants,
-               em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
+               em.MAX_MEMBERS AS max_participants,
+               em.COORDINATOR AS coordinator_name, em.CONTACT  AS coordinator_number,
                u.NAME AS proposed_by, u.DISCIPLINE AS proposer_dept,
                IF(r.ID IS NOT NULL, 1, 0) AS is_registered,
                r.QR_CODE AS qr_token, r.CHECK_IN_STATUS AS check_in_status, r.ROLE AS my_role
         FROM event_master AS em
-        JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
+        JOIN users AS u ON u.USER_NAME = em.CREATED_BY
         LEFT JOIN event_registrations AS r ON r.EVENT_ID = em.EVENT_ID AND r.USER_ID = ?
         WHERE em.CURRENT_STATUS IN ('published', 'approved')";
 
 if ($student_department) {
     $dept_escaped = $conn->real_escape_string($student_department);
-    $sql .= " AND (em.SCALE = 'university' OR u.DISCIPLINE = '$dept_escaped')";
+    $sql .= " AND (em.TYPE = 'university' OR u.DISCIPLINE = '$dept_escaped')";
 }
 $sql .= " ORDER BY em.START_DATE ASC, em.START_TIME ASC";
 
@@ -87,7 +87,7 @@ $count_result = $conn->query($count_sql);
 $counts       = [];
 if ($count_result) {
     while ($crow = $count_result->fetch_assoc()) {
-        $eid  = (int)$crow['EVENT_ID'];
+        $eid  = $crow['EVENT_ID'];
         $role = $crow['ROLE'];
         $counts[$eid][$role] = (int)$crow['cnt'];
     }
@@ -95,7 +95,7 @@ if ($count_result) {
 
 $events = [];
 while ($row = $result->fetch_assoc()) {
-    $eid        = (int)($row['id'] ?? 0);
+    $eid        = $row['id'] ?? '';
     $evt_counts = $counts[$eid] ?? [];
 
     $slots = [];

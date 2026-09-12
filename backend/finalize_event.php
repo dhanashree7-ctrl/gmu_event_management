@@ -76,7 +76,7 @@ $stmt->bind_param("sssssss",
 
 if ($stmt->execute()) {
     // Fetch event details for student notifications
-    $eq = $conn->prepare("SELECT em.EVENT_TITLE AS event_title, em.SCALE AS event_scale, u.DISCIPLINE AS proposer_dept, u.USER_NAME AS proposer_uid FROM event_master em LEFT JOIN users u ON em.PROPOSER_ID = u.USER_NAME WHERE em.EVENT_ID = ?");
+    $eq = $conn->prepare("SELECT em.EVENT AS event_title, em.TYPE AS event_scale, u.DISCIPLINE AS proposer_dept, u.USER_NAME AS proposer_uid FROM event_master em LEFT JOIN users u ON em.CREATED_BY = u.USER_NAME WHERE em.EVENT_ID = ?");
     $eq->bind_param("s", $event_id);
     $eq->execute();
     $event = $eq->get_result()->fetch_assoc();

@@ -48,7 +48,7 @@ $usn_stmt->close();
 $student_usn = $usn_row['USER_NAME'] ?? $studentId;
 
 $stmt = $conn->prepare("
-    SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title,
+    SELECT em.EVENT_ID AS id, em.EVENT AS event_title,
            em.START_DATE AS event_date, em.START_TIME AS event_time,
            em.VENUE AS venue, em.CATEGORY AS category, em.ATTACHMENTS AS attachments_json,
            r.CHECK_IN_STATUS AS check_in_status, r.CHECK_IN_TIME AS check_in_time,
@@ -77,7 +77,7 @@ while ($row = $result->fetch_assoc()) {
     $brochure_path = $attachments['brochure'] ?? null;
 
     $events[] = [
-        'id'                => (int)($row['id'] ?? 0),
+        'id'                => $row['id'] ?? '',
         'event_title'       => $row['event_title']        ?? 'Unknown',
         'event_date'        => $row['event_date']          ?: null,
         'event_time'        => $row['event_time']          ?: null,

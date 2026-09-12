@@ -26,7 +26,7 @@ $fac_sql = "
            COALESCE(u.FACULTY, 'Other') AS faculty_name, 
            COUNT(em.EVENT_ID) as event_count 
     FROM event_master em 
-    JOIN users u ON em.PROPOSER_ID = u.USER_NAME 
+    JOIN users u ON em.CREATED_BY = u.USER_NAME 
     GROUP BY u.SCHOOL, u.FACULTY
 ";
 $fac_res = $conn->query($fac_sql);
@@ -52,7 +52,7 @@ $faculty_comparison_data = array_values($faculty_comparison);
 
 // 2. Budget vs Scale (Scatter Plot Data)
 $scatter_sql = "
-    SELECT em.EVENT_TITLE as event_name, em.BUDGET as budget, 
+    SELECT em.EVENT AS event_name, em.BUDGET as budget, 
            SUM(CASE WHEN er.CHECK_IN_STATUS = 'checked_in' THEN 1 ELSE 0 END) as checked_in_count
     FROM event_master em
     LEFT JOIN event_registrations er ON em.EVENT_ID = er.EVENT_ID

@@ -62,27 +62,27 @@ if ($DESIGNATION === 'hod') {
         echo json_encode(['success' => false, 'message' => 'Department name is required for HODs.']);
         exit;
     }
-    $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
-                   em.CATEGORY AS category, em.SCALE AS event_scale, em.BUDGET AS budget,
+    $sql = "SELECT em.EVENT_ID AS id, em.EVENT AS event_title, em.DESCRIPTION AS description,
+                   em.CATEGORY AS category, em.TYPE AS event_scale, em.BUDGET AS budget,
                    em.ATTACHMENTS AS attachments_json,
-                   em.MAX_PARTICIPANTS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
-                   em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
+                   em.MAX_MEMBERS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
+                   em.COORDINATOR AS coordinator_name, em.CONTACT  AS coordinator_number,
                    u.NAME AS proposed_by, u.DISCIPLINE AS proposer_department, u.DESIGNATION AS proposer_role
             FROM event_master AS em
-            JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
+            JOIN users AS u ON u.USER_NAME = em.CREATED_BY
             WHERE em.CURRENT_STATUS = ? AND u.DISCIPLINE = ?
             ORDER BY em.EVENT_ID ASC";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('ss', $target_status, $department);
 } else {
-    $sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
-                   em.CATEGORY AS category, em.SCALE AS event_scale, em.BUDGET AS budget,
+    $sql = "SELECT em.EVENT_ID AS id, em.EVENT AS event_title, em.DESCRIPTION AS description,
+                   em.CATEGORY AS category, em.TYPE AS event_scale, em.BUDGET AS budget,
                    em.ATTACHMENTS AS attachments_json,
-                   em.MAX_PARTICIPANTS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
-                   em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
+                   em.MAX_MEMBERS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
+                   em.COORDINATOR AS coordinator_name, em.CONTACT  AS coordinator_number,
                    u.NAME AS proposed_by, u.DISCIPLINE AS department, u.DESIGNATION AS proposer_role
             FROM event_master AS em
-            JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
+            JOIN users AS u ON u.USER_NAME = em.CREATED_BY
             WHERE em.CURRENT_STATUS = ?
             ORDER BY em.EVENT_ID ASC";
     $stmt = $conn->prepare($sql);
@@ -105,7 +105,7 @@ while ($row = $result->fetch_assoc()) {
     $brochure_path = $attachments['brochure'] ?? null;
 
     $events[] = [
-        'id'                 => (int)$row['id'],
+        'id'                 => $row['id'],
         'event_title'        => $row['event_title'],
         'description'        => $row['description'],
         'category'           => $row['category'],

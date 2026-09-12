@@ -27,7 +27,7 @@ try {
     exit;
 }
 
-$sql    = "SELECT EVENT_ID AS id, EVENT_TITLE AS event_title, START_DATE AS event_date FROM event_master ORDER BY START_DATE DESC";
+$sql    = "SELECT EVENT_ID AS id, EVENT AS event_title, START_DATE AS event_date FROM event_master ORDER BY START_DATE DESC";
 $result = $conn->query($sql);
 
 if (!$result) {

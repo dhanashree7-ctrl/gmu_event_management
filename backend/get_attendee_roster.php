@@ -48,7 +48,7 @@ catch (RuntimeException $e) {
 
 // Fetch capacities and START_DATE from event_master
 $cap_stmt = $conn->prepare("
-    SELECT MAX_PARTICIPANTS, START_DATE 
+    SELECT MAX_MEMBERS AS max_participants, START_DATE 
     FROM event_master 
     WHERE EVENT_ID = ?
 ");
@@ -58,7 +58,7 @@ $cap_row = $cap_stmt->get_result()->fetch_assoc();
 $cap_stmt->close();
 
 $capacities = [
-    'max_participants' => $cap_row ? ($cap_row['MAX_PARTICIPANTS'] !== null ? (int)$cap_row['MAX_PARTICIPANTS'] : null) : null,
+    'max_participants' => $cap_row ? ($cap_row['MAX_MEMBERS AS max_participants'] !== null ? (int)$cap_row['MAX_MEMBERS AS max_participants'] : null) : null,
     'max_volunteers'   => null,
     'max_coordinators' => null,
 ];

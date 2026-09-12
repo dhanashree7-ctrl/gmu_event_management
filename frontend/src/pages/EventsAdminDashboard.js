@@ -25,6 +25,7 @@ const NAV_ITEMS = [
   { icon: '', label: 'Current Routings', active: false },
   { icon: '️', label: 'Configure Routing', active: false },
   { icon: '', label: 'Manage Users', active: false },
+  { icon: '📅', label: 'Manage Events', active: false },
   { icon: '', label: 'Reports & Analytics', active: false },
   { icon: '️', label: 'Archive', active: false },
 ];
@@ -253,6 +254,84 @@ function ConfigureRoutingView({ rules, setRules, selectedScaleId, setSelectedSca
   );
 }
 
+
+function ManageEventsView() {
+  const [events, setEvents] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const { user } = useAuth();
+
+  React.useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/get_event_history.php`, {
+        headers: { Authorization: `Bearer ${user?.token}` }
+      });
+      const data = await res.json();
+      if(data.success) {
+        setEvents(data.data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleEventStatus = async (eventId, currentStatus) => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    setEvents(events.map(ev => ev.id === eventId ? { ...ev, status: newStatus } : ev));
+    try {
+      const fd = new FormData();
+      fd.append('event_id', eventId);
+      fd.append('status', newStatus);
+      await fetch(`${API_BASE}/update_event_master_status.php`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${user?.token}` },
+        body: fd
+      });
+    } catch(e) {
+      console.error(e);
+      fetchEvents();
+    }
+  };
+
+  return (
+    <div style={styles.viewContainer}>
+      <div style={styles.topBar}>
+        <div>
+          <h2 style={{ margin: 0, color: theme.colors.maroon }}>Manage Events</h2>
+          <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>Toggle event active/inactive status across the platform.</p>
+        </div>
+      </div>
+      <div style={styles.listContainer}>
+        {loading ? <p>Loading events...</p> : events.map(ev => (
+          <div key={ev.id} style={{...styles.ruleCard, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+            <div>
+              <h3 style={{margin: '0 0 5px 0', color: theme.colors.text}}>{ev.event_title}</h3>
+              <p style={{margin: 0, fontSize: '0.85rem', color: '#666'}}>Date: {ev.event_date} | Category: {ev.category}</p>
+            </div>
+            <div>
+              <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '0.9rem'}}>
+                <input 
+                  type="checkbox" 
+                  checked={ev.status === 'active' || !ev.status} 
+                  onChange={() => toggleEventStatus(ev.id, ev.status || 'active')}
+                  style={{marginRight: '8px'}}
+                />
+                Active
+              </label>
+            </div>
+          </div>
+        ))}
+        {events.length === 0 && !loading && <p>No events found.</p>}
+      </div>
+    </div>
+  );
+}
+
 function ManageUsersView() {
   const [formData, setFormData] = React.useState({
     full_name: '',
@@ -439,6 +518,7 @@ export default function EventsAdminDashboard() {
           )}
           {activeNav === 'Current Routings' && <CurrentRoutingsView rules={rules} />}
           {activeNav === 'Manage Users' && <ManageUsersView />}
+          {activeNav === 'Manage Events' && <ManageEventsView />}
           {activeNav === 'Reports & Analytics' && <AdminReportsView user={user} />}
           {activeNav === 'Archive' && <EventArchive user={user} />}
           {activeNav === 'Settings' && <SettingsView user={user} />}

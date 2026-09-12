@@ -52,10 +52,10 @@ $student_usn = $usn_row['USER_NAME'] ?? $student_id;
 $sql = "
     SELECT
         em.EVENT_ID      AS id,
-        em.EVENT_TITLE   AS event_title,
+        em.EVENT AS event_title,
         em.DESCRIPTION   AS description,
         em.CATEGORY      AS category,
-        em.SCALE         AS event_scale,
+        em.TYPE AS event_scale,
         em.START_DATE    AS event_date,
         em.START_TIME    AS event_time,
         em.VENUE         AS venue,

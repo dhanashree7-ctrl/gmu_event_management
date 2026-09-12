@@ -38,7 +38,7 @@ export default function ExecutiveDashboard() {
 
   // Action Center: Propose Event
   const [formData, setFormData] = useState({
-    event_title: '',
+    event_title: '', is_faculty_only: false,
     event_date: '', registration_date: '', coordinator_name: '', coordinator_number: '',
     start_time: '',
     end_time: '',
@@ -276,6 +276,7 @@ export default function ExecutiveDashboard() {
       fd.append('end_time', formData.end_time);
       fd.append('venue', formData.venue);
       fd.append('category', formData.category);
+      fd.append('is_faculty_only', formData.is_faculty_only ? 'true' : 'false');
       fd.append('event_scale', formData.event_scale);
       fd.append('event_mode', formData.event_mode);
       fd.append('budget', formData.budget);
@@ -304,7 +305,7 @@ export default function ExecutiveDashboard() {
       if (json.success) {
         setProposeMessage({ type: 'success', text: 'Event proposed successfully!' });
         fetchApprovedHistory();
-        setFormData({ event_title: '', date: '', coordinator_name: '', coordinator_name: '', start_time: '', end_time: '', venue: '', description: '', category: '', event_scale: '', event_mode: 'offline', budget: '',
+        setFormData({ event_title: '', is_faculty_only: false, date: '', coordinator_name: '', coordinator_name: '', start_time: '', end_time: '', venue: '', description: '', category: '', event_scale: '', event_mode: 'offline', budget: '',
     rewards: '', brochureFile: null, approval_route: [], max_participants: '', max_volunteers: '', max_coordinators: '', is_festival: false, sub_events: [{ name: '', description: '', participation_type: 'solo', max_participants: '', coordinator_name: '' }], participation_type: 'solo', max_team_size: '' });
       } else {
         setProposeMessage({ type: 'error', text: json.message || 'Failed to propose event.' });

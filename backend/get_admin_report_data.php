@@ -34,11 +34,11 @@ $school        = isset($_GET['school'])     && $_GET['school']     !== '' ? $_GE
 
 // Fetch master events from event_master
 $master_events_query = "
-    SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.ATTACHMENTS AS attachments_json,
-           em.START_DATE AS event_date, em.CATEGORY AS category, em.SCALE AS event_scale,
+    SELECT em.EVENT_ID AS id, em.EVENT AS event_title, em.ATTACHMENTS AS attachments_json,
+           em.START_DATE AS event_date, em.CATEGORY AS category, em.TYPE AS event_scale,
            em.BUDGET AS budget, u.DISCIPLINE AS department
     FROM event_master em
-    LEFT JOIN users u ON u.USER_NAME = em.PROPOSER_ID
+    LEFT JOIN users u ON u.USER_NAME = em.CREATED_BY
 ";
 $master_events_result = $conn->query($master_events_query);
 
@@ -94,7 +94,7 @@ $participants_query = "
         u.SCHOOL         AS school_name,
         er.ROLE          AS role,
         er.EVENT_ID      AS event_id,
-        em.EVENT_TITLE   AS event_title
+        em.EVENT AS event_title
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
     LEFT JOIN users u ON er.USER_ID = u.USER_NAME

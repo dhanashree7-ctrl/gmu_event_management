@@ -60,9 +60,9 @@ catch (RuntimeException $e) {
 }
 
 // Step 1: Verify event exists in event_master
-$check_sql  = 'SELECT em.EVENT_ID AS event_id, em.EVENT_TITLE AS event_title, em.CURRENT_STATUS AS current_status,
-                      em.SCALE AS event_scale, em.APPROVAL_WORKFLOW AS approval_workflow,
-                      em.BUDGET AS budget, em.PROPOSER_ID AS proposer_username
+$check_sql  = 'SELECT em.EVENT_ID AS event_id, em.EVENT AS event_title, em.CURRENT_STATUS AS current_status,
+                      em.TYPE AS event_scale, em.APPROVAL_WORKFLOW AS approval_workflow,
+                      em.BUDGET AS budget, em.CREATED_BY AS proposer_username
                FROM event_master em
                WHERE em.EVENT_ID = ? LIMIT 1';
 $check_stmt = $conn->prepare($check_sql);

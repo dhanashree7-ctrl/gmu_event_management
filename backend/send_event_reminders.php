@@ -24,7 +24,7 @@ $currentTime = $now->format('H:i:s');
 
 // 1. Day-Before Reminders
 $sqlTomorrow = "
-    SELECT er.USER_ID AS student_id, em.EVENT_TITLE AS event_title
+    SELECT er.USER_ID AS student_id, em.EVENT AS event_title
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
     WHERE em.START_DATE = ? AND em.CURRENT_STATUS IN ('published', 'approved')
@@ -43,7 +43,7 @@ if ($stmtTomorrow) {
 
 // 2 & 3. Check-in window notifications (30 mins / 5 mins before)
 $sqlToday = "
-    SELECT er.USER_ID AS student_id, em.EVENT_TITLE AS event_title, em.START_TIME AS event_time
+    SELECT er.USER_ID AS student_id, em.EVENT AS event_title, em.START_TIME AS event_time
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
     WHERE em.START_DATE = ? AND em.CURRENT_STATUS IN ('published', 'approved') AND er.CHECK_IN_STATUS = 'pending'
@@ -71,7 +71,7 @@ if ($stmtToday) {
 }
 
 // 4. Registration Deadline Warnings
-$sqlDeadline  = "SELECT EVENT_ID AS id, EVENT_TITLE AS event_title, REGISTRATION_DEADLINE FROM event_master WHERE CURRENT_STATUS IN ('published', 'approved') AND REGISTRATION_DEADLINE IS NOT NULL";
+$sqlDeadline  = "SELECT EVENT_ID AS id, EVENT AS event_title, REGISTRATION_DEADLINE FROM event_master WHERE CURRENT_STATUS IN ('published', 'approved') AND REGISTRATION_DEADLINE IS NOT NULL";
 $stmtDeadline = $conn->prepare($sqlDeadline);
 if ($stmtDeadline) {
     $stmtDeadline->execute();
@@ -94,7 +94,7 @@ if ($stmtDeadline) {
 
 // 5. Post-Event Feedback Reminders
 $sqlPast = "
-    SELECT er.USER_ID AS student_id, em.EVENT_TITLE AS event_title, em.START_TIME AS event_time
+    SELECT er.USER_ID AS student_id, em.EVENT AS event_title, em.START_TIME AS event_time
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
     WHERE em.START_DATE = ? AND em.CURRENT_STATUS IN ('published', 'approved') AND er.CHECK_IN_STATUS = 'checked_in'

@@ -31,12 +31,12 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$event_sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.CATEGORY AS category,
-                     em.SCALE AS event_scale, em.CURRENT_STATUS AS current_status,
+$event_sql = "SELECT em.EVENT_ID AS id, em.EVENT AS event_title, em.CATEGORY AS category,
+                     em.TYPE AS event_scale, em.CURRENT_STATUS AS current_status,
                      em.BUDGET AS budget, u.NAME AS proposed_by,
                      em.APPROVAL_WORKFLOW AS approval_workflow_json, em.ATTACHMENTS AS details_json
               FROM event_master em
-              JOIN users u ON em.PROPOSER_ID = u.USER_NAME
+              JOIN users u ON em.CREATED_BY = u.USER_NAME
               WHERE em.EVENT_ID = ? LIMIT 1";
 
 $event_stmt = $conn->prepare($event_sql);

@@ -61,9 +61,9 @@ catch (RuntimeException $e) {
 
 // ── Fetch event from event_master ──────────────────────────────────────────────
 $event_stmt = $conn->prepare("
-    SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
+    SELECT em.EVENT_ID AS id, em.EVENT AS event_title, em.DESCRIPTION AS description,
            em.START_DATE AS event_date, em.REGISTRATION_DEADLINE AS registration_deadline,
-           em.MAX_PARTICIPANTS AS max_participants, em.CURRENT_STATUS AS current_status,
+           em.MAX_MEMBERS AS max_participants, em.CURRENT_STATUS AS current_status,
            JSON_UNQUOTE(JSON_EXTRACT(em.ATTACHMENTS, '$.details.max_team_size')) AS max_team_size,
            JSON_UNQUOTE(JSON_EXTRACT(em.ATTACHMENTS, '$.details.participation_type')) AS participation_type
     FROM event_master em 
@@ -208,7 +208,7 @@ if ($count_stmt) {
     $count_stmt->close();
     $total_reg = (int)$count_row['total_reg'];
     if (in_array($total_reg, [1, 25, 50, 100, 200])) {
-        $evt_stmt = $conn->prepare("SELECT em.EVENT_TITLE AS event_title, u.USER_NAME AS proposer_id FROM event_master em JOIN users u ON em.PROPOSER_ID = u.USER_NAME WHERE em.EVENT_ID = ?");
+        $evt_stmt = $conn->prepare("SELECT em.EVENT AS event_title, u.USER_NAME AS proposer_id FROM event_master em JOIN users u ON em.CREATED_BY = u.USER_NAME WHERE em.EVENT_ID = ?");
         if ($evt_stmt) {
             $evt_stmt->bind_param('s', $event_id);
             $evt_stmt->execute();

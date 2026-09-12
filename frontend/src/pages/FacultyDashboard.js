@@ -59,7 +59,7 @@ const NAV_ITEMS = [
 
 // ── Initial form state ───────────────────────────────────────────────────────
 const EMPTY_FORM = {
-  event_title: '',
+  event_title: '', is_faculty_only: false,
   description: '',
   event_date: '',
   registration_date: '',
@@ -451,6 +451,7 @@ export default function FacultyDashboard() {
       formData.append('end_time', form.end_time);
       formData.append('venue', form.venue);
       formData.append('category', form.category);
+      formData.append('is_faculty_only', form.is_faculty_only ? 'true' : 'false');
       formData.append('event_scale', form.event_scale);
       formData.append('event_mode', form.event_mode);
       formData.append('budget', form.budget);

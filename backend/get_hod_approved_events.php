@@ -38,14 +38,14 @@ catch (RuntimeException $e) {
     exit;
 }
 
-$sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
-               em.CATEGORY AS category, em.SCALE AS event_scale,
+$sql = "SELECT em.EVENT_ID AS id, em.EVENT AS event_title, em.DESCRIPTION AS description,
+               em.CATEGORY AS category, em.TYPE AS event_scale,
                em.BUDGET AS budget, em.CURRENT_STATUS AS current_status,
-               em.MAX_PARTICIPANTS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
-               em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
+               em.MAX_MEMBERS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
+               em.COORDINATOR AS coordinator_name, em.CONTACT  AS coordinator_number,
                u.NAME AS proposed_by, u.DISCIPLINE AS proposer_department
         FROM event_master AS em
-        JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
+        JOIN users AS u ON u.USER_NAME = em.CREATED_BY
         WHERE u.DISCIPLINE = ?
           AND em.CURRENT_STATUS NOT IN ('pending_hod','rejected','draft')
         ORDER BY em.START_DATE DESC";

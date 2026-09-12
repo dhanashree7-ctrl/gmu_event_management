@@ -66,7 +66,7 @@ catch (RuntimeException $e) {
 }
 
 // Verify the faculty proposed this event
-$check_stmt = $conn->prepare('SELECT CURRENT_STATUS, ATTACHMENTS FROM event_master WHERE EVENT_ID = ? AND PROPOSER_ID = ?');
+$check_stmt = $conn->prepare('SELECT CURRENT_STATUS, ATTACHMENTS FROM event_master WHERE EVENT_ID = ? AND CREATED_BY = ?');
 if (!$check_stmt) {
     echo json_encode(['success' => false, 'message' => 'Internal Server Error.']);
     exit;

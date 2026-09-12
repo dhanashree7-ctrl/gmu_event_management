@@ -34,21 +34,21 @@ catch (RuntimeException $e) {
 
 $sql = 'SELECT
             em.EVENT_ID AS id,
-            em.EVENT_TITLE AS event_title,
+            em.EVENT AS event_title,
             em.CATEGORY AS category,
-            em.SCALE AS event_scale,
+            em.TYPE AS event_scale,
             em.CURRENT_STATUS AS current_status,
             em.BUDGET AS budget,
             em.ATTACHMENTS AS attachments_json,
             em.MODE AS event_mode,
             em.START_DATE AS event_date,
             em.START_DATE AS submitted_at,
-            em.MAX_PARTICIPANTS AS max_participants,
+            em.MAX_MEMBERS AS max_participants,
             em.REGISTRATION_DEADLINE AS registration_deadline,
-            em.COORDINATOR_NAME AS coordinator_name,
-            em.CORDINATOR_CONTACT AS coordinator_number
+            em.COORDINATOR AS coordinator_name,
+            em.CONTACT  AS coordinator_number
         FROM event_master em
-        WHERE em.PROPOSER_ID = ?
+        WHERE em.CREATED_BY = ?
         ORDER BY em.START_DATE DESC';
 
 $stmt = $conn->prepare($sql);

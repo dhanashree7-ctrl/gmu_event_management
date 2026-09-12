@@ -55,14 +55,14 @@ if (!isset($status_map[$DESIGNATION])) {
 
 $in_clause = implode(',', $status_map[$DESIGNATION]);
 
-$sql = "SELECT em.EVENT_ID AS id, em.EVENT_TITLE AS event_title, em.DESCRIPTION AS description,
+$sql = "SELECT em.EVENT_ID AS id, em.EVENT AS event_title, em.DESCRIPTION AS description,
                em.CATEGORY AS category, em.BUDGET AS budget,
-               em.CURRENT_STATUS AS current_status, em.SCALE AS event_scale,
-               em.MAX_PARTICIPANTS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
-               em.COORDINATOR_NAME AS coordinator_name, em.CORDINATOR_CONTACT AS coordinator_number,
+               em.CURRENT_STATUS AS current_status, em.TYPE AS event_scale,
+               em.MAX_MEMBERS AS max_participants, em.REGISTRATION_DEADLINE AS registration_deadline,
+               em.COORDINATOR AS coordinator_name, em.CONTACT  AS coordinator_number,
                u.NAME AS proposed_by, u.DISCIPLINE AS department
         FROM event_master AS em
-        JOIN users AS u ON u.USER_NAME = em.PROPOSER_ID
+        JOIN users AS u ON u.USER_NAME = em.CREATED_BY
         WHERE em.CURRENT_STATUS IN ($in_clause)
         ORDER BY em.START_DATE DESC";
 

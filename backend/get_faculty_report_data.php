@@ -37,7 +37,7 @@ $funnel_sql = "
         SUM(CASE WHEN er.CHECK_IN_STATUS = 'checked_in' THEN 1 ELSE 0 END) AS total_checked_in
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
-    WHERE em.PROPOSER_ID = ?
+    WHERE em.CREATED_BY = ?
 ";
 $funnel_stmt = $conn->prepare($funnel_sql);
 $funnel_stmt->bind_param("s", $user_id);
@@ -56,7 +56,7 @@ $demo_sql = "
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
     LEFT JOIN users u ON er.USER_ID = u.USER_NAME
-    WHERE em.PROPOSER_ID = ?
+    WHERE em.CREATED_BY = ?
     GROUP BY u.DISCIPLINE
     ORDER BY count DESC
 ";
@@ -79,7 +79,7 @@ $feedback_sql = "
     SELECT JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') AS rating, COUNT(er.ID) as count
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
-    WHERE em.PROPOSER_ID = ? AND JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') IS NOT NULL AND JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') > 0
+    WHERE em.CREATED_BY = ? AND JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') IS NOT NULL AND JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') > 0
     GROUP BY JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating')
     ORDER BY JSON_EXTRACT(er.FEEDBACK_JSON, '$.rating') ASC
 ";

@@ -169,9 +169,7 @@ $workflow_json = json_encode($workflow_arr);
 
 // Build ATTACHMENTS JSON
 $attachments_arr = [];
-if ($brochure_path !== '') {
-    $attachments_arr['brochure'] = $brochure_path;
-}
+$is_faculty_only = isset($_POST['is_faculty_only']) && $_POST['is_faculty_only'] === 'true' ? 1 : 0;
 
 
 // ---------- Sub-events / Details JSON ------------------------------------
@@ -211,13 +209,13 @@ $NOTIFICATION_SENT = 0;
 $event_id_val = 'EVT-' . strtoupper(uniqid());
 
 $sql = 'INSERT INTO event_master
-            (PROPOSER_ID, EVENT_TITLE, DESCRIPTION, CATEGORY, SCALE, MODE, VENUE,
-             START_DATE, END_DATE, START_TIME, END_TIME, REGISTRATION_DEADLINE, MAX_PARTICIPANTS, BUDGET, COORDINATOR_NAME, CORDINATOR_CONTACT,
-             ATTACHMENTS, CURRENT_STATUS, APPROVAL_WORKFLOW, NOTIFICATION_SENT)
+            (EVENT_ID, CREATED_BY, EVENT, DESCRIPTION, CATEGORY, TYPE, MODE, VENUE,
+             START_DATE, END_DATE, START_TIME, END_TIME, REGISTRATION_DEADLINE, MAX_MEMBERS, BUDGET, COORDINATOR, CONTACT,
+             BROUCHER, ATTACHMENTS, CURRENT_STATUS, APPROVAL_WORKFLOW, NOTIFICATION_SENT, DEPARTMENT, IS_FACULTY_ONLY)
         VALUES
-            (?, ?, ?, ?, ?, ?, ?,
+            (?, ?, ?, ?, ?, ?, ?, ?,
              ?, ?, ?, ?, ?, ?, ?, ?, ?,
-             ?, ?, ?, ?)';
+             ?, ?, ?, ?, ?, ?, ?)';
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -230,7 +228,8 @@ if (!$stmt) {
 
 try {
     $stmt->bind_param(
-        'ssssssssssssidsssssi',
+        'sssssssssssssidssssssisi',
+        $event_id_val,
         $proposed_by_id,
         $event_title,
         $description,
@@ -247,10 +246,13 @@ try {
         $budget,
         $coordinator_name,
         $coordinator_number,
+        $brochure_path,
         $attachments_json,
         $initial_status,
         $workflow_json,
-        $NOTIFICATION_SENT
+        $NOTIFICATION_SENT,
+        $proposer_dept,
+        $is_faculty_only
     );
 
     if (!$stmt->execute()) {

@@ -38,7 +38,7 @@ if (!$event_id) {
 $stmt = $conn->prepare("
     SELECT em.*, u.NAME AS proposed_by_name, u.DISCIPLINE AS proposer_dept 
     FROM event_master em 
-    LEFT JOIN users u ON em.PROPOSER_ID = u.USER_NAME 
+    LEFT JOIN users u ON em.CREATED_BY = u.USER_NAME 
     WHERE em.EVENT_ID = ?
 ");
 $stmt->bind_param("s", $event_id);
@@ -52,10 +52,10 @@ if ($master_result->num_rows === 0) {
 $master_event = $master_result->fetch_assoc();
 // Normalize key names for frontend compatibility
 $master_event['id']           = $master_event['EVENT_ID'];
-$master_event['event_title']  = $master_event['EVENT_TITLE'];
+$master_event['event_title']  = $master_event['EVENT'];
 $master_event['description']  = $master_event['DESCRIPTION'];
 $master_event['category']     = $master_event['CATEGORY'];
-$master_event['event_scale']  = $master_event['SCALE'];
+$master_event['event_scale']  = $master_event['TYPE'];
 $master_event['current_status'] = $master_event['CURRENT_STATUS'];
 $master_event['budget']       = $master_event['BUDGET'];
 
