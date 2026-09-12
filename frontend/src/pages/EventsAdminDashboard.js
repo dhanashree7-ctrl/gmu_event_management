@@ -254,6 +254,32 @@ function ConfigureRoutingView({ rules, setRules, selectedScaleId, setSelectedSca
   );
 }
 
+const ToggleSwitch = ({ checked, onChange }) => (
+  <div 
+    onClick={onChange}
+    style={{
+      width: '40px',
+      height: '20px',
+      backgroundColor: checked ? theme.colors.maroon : '#ccc',
+      borderRadius: '20px',
+      position: 'relative',
+      cursor: 'pointer',
+      transition: 'background-color 0.3s'
+    }}
+  >
+    <div style={{
+      width: '16px',
+      height: '16px',
+      backgroundColor: '#fff',
+      borderRadius: '50%',
+      position: 'absolute',
+      top: '2px',
+      left: checked ? '22px' : '2px',
+      transition: 'left 0.3s',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+    }} />
+  </div>
+);
 
 function ManageEventsView() {
   const [events, setEvents] = React.useState([]);
@@ -307,25 +333,26 @@ function ManageEventsView() {
         </div>
       </div>
       <div style={styles.listContainer}>
-        {loading ? <p>Loading events...</p> : events.map(ev => (
-          <div key={ev.id} style={{...styles.ruleCard, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-            <div>
-              <h3 style={{margin: '0 0 5px 0', color: theme.colors.text}}>{ev.event_title}</h3>
-              <p style={{margin: 0, fontSize: '0.85rem', color: '#666'}}>Date: {ev.event_date} | Category: {ev.category}</p>
-            </div>
-            <div>
-              <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '0.9rem'}}>
-                <input 
-                  type="checkbox" 
-                  checked={ev.status === 'active' || !ev.status} 
+        {loading ? <p>Loading events...</p> : events.map(ev => {
+          const isActive = ev.status === 'active' || !ev.status;
+          return (
+            <div key={ev.id} style={{...styles.ruleCard, display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+              <div>
+                <h3 style={{margin: '0 0 5px 0', color: theme.colors.text}}>{ev.event_title}</h3>
+                <p style={{margin: 0, fontSize: '0.85rem', color: '#666'}}>Date: {ev.event_date} | Category: {ev.category}</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '0.9rem', color: isActive ? theme.colors.maroon : '#666', fontWeight: isActive ? '600' : '400' }}>
+                  {isActive ? 'Active' : 'Inactive'}
+                </span>
+                <ToggleSwitch 
+                  checked={isActive} 
                   onChange={() => toggleEventStatus(ev.id, ev.status || 'active')}
-                  style={{marginRight: '8px'}}
                 />
-                Active
-              </label>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {events.length === 0 && !loading && <p>No events found.</p>}
       </div>
     </div>

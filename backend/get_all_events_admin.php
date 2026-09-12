@@ -28,7 +28,7 @@ try {
     $conn = get_db_connection();
     $sql = "SELECT EVENT_ID AS id, EVENT AS event_title, START_DATE AS event_date, CATEGORY AS category, STATUS AS status 
             FROM event_master 
-            ORDER BY CREATED_ON DESC";
+            ORDER BY SL_NO DESC";
     $result = $conn->query($sql);
     
     $events = [];
