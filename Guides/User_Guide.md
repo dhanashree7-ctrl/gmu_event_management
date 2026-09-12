@@ -94,6 +94,7 @@ To thoroughly test the platform's features and end-to-end approval workflows, yo
 | **Dean (Level 3 Approver)** | dean.fet@gmu.ac.in | Approves University scale events, and routes to the Pro VC. |
 | **Pro VC (Level 4 Approver)**| pro-vc@gmu.ac.in | Approves University scale events, and routes to the VC. |
 | **VC (Level 5 Approver — Final)** | vc@gmu.ac.in | Final executive sign-off. Event is published after VC approval. |
+| **Student** | `csstudent01` | Use this to register for events, form teams, and submit feedback. (Computer Science and Engineering Student) |
 | **Student** | `U23E01CS018` | Use this to register for events, form teams, and submit feedback. (CSE Student) |
 | **Student Affairs Director**| student_affairs | View all global events and analytical drill-downs. |
 | **Events Admin**        | events_admin | Manage overall platform settings and view event analytics. |
