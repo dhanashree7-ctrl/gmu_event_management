@@ -465,7 +465,13 @@ export default function EventsAdminDashboard() {
   const [selectedScaleId, setSelectedScaleId] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const [activeNav, setActiveNav] = useState(location.state?.activeNav || 'Dashboard');
+  const [activeNav, setActiveNav] = useState(() => {
+    return localStorage.getItem('adminDashboardNav') || location.state?.activeNav || 'Dashboard';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('adminDashboardNav', activeNav);
+  }, [activeNav]);
 
   useEffect(() => {
     if (!user || user.role !== "events_admin") {
