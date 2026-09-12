@@ -67,7 +67,7 @@ $event_date = $cap_row['START_DATE'] ?? null;
 // Fetch attendees from event_registrations JOIN users
 $sql = "SELECT
             er.ID                     AS registration_id,
-            er.USER_ID                AS student_uid,
+            er.STUDENT_ID                AS student_uid,
             er.ROLE                   AS registration_role,
             er.EXTERNAL_DETAILS       AS external_details_json,
             er.CHECK_IN_STATUS        AS check_in_status,
@@ -80,7 +80,7 @@ $sql = "SELECT
             er.TEAM_LEAD              AS team_lead,
             er.TEAM_MEMBERS           AS team_members
         FROM event_registrations er
-        LEFT JOIN users u ON er.USER_ID = u.USER_NAME
+        LEFT JOIN users u ON er.STUDENT_ID = u.USER_NAME
         WHERE er.EVENT_ID = ?
         ORDER BY er.ROLE ASC, er.REGISTRATION_DATE DESC";
 

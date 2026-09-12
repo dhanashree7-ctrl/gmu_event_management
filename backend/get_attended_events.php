@@ -63,7 +63,7 @@ $sql = "
         IF(r.FEEDBACK_JSON IS NOT NULL, 1, 0) AS has_feedback
     FROM event_registrations r
     JOIN event_master em ON r.EVENT_ID = em.EVENT_ID
-    WHERE r.USER_ID = ?
+    WHERE r.STUDENT_ID = ?
       AND r.CHECK_IN_STATUS = 'checked_in'
       AND em.CURRENT_STATUS = 'completed'
     ORDER BY em.START_DATE DESC, em.START_TIME DESC

@@ -55,7 +55,7 @@ $stmt = $conn->prepare("
            r.ROLE AS registration_role, r.EXTERNAL_DETAILS AS reg_details
     FROM event_registrations r
     JOIN event_master em ON r.EVENT_ID = em.EVENT_ID
-    WHERE r.USER_ID = ?
+    WHERE r.STUDENT_ID = ?
     ORDER BY em.START_DATE ASC
 ");
 

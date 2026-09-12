@@ -266,7 +266,7 @@ function ManageEventsView() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch(`${API_BASE}/get_event_history.php`, {
+      const res = await fetch(`${API_BASE}/get_all_events_admin.php`, {
         headers: { Authorization: `Bearer ${user?.token}` }
       });
       const data = await res.json();

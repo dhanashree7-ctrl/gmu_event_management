@@ -666,6 +666,22 @@ export default function FacultyDashboard() {
                 </div>
               </div>
 
+              {/* Faculty Only Toggle */}
+              <div style={s(styles.formRow, { marginBottom: '1.5rem', alignItems: 'center' })}>
+                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '8px' }}>
+                  <input
+                    type="checkbox"
+                    checked={form.is_faculty_only}
+                    onChange={(e) => handleFieldChange('is_faculty_only', e.target.checked)}
+                    disabled={loading}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '0.95rem', fontWeight: '500', color: theme.colors.text }}>
+                    Faculty Only Event <span style={{ color: '#777', fontSize: '0.85rem', fontWeight: 'normal' }}>(Restricts registration to Faculty members only)</span>
+                  </span>
+                </label>
+              </div>
+
               {/* Event Mode — Online / Offline toggle */}
               <div style={styles.formGroup}>
                 <label style={styles.formLabel}>

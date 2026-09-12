@@ -55,7 +55,7 @@ $demo_sql = "
     SELECT COALESCE(u.DISCIPLINE, 'External/Unknown') AS department, COUNT(er.ID) as count
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
-    LEFT JOIN users u ON er.USER_ID = u.USER_NAME
+    LEFT JOIN users u ON er.STUDENT_ID = u.USER_NAME
     WHERE em.CREATED_BY = ?
     GROUP BY u.DISCIPLINE
     ORDER BY count DESC

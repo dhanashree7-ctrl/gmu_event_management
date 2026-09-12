@@ -66,7 +66,7 @@ $check_sql = "
     SELECT er.CHECK_IN_STATUS, em.CURRENT_STATUS
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
-    WHERE er.EVENT_ID = ? AND er.USER_ID = ?
+    WHERE er.EVENT_ID = ? AND er.STUDENT_ID = ?
 ";
 $check_stmt = $conn->prepare($check_sql);
 $check_stmt->bind_param('ss', $event_id, $student_usn);
@@ -91,7 +91,7 @@ if ($row['CHECK_IN_STATUS'] !== 'checked_in') {
 
 
 // 3. Check for duplicate feedback
-$dup_stmt = $conn->prepare("SELECT FEEDBACK_JSON FROM event_registrations WHERE USER_ID = ? AND EVENT_ID = ?");
+$dup_stmt = $conn->prepare("SELECT FEEDBACK_JSON FROM event_registrations WHERE STUDENT_ID = ? AND EVENT_ID = ?");
 $dup_stmt->bind_param('ss', $student_usn, $event_id);
 $dup_stmt->execute();
 $dup_row = $dup_stmt->get_result()->fetch_assoc();
@@ -105,7 +105,7 @@ if (isset($existing_feedback['rating'])) {
 
 // 4. UPDATE event_registrations with feedback
 $feedback_json = json_encode(['rating' => $rating, 'comment' => $comments]);
-$update_stmt = $conn->prepare("UPDATE event_registrations SET FEEDBACK_JSON = ? WHERE USER_ID = ? AND EVENT_ID = ?");
+$update_stmt = $conn->prepare("UPDATE event_registrations SET FEEDBACK_JSON = ? WHERE STUDENT_ID = ? AND EVENT_ID = ?");
 $update_stmt->bind_param('sss', $feedback_json, $student_usn, $event_id);
 
 if ($update_stmt->execute() && $update_stmt->affected_rows > 0) {

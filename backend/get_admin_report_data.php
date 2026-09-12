@@ -97,7 +97,7 @@ $participants_query = "
         em.EVENT AS event_title
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
-    LEFT JOIN users u ON er.USER_ID = u.USER_NAME
+    LEFT JOIN users u ON er.STUDENT_ID = u.USER_NAME
     WHERE er.EVENT_ID IN ($in_clause)
 ";
 

@@ -105,7 +105,7 @@ while ($row = $student_res->fetch_assoc()) {
 
 $stmt_event = $conn->prepare("INSERT INTO event_master (EVENT_ID, CREATED_BY, EVENT, DESCRIPTION, CATEGORY, TYPE, MODE, VENUE, START_DATE, END_DATE, START_TIME, END_TIME, REGISTRATION_DEADLINE, MAX_MEMBERS, BUDGET, COORDINATOR, CONTACT, BROUCHER, ATTACHMENTS, CURRENT_STATUS, APPROVAL_WORKFLOW, NOTIFICATION_SENT, DEPARTMENT, IS_FACULTY_ONLY) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-$stmt_reg = $conn->prepare("INSERT INTO event_registrations (EVENT_ID, USER_ID, ROLE, REGISTRATION_DATE, QR_CODE, CHECK_IN_STATUS, CHECK_IN_TIME, FEEDBACK_JSON, EXTERNAL_DETAILS, TEAM_LEAD, TEAM_MEMBERS) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt_reg = $conn->prepare("INSERT INTO event_registrations (EVENT_ID, STUDENT_ID, ROLE, REGISTRATION_DATE, QR_CODE, CHECK_IN_STATUS, CHECK_IN_TIME, FEEDBACK_JSON, EXTERNAL_DETAILS, TEAM_LEAD, TEAM_MEMBERS) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
 $eventIdCounter = 1;
 foreach ($events as $e) {

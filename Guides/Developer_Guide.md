@@ -38,7 +38,7 @@ The database (`GMU_Events_Test`) is highly normalized and strictly enforces ente
 
 ### The Enterprise User Constraint
 The `users` table is treated as a **Read-Only Enterprise Dependency**. 
-- **`SL_NO` vs. `ID`:** The table uses `SL_NO` (an internal auto-incrementing integer) as its Primary Key. However, our application logic and foreign keys (e.g., in `event_registrations` or `event_master`) strictly rely on the string-based `ID` (which represents the user's USN or Employee Roll Number) or `USER_NAME`.
+- **`SL_NO` vs. `ID`:** The table uses `SL_NO` (an internal auto-incrementing integer) as its Primary Key. However, our application logic and foreign keys strictly rely on the string-based `ID` (which represents the user's USN or Employee Roll Number) or `USER_NAME`. For example, `event_registrations.STUDENT_ID` maps directly to `users.ID`, and `event_master.EVENT_ID` uses a string-based format (e.g., `EVT-123`).
 - **Immutability:** The application is explicitly prohibited from writing to or altering the schema of the `users` table, ensuring seamless synchronization with central university IT systems.
 
 ### Role & Department Routing

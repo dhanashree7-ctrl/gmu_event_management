@@ -89,6 +89,7 @@ const ROLE_NAV_CONFIG = {
     { label: 'Current Routings',    icon: ListChecks,      id: 'Current Routings' },
     { label: 'Configure Routing',   icon: Route,           id: 'Configure Routing' },
     { label: 'Manage Users',        icon: Users,           id: 'Manage Users' },
+    { label: 'Manage Events',       icon: Calendar,        id: 'Manage Events' },
     { label: 'Archive',             icon: Archive,         id: 'Archive' },
     { label: 'Reports & Analytics', icon: FileText,        id: 'Reports & Analytics' },
     { label: 'Settings',            icon: Settings,        id: 'Settings' },

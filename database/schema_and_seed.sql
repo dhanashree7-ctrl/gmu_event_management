@@ -122,25 +122,23 @@ VALUES
 
 CREATE TABLE IF NOT EXISTS `event_registrations` (
     `ID` int NOT NULL AUTO_INCREMENT,
+    `STUDENT_ID` varchar(50) DEFAULT NULL,
     `EVENT_ID` varchar(80) NOT NULL,
-    `USER_ID` varchar(50) DEFAULT NULL,
     `SUB_EVENT_ID` varchar(50) DEFAULT NULL,
-    `ROLE` enum(
-        'participant',
-        'volunteer',
-        'coordinator'
-    ) NOT NULL DEFAULT 'participant',
+    `ROLE` enum('participant','volunteer','coordinator') NOT NULL DEFAULT 'participant',
     `REGISTRATION_DATE` datetime DEFAULT CURRENT_TIMESTAMP,
+    `STATUS` enum('active','completed') NOT NULL DEFAULT 'active',
+    `CERTIFICATE_URL` varchar(500) DEFAULT NULL,
+    `TEAM_LEAD` varchar(100) DEFAULT NULL,
+    `TEAM_MEMBERS` text,
+    
     `CHECK_IN_STATUS` varchar(50) DEFAULT 'pending',
     `CHECK_IN_TIME` datetime DEFAULT NULL,
     `QR_CODE` varchar(255) DEFAULT NULL,
     `FEEDBACK_JSON` json DEFAULT NULL,
-    `CERTIFICATE_URL` varchar(500) DEFAULT NULL,
-    `TEAM_LEAD` varchar(100) DEFAULT NULL,
-    `TEAM_MEMBERS` text,
     `EXTERNAL_DETAILS` json DEFAULT NULL,
     PRIMARY KEY (`ID`)
-) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `event_registrations`

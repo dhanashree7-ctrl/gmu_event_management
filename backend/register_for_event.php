@@ -151,7 +151,7 @@ $details_json = !empty($details_data) ? json_encode($details_data) : null;
 // ── Insert lean transaction into event_registrations ──────────────────────────
 $reg_stmt = $conn->prepare("
     INSERT INTO event_registrations (
-        USER_ID, EVENT_ID, ROLE, REGISTRATION_DATE,
+        STUDENT_ID, EVENT_ID, ROLE, REGISTRATION_DATE,
         QR_CODE, CHECK_IN_STATUS, EXTERNAL_DETAILS,
         TEAM_LEAD, TEAM_MEMBERS
     ) VALUES (

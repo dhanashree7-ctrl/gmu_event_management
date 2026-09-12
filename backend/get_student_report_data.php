@@ -45,7 +45,7 @@ $eng_sql = "
     SELECT COALESCE(em.CATEGORY, 'Uncategorized') as category, COUNT(r.ID) as count
     FROM event_registrations r
     JOIN event_master em ON r.EVENT_ID = em.EVENT_ID
-    WHERE r.USER_ID = ?
+    WHERE r.STUDENT_ID = ?
     GROUP BY category
 ";
 $stmt = $conn->prepare($eng_sql);
@@ -65,7 +65,7 @@ $stmt->close();
 $role_sql = "
     SELECT COALESCE(ROLE, 'participant') as role_name, COUNT(ID) as count
     FROM event_registrations
-    WHERE USER_ID = ?
+    WHERE STUDENT_ID = ?
     GROUP BY role_name
 ";
 $stmt = $conn->prepare($role_sql);
@@ -87,7 +87,7 @@ $score_sql = "
         COUNT(ID) as total_registrations,
         SUM(CASE WHEN CHECK_IN_STATUS = 'checked_in' THEN 1 ELSE 0 END) as checked_in_count
     FROM event_registrations
-    WHERE USER_ID = ?
+    WHERE STUDENT_ID = ?
 ";
 $stmt = $conn->prepare($score_sql);
 $stmt->bind_param("s", $usn);

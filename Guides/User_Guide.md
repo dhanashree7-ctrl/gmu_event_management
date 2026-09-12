@@ -42,7 +42,7 @@ The Student Dashboard is a gamified, mobile-responsive hub for campus engagement
 
 ### Faculty / Organiser Dashboard
 The organizing dashboard empowers staff to create, manage, and report on events without administrative friction.
-- **Propose Events:** Submit comprehensive event proposals. You can propose standalone events or "Mega Events" that contain multiple distinct "Sub-Events" (e.g., a multi-day cultural festival).
+- **Propose Events:** Submit comprehensive event proposals. You can propose standalone events or "Mega Events" that contain multiple distinct "Sub-Events" (e.g., a multi-day cultural festival). You can also toggle the **"Faculty Only"** flag to restrict event registration to only faculty members.
 - **Resource Management:** Upload supporting documents, event brochures, and budgets during the proposal phase.
 - **My Events & Roster:** Track the live approval status of your proposals. Once approved, view the real-time "Attendee Roster" to see exactly who has registered (including external college participants).
 - **Post-Event Completion:** After an event concludes, organizers must complete a post-event report, uploading gallery images and documentation to officially mark the event as `completed` for the archives.
@@ -57,6 +57,7 @@ Approvers have access to streamlined dashboards focused on oversight and rapid d
 ### Events Admin & Student Affairs Director
 The Student Affairs and Events Admin dashboards provide a macro-view of the entire university's event ecosystem.
 - **System-Wide Monitoring:** View all events across all departments, regardless of approval status.
+- **Global Event Toggle:** Use the "Manage Events" tab to instantly toggle any event's status between `active` and `inactive` across the entire platform.
 - **Drill-Down Analytics:** Access deep analytics on event performance, student engagement, external college participation, and departmental activity using interactive visual charts.
 - **Event Timeline:** View the complete chronological history of an event's approvals, registrations, and feedback.
 - **Routing Oversight:** Ensure that the approval hierarchy is flowing correctly and identify bottlenecks in the proposal pipeline.

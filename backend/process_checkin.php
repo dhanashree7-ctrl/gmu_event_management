@@ -40,12 +40,12 @@ if (!$qr_token) {
 }
 
 $stmt = $conn->prepare("
-    SELECT er.ID, er.CHECK_IN_STATUS, er.EVENT_ID, er.USER_ID,
+    SELECT er.ID, er.CHECK_IN_STATUS, er.EVENT_ID, er.STUDENT_ID,
            u.NAME AS STUDENT_NAME,
            em.EVENT AS event_title, em.START_DATE AS event_date, em.START_TIME AS event_time
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
-    LEFT JOIN users u ON er.USER_ID = u.USER_NAME
+    LEFT JOIN users u ON er.STUDENT_ID = u.USER_NAME
     WHERE er.QR_CODE = ?
 ");
 $stmt->bind_param("s", $qr_token);

@@ -62,7 +62,7 @@ $sql = "SELECT em.EVENT_ID AS id, em.EVENT AS event_title, em.DESCRIPTION AS des
                r.QR_CODE AS qr_token, r.CHECK_IN_STATUS AS check_in_status, r.ROLE AS my_role
         FROM event_master AS em
         JOIN users AS u ON u.USER_NAME = em.CREATED_BY
-        LEFT JOIN event_registrations AS r ON r.EVENT_ID = em.EVENT_ID AND r.USER_ID = ?
+        LEFT JOIN event_registrations AS r ON r.EVENT_ID = em.EVENT_ID AND r.STUDENT_ID = ?
         WHERE em.CURRENT_STATUS IN ('published', 'approved')";
 
 if ($student_department) {

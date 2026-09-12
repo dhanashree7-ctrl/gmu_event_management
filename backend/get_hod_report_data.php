@@ -58,7 +58,7 @@ $engagement_sql = "
     SELECT DATE_FORMAT(em.START_DATE, '%Y-%m') AS month, COUNT(er.ID) AS count
     FROM event_registrations er
     JOIN event_master em ON er.EVENT_ID = em.EVENT_ID
-    JOIN users u ON er.USER_ID = u.USER_NAME
+    JOIN users u ON er.STUDENT_ID = u.USER_NAME
     WHERE u.DISCIPLINE = ? AND em.START_DATE IS NOT NULL
     GROUP BY month
     ORDER BY month ASC
